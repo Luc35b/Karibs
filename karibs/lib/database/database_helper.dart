@@ -39,7 +39,6 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         class_id INTEGER NOT NULL,
-        average_score FLOAT NOT NULL,
         FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
       )
     ''');
@@ -86,6 +85,12 @@ class DatabaseHelper {
     Database db = await database;
     return await db
         .query('reports', where: 'student_id = ?', whereArgs: [studentId]);
+  }
+
+  Future<Map<String, dynamic>?> queryStudent(int studentId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query('students', where: 'id = ?', whereArgs: [studentId]);
+    return result.isNotEmpty ? result.first : null;
   }
 
   Future<int> updateClass(Map<String, dynamic> row) async {

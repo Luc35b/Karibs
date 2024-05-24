@@ -95,7 +95,7 @@ class _TeacherScreenState extends State<TeacherScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TeacherClassScreen(),
+                            builder: (context) => TeacherClassScreen(classId: _classes[index]['id']),
                           ),
                         );
                       },
@@ -113,5 +113,6 @@ class _TeacherScreenState extends State<TeacherScreen> {
               ],
             ),
     );
+
   }
 }
