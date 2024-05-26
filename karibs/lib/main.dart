@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'screens/teacher_screen.dart';
 import 'screens/student_screen.dart';
+import 'database/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database
   runApp(MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   @override

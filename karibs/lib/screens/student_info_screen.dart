@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
 
 class StudentInfoScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class StudentInfoScreen extends StatefulWidget {
 class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Map<String, dynamic>? _student;
   List<Map<String, dynamic>> _reports = [];
+  double? _averageScore;
   bool _isLoading = true;
 
   @override
@@ -24,9 +26,16 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
+    final averageScore = await DatabaseHelper().queryAverageScore(widget.studentId);
+
+    // Convert the read-only list to a mutable list before sorting
+    final mutableReports = List<Map<String, dynamic>>.from(reports);
+    mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
+
     setState(() {
       _student = student;
-      _reports = reports;
+      _reports = mutableReports;
+      _averageScore = averageScore;
       _isLoading = false;
     });
   }
@@ -96,6 +105,33 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     );
   }
 
+  List<FlSpot> _prepareDataForChart() {
+    List<FlSpot> spots = [];
+    for (var report in _reports) {
+      DateTime date = DateTime.parse(report['date']);
+      double score = report['score'] != null ? report['score'].toDouble() : 0.0;
+      spots.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
+    }
+    return spots;
+  }
+
+  double _getMinX() {
+    return _reports.isEmpty
+        ? 0
+        : DateTime.parse(_reports.first['date']).millisecondsSinceEpoch.toDouble();
+  }
+
+  double _getMaxX() {
+    return _reports.isEmpty
+        ? 0
+        : DateTime.parse(_reports.last['date']).millisecondsSinceEpoch.toDouble();
+  }
+
+  String _formatDate(double value) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    return '${date.day}/${date.month}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,41 +140,80 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : _reports.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('No reports available. Please add!'),
-            SizedBox(height: 20),
-            FloatingActionButton(
-              onPressed: _showAddReportDialog,
-              child: Icon(Icons.add),
-            ),
-          ],
-        ),
-      )
-          : Stack(
+          : Column(
         children: [
-          ListView.builder(
-            itemCount: _reports.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_reports[index]['title']),
-                subtitle: Text(_reports[index]['notes']),
-                trailing: Text(_reports[index]['score']?.toString() ?? ''),
-              );
-            },
+          if (_averageScore != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Average Score: ${_averageScore!.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+          SizedBox(
+            height: 300, // Provide a fixed height for the chart
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _reports.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('No reports available. Please add!'),
+                    SizedBox(height: 20),
+                    FloatingActionButton(
+                      onPressed: _showAddReportDialog,
+                      child: Icon(Icons.add),
+                    ),
+                  ],
+                ),
+              )
+                  : LineChart(
+                LineChartData(
+                  minX: _getMinX(),
+                  maxX: _getMaxX(),
+                  gridData: FlGridData(show: true),
+                  titlesData: FlTitlesData(
+                    bottomTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (value) => _formatDate(value),
+                    ),
+                    leftTitles: SideTitles(showTitles: true),
+                  ),
+                  borderData: FlBorderData(show: true),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _prepareDataForChart(),
+                      isCurved: true,
+                      colors: [Colors.blue],
+                      barWidth: 4,
+                      belowBarData: BarAreaData(
+                        show: true,
+                        colors: [Colors.lightBlue.withOpacity(0.4)],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _showAddReportDialog,
-              child: Icon(Icons.add),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _reports.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_reports[index]['title']),
+                  subtitle: Text(_reports[index]['notes']),
+                  trailing: Text(_reports[index]['score']?.toString() ?? ''),
+                );
+              },
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddReportDialog,
+        child: Icon(Icons.add),
       ),
     );
   }

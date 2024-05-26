@@ -22,8 +22,9 @@ class DatabaseHelper {
     String path = join(documentsDirectory.path, 'school.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment the version to trigger the upgrade
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -38,6 +39,7 @@ class DatabaseHelper {
       CREATE TABLE students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        status TEXT,
         class_id INTEGER NOT NULL,
         FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
       )
@@ -53,6 +55,29 @@ class DatabaseHelper {
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        ALTER TABLE students ADD COLUMN status TEXT
+      ''');
+    }
+  }
+
+  Future<void> deleteDatabaseFile() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'school.db');
+    File databaseFile = File(path);
+
+    if (await databaseFile.exists()) {
+      await databaseFile.delete();
+      print('Database deleted');
+    } else {
+      print('Database file not found');
+    }
+
+    _database = null;
   }
 
   Future<int> insertClass(Map<String, dynamic> row) async {
@@ -77,14 +102,12 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> queryAllStudents(int classId) async {
     Database db = await database;
-    return await db
-        .query('students', where: 'class_id = ?', whereArgs: [classId]);
+    return await db.query('students', where: 'class_id = ?', whereArgs: [classId]);
   }
 
   Future<List<Map<String, dynamic>>> queryAllReports(int studentId) async {
     Database db = await database;
-    return await db
-        .query('reports', where: 'student_id = ?', whereArgs: [studentId]);
+    return await db.query('reports', where: 'student_id = ?', whereArgs: [studentId]);
   }
 
   Future<Map<String, dynamic>?> queryStudent(int studentId) async {
@@ -93,36 +116,15 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first : null;
   }
 
-  Future<int> updateClass(Map<String, dynamic> row) async {
+  Future<double?> queryAverageScore(int studentId) async {
     Database db = await database;
-    int id = row['id'];
-    return await db.update('classes', row, where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> updateStudent(Map<String, dynamic> row) async {
-    Database db = await database;
-    int id = row['id'];
-    return await db.update('students', row, where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> updateReport(Map<String, dynamic> row) async {
-    Database db = await database;
-    int id = row['id'];
-    return await db.update('reports', row, where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> deleteClass(int id) async {
-    Database db = await database;
-    return await db.delete('classes', where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> deleteStudent(int id) async {
-    Database db = await database;
-    return await db.delete('students', where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> deleteReport(int id) async {
-    Database db = await database;
-    return await db.delete('reports', where: 'id = ?', whereArgs: [id]);
+    List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT AVG(score) as avg_score FROM reports WHERE student_id = ? AND score IS NOT NULL',
+      [studentId],
+    );
+    if (result.isNotEmpty && result.first['avg_score'] != null) {
+      return result.first['avg_score'];
+    }
+    return null;
   }
 }

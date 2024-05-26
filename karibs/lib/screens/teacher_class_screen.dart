@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'student_info_screen.dart';
+import 'add_student_screen.dart';
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
@@ -29,45 +30,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
-  void _addStudent(String studentName) async {
-    await DatabaseHelper().insertStudent({
-      'name': studentName,
-      'class_id': widget.classId,
-    });
+  void _addStudent(Map<String, dynamic> student) async {
+    await DatabaseHelper().insertStudent(student);
     _fetchStudents();
   }
 
-  void _showAddStudentDialog() {
-    final TextEditingController studentNameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Add New Student'),
-          content: TextField(
-            controller: studentNameController,
-            decoration: InputDecoration(labelText: 'Student Name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (studentNameController.text.isNotEmpty) {
-                  _addStudent(studentNameController.text);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('Add'),
-            ),
-          ],
-        );
-      },
+  void _navigateToAddStudentScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddStudentScreen(
+          classId: widget.classId,
+          onStudentAdded: (student) {
+            _addStudent(student);
+          },
+        ),
+      ),
     );
   }
 
@@ -87,7 +65,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             Text('No students available. Please add!'),
             SizedBox(height: 20),
             FloatingActionButton(
-              onPressed: _showAddStudentDialog,
+              onPressed: _navigateToAddStudentScreen,
               child: Icon(Icons.add),
             ),
           ],
@@ -100,6 +78,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(_students[index]['name']),
+                subtitle: Text(_students[index]['status'] ?? 'No status'),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -115,7 +94,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             bottom: 16,
             right: 16,
             child: FloatingActionButton(
-              onPressed: _showAddStudentDialog,
+              onPressed: _navigateToAddStudentScreen,
               child: Icon(Icons.add),
             ),
           ),
