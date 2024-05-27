@@ -12,6 +12,19 @@ class TeacherClassScreen extends StatefulWidget {
   _TeacherClassScreenState createState() => _TeacherClassScreenState();
 }
 
+Color getStatusColor(String currStatus){
+  switch(currStatus){
+    case 'Doing well':
+      return Colors.green;
+    case 'Doing okay':
+      return Colors.yellow;
+    case 'Needs help':
+      return Colors.red;
+    default:
+      return Colors.white;
+  }
+}
+
 class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _students = [];
   bool _isLoading = true;
@@ -77,7 +90,10 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             itemCount: _students.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(_students[index]['name']),
+                title: Text(_students[index]['name'],
+                  style: TextStyle(
+                      color: getStatusColor(_students[index]['status'])),
+              ),
                 subtitle: Text(_students[index]['status'] ?? 'No status'),
                 onTap: () {
                   Navigator.push(

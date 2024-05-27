@@ -108,23 +108,27 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
     for (var report in _reports) {
-      DateTime date = DateTime.parse(report['date']);
-      double score = report['score'] != null ? report['score'].toDouble() : 0.0;
-      spots.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
+      int id = report['id'];
+      double score = report['score'] != null ? report['score'].toDouble(): 0.0;
+      spots.add(FlSpot(id.toDouble(), score));
     }
     return spots;
   }
 
   double _getMinX() {
-    return _reports.isEmpty
-        ? 0
-        : DateTime.parse(_reports.first['date']).millisecondsSinceEpoch.toDouble();
+    if(_reports.isEmpty){
+      return 0.0;
+    }
+    int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
+    return min.toDouble();
   }
 
   double _getMaxX() {
-    return _reports.isEmpty
-        ? 0
-        : DateTime.parse(_reports.last['date']).millisecondsSinceEpoch.toDouble();
+    if(_reports.isEmpty){
+      return 0.0;
+    }
+    int max = _reports.map((report) => report['id']).reduce((a, b) => a > b ? a : b);
+    return max.toDouble();
   }
 
   String _formatDate(double value) {
@@ -172,11 +176,21 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 LineChartData(
                   minX: _getMinX(),
                   maxX: _getMaxX(),
-                  gridData: FlGridData(show: true),
+                  minY: 0,
+                  maxY: 100,
+                  gridData: FlGridData(show: _reports.isNotEmpty),
                   titlesData: FlTitlesData(
                     bottomTitles: SideTitles(
                       showTitles: true,
-                      getTitles: (value) => _formatDate(value),
+                      getTitles: (value) {
+                        int index = value.toInt();
+                        if(value >=0 && value< _reports.length){
+                          return _reports[index]['title'] ?? '';
+                        }
+                        return '';
+                      },
+                      reservedSize: 22,
+                      margin: 10,
                     ),
                     leftTitles: SideTitles(showTitles: true),
                   ),
@@ -184,13 +198,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   lineBarsData: [
                     LineChartBarData(
                       spots: _prepareDataForChart(),
-                      isCurved: true,
-                      colors: [Colors.blue],
-                      barWidth: 4,
-                      belowBarData: BarAreaData(
-                        show: true,
-                        colors: [Colors.lightBlue.withOpacity(0.4)],
-                      ),
+                      isCurved: false,
+                      colors: [Color(0xFF245209)],
+                      barWidth: 2,
                     ),
                   ],
                 ),
