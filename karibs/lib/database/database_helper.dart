@@ -55,12 +55,75 @@ class DatabaseHelper {
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
       )
     ''');
+    await db.execute('''
+      CREATE TABLE tests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT NOT NULL,
+        type TEXT NOT NULL,
+        test_id INTEGER NOT NULL,
+        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE question_choices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id INTEGER NOT NULL,
+        choice_text TEXT NOT NULL,
+        is_correct BOOLEAN NOT NULL,
+        FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE student_tests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        test_id INTEGER NOT NULL,
+        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
+    if (oldVersion < 4) {
       await db.execute('''
-        ALTER TABLE students ADD COLUMN status TEXT
+        CREATE TABLE tests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE questions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT NOT NULL,
+          type TEXT NOT NULL,
+          test_id INTEGER NOT NULL,
+          FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE question_choices (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          question_id INTEGER NOT NULL,
+          choice_text TEXT NOT NULL,
+          is_correct BOOLEAN NOT NULL,
+          FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE student_tests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER NOT NULL,
+          test_id INTEGER NOT NULL,
+          FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+          FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+        )
       ''');
     }
   }
@@ -80,6 +143,7 @@ class DatabaseHelper {
     _database = null;
   }
 
+
   Future<int> insertClass(Map<String, dynamic> row) async {
     Database db = await database;
     return await db.insert('classes', row);
@@ -93,6 +157,26 @@ class DatabaseHelper {
   Future<int> insertReport(Map<String, dynamic> row) async {
     Database db = await database;
     return await db.insert('reports', row);
+  }
+
+  Future<int> insertTest(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('tests', row);
+  }
+
+  Future<int> insertQuestion(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('questions', row);
+  }
+
+  Future<int> insertQuestionChoice(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('question_choices', row);
+  }
+
+  Future<int> insertStudentTest(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('student_tests', row);
   }
 
   Future<List<Map<String, dynamic>>> queryAllClasses() async {
@@ -115,6 +199,32 @@ class DatabaseHelper {
     List<Map<String, dynamic>> result = await db.query('students', where: 'id = ?', whereArgs: [studentId]);
     return result.isNotEmpty ? result.first : null;
   }
+
+  Future<List<Map<String, dynamic>>> queryAllTests() async {
+    Database db = await database;
+    return await db.query('tests');
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllQuestions(int testId) async {
+    Database db = await database;
+    return await db.query('questions', where: 'test_id = ?', whereArgs: [testId]);
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllQuestionChoices(int questionId) async {
+    Database db = await database;
+    return await db.query('question_choices', where: 'question_id = ?', whereArgs: [questionId]);
+  }
+
+  Future<Map<String, dynamic>?> queryQuestion(int questionId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'questions',
+      where: 'id = ?',
+      whereArgs: [questionId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
 
   Future<double?> queryAverageScore(int studentId) async {
     Database db = await database;
