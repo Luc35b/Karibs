@@ -77,10 +77,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           children: [
             Text('No students available. Please add!'),
             SizedBox(height: 20),
-            FloatingActionButton(
-              onPressed: _navigateToAddStudentScreen,
-              child: Icon(Icons.add),
-            ),
+
           ],
         ),
       )
@@ -107,11 +104,19 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             },
           ),
           Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
+            bottom: 30,
+            left: 125,
+            child: ElevatedButton(
               onPressed: _navigateToAddStudentScreen,
-              child: Icon(Icons.add),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('Add Student +'),
             ),
           ),
         ],
