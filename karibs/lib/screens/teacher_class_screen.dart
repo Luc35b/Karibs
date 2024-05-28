@@ -75,7 +75,6 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       ),
     );
   }
-
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
       context,
@@ -89,8 +88,6 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _fetchStudents();
     }
   }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,10 +101,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('No students available. Please add!'),
+            Text('No students available. \nPlease add!', style: TextStyle(fontSize: 30),),
             SizedBox(height: 20),
-
+            ElevatedButton(
+              onPressed: _navigateToAddStudentScreen,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('Add Student +', style: TextStyle(fontSize: 24),),
+            ),
           ],
+
         ),
       )
           : Stack(
@@ -115,7 +124,13 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       ListView.builder(
       itemCount: _students.length,
         itemBuilder: (context, index) {
-          return ListTile(
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[300], // Background color of the box
+              borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+            ),
+            margin: EdgeInsets.all(10),
+          child: ListTile(
             title: Row(
               children: [
                 // Display the average score in a circle
@@ -147,15 +162,16 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               ],
             ),
             subtitle: Text(_students[index]['status'] ?? 'No status'),
-            onTap: ()  {
+            onTap: () {
               _navigateToStudentInfoScreen(_students[index]['id']);
             },
+          ),
           );
         },
       ),
           Positioned(
             bottom: 30,
-            left: 125,
+            left: 120,
             child: ElevatedButton(
               onPressed: _navigateToAddStudentScreen,
               style: ElevatedButton.styleFrom(
@@ -166,7 +182,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              child: Text('Add Student +'),
+              child: Text('Add Student +', style: TextStyle(fontSize: 20),),
             ),
           ),
         ],

@@ -77,11 +77,19 @@ class _ClassesScreenState extends State<ClassesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('No classes available. Please add!'),
-            SizedBox(height: 20),
-            FloatingActionButton(
+            Text('No classes available. \nPlease add!',style: TextStyle(fontSize: 30),),
+            SizedBox(height: 30),
+            ElevatedButton(
               onPressed: _showAddClassDialog,
-              child: Icon(Icons.add),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('Add Class +', style: TextStyle(fontSize: 20),),
             ),
           ],
         ),
@@ -91,25 +99,43 @@ class _ClassesScreenState extends State<ClassesScreen> {
           ListView.builder(
             itemCount: _classes.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_classes[index]['name']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TeacherClassScreen(classId: _classes[index]['id']),
-                    ),
-                  );
-                },
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.purple[200], // Background color of the box
+                  borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                ),
+                margin: EdgeInsets.all(10),
+                child: ListTile(
+                  title: Text(_classes[index]['name'], style: TextStyle(fontSize: 30),),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TeacherClassScreen(classId: _classes[index]['id']),
+                      ),
+                    );
+                  },
+                ),
               );
             },
           ),
           Positioned(
             bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
+            left: 20,
+            child: ElevatedButton(
               onPressed: _showAddClassDialog,
-              child: Icon(Icons.add),
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('  Add Class +  ',
+                style: TextStyle(fontSize: 24),
+              ),
             ),
           ),
         ],

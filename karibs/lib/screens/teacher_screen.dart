@@ -33,6 +33,7 @@ class TeacherScreen extends StatelessWidget {
               ),
 
             ),
+            SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -48,7 +49,7 @@ class TeacherScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              child: Text('My Tests',
+              child: Text('  My Tests  ',
                 style: TextStyle(fontSize: 24),
               ),
             ),

@@ -45,10 +45,18 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               controller: _studentNameController,
               decoration: InputDecoration(labelText: 'Student Name'),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 30),
             ElevatedButton(
               onPressed: _addStudent,
-              child: Text('Add Student'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('Add Student', style: TextStyle(fontSize: 24),),
             ),
           ],
         ),

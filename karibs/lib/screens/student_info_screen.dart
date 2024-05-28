@@ -178,12 +178,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('No reports available. Please add!'),
+                    Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30),),
                     SizedBox(height: 20),
-                    FloatingActionButton(
-                      onPressed: _showAddReportDialog,
-                      child: Icon(Icons.add),
-                    ),
+
                   ],
                 ),
               )
