@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'add_report_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
@@ -50,6 +51,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
     _fetchStudentData();
   }
+
 
   void _showAddReportDialog() {
     final TextEditingController titleController = TextEditingController();
@@ -220,23 +222,52 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                ),
+                ElevatedButton(
+                  onPressed: _showAddReportDialog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text('Add Report'),
+                ),
+              ]
+
+            ),
+          ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _reports.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_reports[index]['title']),
-                  subtitle: Text(_reports[index]['notes']),
-                  trailing: Text(_reports[index]['score']?.toString() ?? ''),
-                );
-              },
+            child:Padding(
+              padding: const EdgeInsets.all(8),
+              child: ListView.builder(
+                itemCount: _reports.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200], // Background color of the box
+                      borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                    ),
+                    margin: EdgeInsets.only(bottom: 8), // Margin between boxes
+                    child: ListTile(
+                      title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
+                      subtitle: Text(_reports[index]['notes']),
+                      trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddReportDialog,
-        child: Icon(Icons.add),
       ),
     );
   }

@@ -20,7 +20,18 @@ class TeacherScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => ClassesScreen()),
                 );
               },
-              child: Text('Classes'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('My Classes',
+                style: TextStyle(fontSize: 24),
+              ),
+
             ),
             ElevatedButton(
               onPressed: () {
@@ -29,7 +40,17 @@ class TeacherScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => TestsScreen()),
                 );
               },
-              child: Text('Tests'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Background color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Text('My Tests',
+                style: TextStyle(fontSize: 24),
+              ),
             ),
           ],
         ),
