@@ -14,8 +14,8 @@ class StudentInfoScreen extends StatefulWidget {
 class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Map<String, dynamic>? _student;
   List<Map<String, dynamic>> _reports = [];
-  double? _averageScore;
   bool _isLoading = true;
+  double? _averageScore = 0.0;
 
   @override
   void initState() {

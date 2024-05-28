@@ -40,6 +40,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         status TEXT,
+        average_score DOUBLE,
         class_id INTEGER NOT NULL,
         FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
       )
@@ -233,7 +234,14 @@ class DatabaseHelper {
       [studentId],
     );
     if (result.isNotEmpty && result.first['avg_score'] != null) {
-      return result.first['avg_score'];
+      double avgScore = result.first['avg_score'];
+      await db.update(
+        'students',
+        {'average_score': avgScore},
+        where: 'id = ?',
+        whereArgs: [studentId],
+      );
+      return avgScore;
     }
     return null;
   }
