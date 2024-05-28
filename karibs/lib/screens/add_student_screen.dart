@@ -12,9 +12,8 @@ class AddStudentScreen extends StatefulWidget {
 
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final TextEditingController _studentNameController = TextEditingController();
-  String? _selectedStatus;
+  String? _selectedStatus = 'No status';
 
-  final List<String> _statuses = ['Doing well', 'Doing okay', 'Needs help'];
 
   void _addStudent() {
     if (_studentNameController.text.isNotEmpty && _selectedStatus != null) {
@@ -45,22 +44,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             TextField(
               controller: _studentNameController,
               decoration: InputDecoration(labelText: 'Student Name'),
-            ),
-            SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedStatus,
-              items: _statuses.map((status) {
-                return DropdownMenuItem<String>(
-                  value: status,
-                  child: Text(status),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedStatus = value;
-                });
-              },
-              decoration: InputDecoration(labelText: 'Status'),
             ),
             SizedBox(height: 16),
             ElevatedButton(
