@@ -20,6 +20,8 @@ Color getStatusColor(String currStatus){
       return Colors.yellow;
     case 'Needs help':
       return Colors.red;
+    case 'No status':
+      return Colors.blueGrey;
     default:
       return Colors.white;
   }
@@ -73,6 +75,21 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       ),
     );
   }
+
+  Future<void> _navigateToStudentInfoScreen(int studentId) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StudentInfoScreen(studentId: studentId),
+      ),
+    );
+
+    if (result == true) {
+      // If the result is true, it means the data was updated, so refresh the students
+      _fetchStudents();
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -130,19 +147,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               ],
             ),
             subtitle: Text(_students[index]['status'] ?? 'No status'),
-            onTap: () async {
-              setState((){
-                _fetchStudents();
-              });
-              final result = Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => StudentInfoScreen(studentId: _students[index]['id']),
-                ),
-              );
-              if(result == true) {
-                _fetchStudents();
-              }
+            onTap: ()  {
+              _navigateToStudentInfoScreen(_students[index]['id']);
             },
           );
         },

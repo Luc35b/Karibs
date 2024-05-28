@@ -180,6 +180,18 @@ class DatabaseHelper {
     return await db.insert('student_tests', row);
   }
 
+  Future<int> updateStudentStatus(int studentId, String newStatus) async {
+    Database db = await database;
+    return await db.update(
+      'students',
+      {'status': newStatus},
+      where: 'id = ?',
+      whereArgs: [studentId],
+    );
+  }
+
+
+
   Future<List<Map<String, dynamic>>> queryAllClasses() async {
     Database db = await database;
     return await db.query('classes');
