@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'add_report_screen.dart';
+import 'teacher_class_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
@@ -24,11 +25,29 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
+  void _navigateToAddReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddReportScreen(studentId: widget.studentId),
+      ),
+    ).then((result) {
+      if (result != null && result == true) {
+        // Refresh the screen or perform any other action after adding a report
+        _fetchStudentData();
+      }
+    });
+  }
+
+
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
     final averageScore = await DatabaseHelper().queryAverageScore(widget.studentId);
-
+    if(averageScore != null){
+      String newStatus = changeStatus(averageScore);
+      final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
+    }
     // Convert the read-only list to a mutable list before sorting
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
@@ -227,7 +246,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                 ),
                 ElevatedButton(
-                  onPressed: _showAddReportDialog,
+                  onPressed: _navigateToAddReportScreen,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
