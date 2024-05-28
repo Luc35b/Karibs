@@ -25,6 +25,18 @@ Color getStatusColor(String currStatus){
   }
 }
 
+String changeStatus(double avgScore){
+  if(avgScore >=70){
+    return 'Doing well';
+  }
+  else if(avgScore >=50){
+    return 'Doing okay';
+  }
+  else{
+    return 'Needs help';
+  }
+}
+
 class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _students = [];
   bool _isLoading = true;
@@ -86,26 +98,58 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       )
           : Stack(
         children: [
-          ListView.builder(
-            itemCount: _students.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_students[index]['name'],
-                  style: TextStyle(
-                      color: getStatusColor(_students[index]['status'])),
-              ),
-                subtitle: Text(_students[index]['status'] ?? 'No status'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StudentInfoScreen(studentId: _students[index]['id']),
+      ListView.builder(
+      itemCount: _students.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Row(
+              children: [
+                // Display the average score in a circle
+                Container(
+                  width: 40, // Adjust the width as needed
+                  height: 40, // Adjust the height as needed
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: getStatusColor(_students[index]['status']), // Customize the color as needed
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${_students[index]['average_score']?.round() ?? ''}',
+                      style: TextStyle(
+                        color: Colors.white, // Customize the text color
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
+                  ),
+                ),
+                SizedBox(width: 16), // Add spacing between the circle and the name
+                // Display the student's name
+                Text(
+                  '${_students[index]['name']}',
+                  style: TextStyle(
+                    color: Colors.black, // Adjust as needed
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Text(_students[index]['status'] ?? 'No status'),
+            onTap: () async {
+              setState((){
+                _fetchStudents();
+              });
+              final result = Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StudentInfoScreen(studentId: _students[index]['id']),
+                ),
               );
+              if(result == true) {
+                _fetchStudents();
+              }
             },
-          ),
+          );
+        },
+      ),
           Positioned(
             bottom: 16,
             right: 16,

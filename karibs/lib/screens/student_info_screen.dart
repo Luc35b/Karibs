@@ -82,7 +82,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                _fetchStudentData();
+                Navigator.of(context).pop(true);
+
               },
               child: Text('Cancel'),
             ),
@@ -94,10 +96,15 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     notesController.text,
                     scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
                   );
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(true);
+
                 }
+                _fetchStudentData();
               },
+
               child: Text('Add'),
+
+
             ),
           ],
         );
@@ -127,7 +134,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     if(_reports.isEmpty){
       return 0.0;
     }
-    int max = _reports.map((report) => report['id']).reduce((a, b) => a > b ? a : b);
+    int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
   }
 
@@ -141,6 +148,12 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_student != null ? _student!['name'] : 'Student Info'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          }
+        )
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
