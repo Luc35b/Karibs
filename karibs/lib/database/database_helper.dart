@@ -67,6 +67,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         text TEXT NOT NULL,
         type TEXT NOT NULL,
+        category TEXT NOT NULL,
         test_id INTEGER NOT NULL,
         FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
       )
@@ -104,6 +105,8 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           text TEXT NOT NULL,
           type TEXT NOT NULL,
+          answer TEXT,
+          category TEXT NOT NULL,
           test_id INTEGER NOT NULL,
           FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
         )
@@ -190,7 +193,40 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> deleteClass(int id) async {
+    Database db = await database;
+    return await db.delete('classes', where: 'id = ?', whereArgs: [id]);
+  }
 
+  Future<int> deleteStudent(int id) async {
+    Database db = await database;
+    return await db.delete('students', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteReport(int id) async {
+    Database db = await database;
+    return await db.delete('reports', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteTest(int id) async {
+    Database db = await database;
+    return await db.delete('tests', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteQuestion(int id) async {
+    Database db = await database;
+    return await db.delete('questions', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteQuestionChoices(int questionId) async {
+    Database db = await database;
+    return await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]);
+  }
+
+  Future<int> deleteStudentTests(int studentId) async {
+    Database db = await database;
+    return await db.delete('student_tests', where: 'student_id = ?', whereArgs: [studentId]);
+  }
 
   Future<List<Map<String, dynamic>>> queryAllClasses() async {
     Database db = await database;
@@ -237,7 +273,6 @@ class DatabaseHelper {
     );
     return result.isNotEmpty ? result.first : null;
   }
-
 
   Future<double?> queryAverageScore(int studentId) async {
     Database db = await database;

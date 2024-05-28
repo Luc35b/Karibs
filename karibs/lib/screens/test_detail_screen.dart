@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
+import 'package:karibs/pdf_gen.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -52,11 +53,22 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  void _generateAndPrintPdf() async {
+    await _fetchQuestions();
+    await PdfGenerator().generateTestPdf(widget.testId, widget.testTitle);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.testTitle),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.picture_as_pdf),
+            onPressed: _generateAndPrintPdf, // Call the PDF generation method
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

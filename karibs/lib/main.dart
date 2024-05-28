@@ -41,6 +41,14 @@ class MainScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => TeacherScreen()),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
               child: Text('I am a Teacher'),
             ),
             SizedBox(height: 20),
@@ -51,6 +59,14 @@ class MainScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => StudentScreen()),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
               child: Text('I am a Student'),
             ),
           ],
