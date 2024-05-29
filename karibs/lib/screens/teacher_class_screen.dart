@@ -17,7 +17,7 @@ Color getStatusColor(String currStatus) {
     case 'Doing well':
       return Colors.green;
     case 'Doing okay':
-      return Colors.yellow;
+      return Color(0xFFe6cc00);
     case 'Needs help':
       return Colors.red;
     case 'No status':

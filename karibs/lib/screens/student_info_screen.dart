@@ -4,6 +4,7 @@ import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
+import 'report_detail_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
@@ -12,6 +13,18 @@ class StudentInfoScreen extends StatefulWidget {
 
   @override
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
+}
+
+Color getReportColor(int currScore){
+  if(currScore >= 70){
+    return Colors.green;
+  }
+  else if(currScore >=50){
+    return Color(0xFFe6cc00);
+  }
+  else{
+    return Colors.red;
+  }
 }
 
 class _StudentInfoScreenState extends State<StudentInfoScreen> {
@@ -90,62 +103,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController notesController = TextEditingController();
     final TextEditingController scoreController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Add New Report'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
-              ),
-              TextField(
-                controller: notesController,
-                decoration: InputDecoration(labelText: 'Notes'),
-              ),
-              TextField(
-                controller: scoreController,
-                decoration: InputDecoration(labelText: 'Score (optional)'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _fetchStudentData();
-                Navigator.of(context).pop(true);
-
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
-                  _addReport(
-                    titleController.text,
-                    notesController.text,
-                    scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
-                  );
-                  Navigator.of(context).pop(true);
-
-                }
-                _fetchStudentData();
-              },
-
-              child: Text('Add'),
-
-
-            ),
-          ],
-        );
-      },
-    );
-  }
+   }
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
@@ -310,9 +268,21 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               child: ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
-                  return Container(
+                  return GestureDetector(
+                      onTap: () {
+                    // Navigate to another screen when a report is tapped
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReportDetailScreen(
+                          report: _reports[index],
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[200], // Background color of the box
+                      color: getReportColor(_reports[index]['score']).withOpacity(0.7), // Background color of the box
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                     ),
                     margin: EdgeInsets.only(bottom: 8), // Margin between boxes
@@ -321,7 +291,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       subtitle: Text(_reports[index]['notes']),
                       trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
                     ),
-                  );
+                  ));
                 },
               ),
             ),
