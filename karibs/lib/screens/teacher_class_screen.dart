@@ -42,6 +42,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _filteredStudents = [];
   bool _isLoading = true;
   TextEditingController _searchController = TextEditingController();
+  String _selectedStatus = 'All';
 
   @override
   void initState() {
@@ -92,15 +93,60 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _filterStudents(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _filteredStudents = List.from(_students);
-      } else {
-        _filteredStudents = _students.where((student) {
+      List<Map<String, dynamic>> filteredList = _students;
+      if (_selectedStatus != 'All') {
+        filteredList = filteredList.where((student) {
+          return student['status'] == _selectedStatus;
+        }).toList();
+      }
+      if (query.isNotEmpty) {
+        filteredList = filteredList.where((student) {
           return student['name'].toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
+      _filteredStudents = filteredList;
     });
   }
+
+  void _filterByStatus(String status) {
+    setState(() {
+      _selectedStatus = status;
+      _filterStudents(_searchController.text);
+    });
+  }
+  void _showStatusFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Filter by Status'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <String>[
+              'All',
+              'Doing well',
+              'Doing okay',
+              'Needs help',
+              'No status'
+            ].map((String value) {
+              return RadioListTile<String>(
+                title: Text(value),
+                value: value,
+                groupValue: _selectedStatus,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    _filterByStatus(newValue);
+                    Navigator.pop(context);
+                  }
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,14 +162,26 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _filterStudents,
-                  decoration: InputDecoration(
-                    labelText: 'Search by student name',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
-                  ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.filter_list),
+                      onPressed: _showStatusFilterDialog,
+                    ),
+                    SizedBox(width: 10,),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: _filterStudents,
+                        decoration: InputDecoration(
+                          labelText: 'Search by student name',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                  ],
                 ),
               ),
               Expanded(
