@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/pdf_gen.dart';
 
 class AddQuestionScreen extends StatefulWidget {
   final int testId;
@@ -14,15 +15,18 @@ class AddQuestionScreen extends StatefulWidget {
 class _AddQuestionScreenState extends State<AddQuestionScreen> {
   final TextEditingController _textController = TextEditingController();
   String? _selectedType;
+  String? _selectedCategory; // New field for category
   final List<String> _questionTypes = ['multiple_choice', 'fill_in_the_blank'];
+  final List<String> _questionCategories = ['Vocab', 'Comprehension']; // New list of categories
   List<TextEditingController> _choiceControllers = [];
   List<bool> _correctChoices = [];
 
   void _addQuestion() async {
-    if (_textController.text.isNotEmpty && _selectedType != null) {
+    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategory != null) { // Check for selected category
       int questionId = await DatabaseHelper().insertQuestion({
         'text': _textController.text,
         'type': _selectedType,
+        'category': _selectedCategory, // Include category in insertion
         'test_id': widget.testId,
       });
 
@@ -34,6 +38,12 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             'is_correct': _correctChoices[i] ? 1 : 0,
           });
         }
+      } else if (_selectedType == 'fill_in_the_blank') {
+        await DatabaseHelper().insertQuestionChoice({
+          'question_id': questionId,
+          'choice_text': _textController.text,
+          'is_correct': 1,
+        });
       }
 
       widget.onQuestionAdded();
@@ -80,6 +90,21 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 });
               },
               decoration: InputDecoration(labelText: 'Question Type'),
+            ),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              items: _questionCategories.map((category) { // Add dropdown for category
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCategory = value;
+                });
+              },
+              decoration: InputDecoration(labelText: 'Question Category'), // Add label for category
             ),
             if (_selectedType == 'multiple_choice')
               Column(

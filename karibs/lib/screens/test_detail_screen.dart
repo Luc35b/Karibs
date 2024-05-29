@@ -53,9 +53,14 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
-  void _generateAndPrintPdf() async {
+  void _generateAndPrintQuestionsPdf() async {
     await _fetchQuestions();
-    await PdfGenerator().generateTestPdf(widget.testId, widget.testTitle);
+    await PdfGenerator().generateTestQuestionsPdf(widget.testId, widget.testTitle);
+  }
+
+  void _generateAndPrintAnswerKeyPdf() async {
+    await _fetchQuestions();
+    await PdfGenerator().generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
   }
 
   @override
@@ -63,12 +68,6 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.testTitle),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.picture_as_pdf),
-            onPressed: _generateAndPrintPdf, // Call the PDF generation method
-          ),
-        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -86,27 +85,56 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           ],
         ),
       )
-          : Stack(
-        children: [
-          ListView.builder(
-            itemCount: _questions.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_questions[index]['text']),
-                subtitle: Text('Type: ${_questions[index]['type']}'),
-                onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-              );
-            },
+          : ListView.builder(
+        itemCount: _questions.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_questions[index]['text']),
+            subtitle: Text('Type: ${_questions[index]['type']}'),
+            onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+          );
+        },
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                child: ElevatedButton(
+                  onPressed: _generateAndPrintQuestionsPdf,
+                  child: FittedBox(
+                    child: Row(
+                      children: [
+                        Icon(Icons.print),
+                        SizedBox(width: 4),
+                        Text('Print Questions'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Flexible(
+                child: ElevatedButton(
+                  onPressed: _generateAndPrintAnswerKeyPdf,
+                  child: FittedBox(
+                    child: Row(
+                      children: [
+                        Icon(Icons.print),
+                        SizedBox(width: 4),
+                        Text('Print Answer Key'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _navigateToAddQuestionScreen,
-              child: Icon(Icons.add),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

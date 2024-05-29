@@ -52,6 +52,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         notes TEXT,
         score INTEGER,
+        test_id INTEGER,
         student_id INTEGER NOT NULL,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
       )
@@ -86,6 +87,9 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id INTEGER NOT NULL,
         test_id INTEGER NOT NULL,
+        total_score DOUBLE,
+        vocab_score DOUBLE,
+        comp_score DOUBLE,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
         FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
       )
@@ -105,7 +109,6 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           text TEXT NOT NULL,
           type TEXT NOT NULL,
-          answer TEXT,
           category TEXT NOT NULL,
           test_id INTEGER NOT NULL,
           FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
@@ -125,6 +128,9 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           student_id INTEGER NOT NULL,
           test_id INTEGER NOT NULL,
+          total_score DOUBLE,
+          vocab_score DOUBLE,
+          comp_score DOUBLE,
           FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
           FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
         )
@@ -267,6 +273,21 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> queryAllQuestions(int testId) async {
     Database db = await database;
     return await db.query('questions', where: 'test_id = ?', whereArgs: [testId]);
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllQuestionsWithChoices(int testId) async {
+    final db = await database;
+    final questions = await db.query('questions', where: 'test_id = ?', whereArgs: [testId]);
+
+    List<Map<String, dynamic>> mutableQuestions = [];
+    for (var question in questions) {
+      Map<String, dynamic> questionCopy = Map<String, dynamic>.from(question);
+      final choices = await db.query('question_choices', where: 'question_id = ?', whereArgs: [question['id']]);
+      questionCopy['choices'] = List<Map<String, dynamic>>.from(choices);
+      mutableQuestions.add(questionCopy);
+    }
+
+    return mutableQuestions;
   }
 
   Future<List<Map<String, dynamic>>> queryAllQuestionChoices(int questionId) async {
