@@ -95,7 +95,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           );
         },
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _questions.isNotEmpty
+          ? BottomAppBar(
         shape: CircularNotchedRectangle(),
         notchMargin: 8.0,
         child: Padding(
@@ -135,7 +136,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             ],
           ),
         ),
+      )
+          : null,
+      floatingActionButton: _questions.isEmpty
+          ? null
+          : FloatingActionButton(
+        onPressed: _navigateToAddQuestionScreen,
+        child: Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

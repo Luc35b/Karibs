@@ -14,6 +14,7 @@ class AddQuestionScreen extends StatefulWidget {
 
 class _AddQuestionScreenState extends State<AddQuestionScreen> {
   final TextEditingController _textController = TextEditingController();
+  final TextEditingController _correctAnswerController = TextEditingController(); // Controller for the correct answer
   String? _selectedType;
   String? _selectedCategory; // New field for category
   final List<String> _questionTypes = ['multiple_choice', 'fill_in_the_blank'];
@@ -41,7 +42,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       } else if (_selectedType == 'fill_in_the_blank') {
         await DatabaseHelper().insertQuestionChoice({
           'question_id': questionId,
-          'choice_text': _textController.text,
+          'choice_text': _correctAnswerController.text,
           'is_correct': 1,
         });
       }
@@ -134,10 +135,15 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   ),
                 ],
               ),
+            if (_selectedType == 'fill_in_the_blank')
+              TextField(
+                controller: _correctAnswerController,
+                decoration: InputDecoration(labelText: 'Correct Answer'),
+              ),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: _addQuestion,
-              child: Text('Add Question'),
+              child: Text('Save'),
             ),
           ],
         ),
