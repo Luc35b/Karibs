@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 
-class StudentInfoScreen extends StatefulWidget {
+class EditStudentScreen extends StatefulWidget {
   final int studentId;
 
-  StudentInfoScreen({required this.studentId});
+  EditStudentScreen({required this.studentId});
 
   @override
-  _StudentInfoScreenState createState() => _StudentInfoScreenState();
+  _EditStudentScreenState createState() => _EditStudentScreenState();
 }
 
-class _StudentInfoScreenState extends State<StudentInfoScreen> {
+class _EditStudentScreenState extends State<EditStudentScreen> {
   Map<String, dynamic>? _student;
   List<Map<String, dynamic>> _reports = [];
   bool _isLoading = true;
   double? _averageScore = 0.0;
+  TextEditingController _nameController = TextEditingController();
 
   @override
   void initState() {
@@ -31,19 +31,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => AddReportScreen(studentId: widget.studentId),
-      ),
-    ).then((result) {
-      if (result != null && result == true) {
-        // Refresh the screen or perform any other action after adding a report
-        _fetchStudentData();
-      }
-    });
-  }
-  void _navigateToEditStudentScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditStudentScreen(studentId: widget.studentId),
       ),
     ).then((result) {
       if (result != null && result == true) {
@@ -70,6 +57,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       _student = student;
       _reports = mutableReports;
       _averageScore = averageScore;
+      _nameController.text = _student!['name'];
       _isLoading = false;
     });
   }
@@ -178,51 +166,76 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     return '${date.day}/${date.month}';
   }
 
+  void _updateStudentName(String newName) async{
+    await DatabaseHelper().updateStudentName(widget.studentId, newName);
+    setState(() {
+      _student!['name'] = newName;
+    });
+
+  }
+
+  void _deleteStudent() async {
+    // Show a confirmation dialog
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Student'),
+        content: Text('Are you sure you want to delete this student?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Cancel
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Confirm
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    // Delete the student if confirmed
+    if (confirmDelete == true) {
+      await DatabaseHelper().deleteStudent(widget.studentId);
+      Navigator.pop(context, true);
+      Navigator.pop(context, true);// Navigate back to the previous screen
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_student != null ? _student!['name'] : 'Student Info'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(true);
-          }
-        )
+          title: Text('Edit Student'),
+          leading: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              }
+          ),
+          actions: [
+            IconButton(onPressed: _deleteStudent, icon: Icon(Icons.delete))
+          ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(
         children: [
-            Row(
-              children: [
-                SizedBox(width: 20,),
-                if(_student !=null)
-                  Expanded(child:
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        _student!['name'],
-                        style: TextStyle(
-                            fontSize: 48, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-              ElevatedButton(
-                onPressed: _navigateToEditStudentScreen,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+          if(_student !=null)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Student Name',
+                  border: OutlineInputBorder(),
                 ),
-                child: Text('Edit Student', style: TextStyle(fontSize: 16),),
+                onEditingComplete: () {
+                  // Save the updated name when editing is complete
+                  _updateStudentName(_nameController.text);
+                },
               ),
-                SizedBox(width: 20,),
-            ],
-          ),
+            ),
           if (_averageScore != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -284,23 +297,23 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: [
-                Expanded(
-                  child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-                ),
-                ElevatedButton(
-                  onPressed: _navigateToAddReportScreen,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                children: [
+                  Expanded(
+                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                   ),
-                  child: Text('Add Report'),
-                ),
-              ]
+                  ElevatedButton(
+                    onPressed: _navigateToAddReportScreen,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Text('Add Report'),
+                  ),
+                ]
 
             ),
           ),

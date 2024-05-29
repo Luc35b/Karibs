@@ -193,6 +193,16 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> updateStudentName(int studentId, String newName) async{
+    Database db = await database;
+    return await db.update(
+      'students',
+      {'name': newName},
+      where: 'id = ?',
+      whereArgs: [studentId],
+    );
+  }
+
   Future<int> deleteClass(int id) async {
     Database db = await database;
     return await db.delete('classes', where: 'id = ?', whereArgs: [id]);
