@@ -3,6 +3,7 @@ import 'package:karibs/database/database_helper.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
+import 'test_grade_screen.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -63,11 +64,38 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     await PdfGenerator().generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
   }
 
+  void _navigateToGradeTestScreen(int classId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => TestGradeScreen(classId: classId, testTitle: widget.testTitle)
+      ),
+    );
+  }
+  void _showChooseClassDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ChooseClassDialog(
+          onClassSelected: (classId) {
+            Navigator.of(context).pop();
+            _navigateToGradeTestScreen(classId);
+          },
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.testTitle),
+        actions: [IconButton(
+          onPressed: _showChooseClassDialog,
+          icon: Icon(Icons.class_),
+        )],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -148,3 +176,64 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 }
+
+class ChooseClassDialog extends StatefulWidget {
+  final Function(int) onClassSelected;
+
+  ChooseClassDialog({required this.onClassSelected});
+
+  @override
+  _ChooseClassDialogState createState() => _ChooseClassDialogState();
+}
+
+class _ChooseClassDialogState extends State<ChooseClassDialog> {
+  List<Map<String, dynamic>> _classes = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClasses();
+  }
+
+  Future<void> _fetchClasses() async {
+    final data = await DatabaseHelper().queryAllClasses();
+    setState(() {
+      _classes = data;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Choose Class'),
+      content: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+        width: double.minPositive, // Adjust the width to fit the content
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _classes.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_classes[index]['name']),
+              onTap: () {
+                widget.onClassSelected(_classes[index]['id']);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Cancel'),
+        ),
+      ],
+    );
+  }
+}
+

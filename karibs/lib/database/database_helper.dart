@@ -323,4 +323,19 @@ class DatabaseHelper {
     }
     return null;
   }
+
+  Future<String?> getClassName(int classId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'classes',
+      columns: ['name'],
+      where: 'id = ?',
+      whereArgs: [classId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['name'] as String?;
+    }
+    return null;
+  }
+
 }
