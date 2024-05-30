@@ -15,7 +15,7 @@ class StudentInfoScreen extends StatefulWidget {
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
 }
 
-Color getReportColor(int currScore){
+Color getReportColor(double currScore){
   if(currScore >= 70){
     return Colors.green;
   }
