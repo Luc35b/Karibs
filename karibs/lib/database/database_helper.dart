@@ -51,7 +51,9 @@ class DatabaseHelper {
         date TEXT NOT NULL,
         title TEXT NOT NULL,
         notes TEXT,
-        score INTEGER,
+        score DOUBLE,
+        vocab_score DOUBLE,
+        comp_score DOUBLE,
         test_id INTEGER,
         student_id INTEGER NOT NULL,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
@@ -353,4 +355,30 @@ class DatabaseHelper {
     }
     return null;
   }
+
+  Future<String?> getClassName(int classId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'classes',
+      columns: ['name'],
+      where: 'id = ?',
+      whereArgs: [classId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['name'] as String?;
+    }
+    return null;
+  }
+
+  Future<List<Map<String, dynamic>>> getQuestionsByTestId(int testId) async {
+    Database db = await database;
+    return await db.query(
+      'questions',
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+
+
 }
