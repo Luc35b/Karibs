@@ -68,7 +68,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => TestGradeScreen(classId: classId, testTitle: widget.testTitle)
+          builder: (context) => TestGradeScreen(classId: classId, testTitle: widget.testTitle, testId: widget.testId)
       ),
     );
   }

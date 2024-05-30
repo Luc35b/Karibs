@@ -5,8 +5,9 @@ import 'add_student_screen.dart';
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
+  final bool refresh;
 
-  TeacherClassScreen({required this.classId});
+  TeacherClassScreen({required this.classId, required this.refresh});
 
   @override
   _TeacherClassScreenState createState() => _TeacherClassScreenState();
@@ -48,6 +49,14 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   void initState() {
     super.initState();
     _fetchStudents();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if(widget.refresh){
+      _fetchStudents();
+    }
   }
 
   Future<void> _fetchStudents() async {
