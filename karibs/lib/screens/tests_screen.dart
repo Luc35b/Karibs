@@ -9,6 +9,7 @@ class TestsScreen extends StatefulWidget {
 }
 
 class _TestsScreenState extends State<TestsScreen> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   List<Map<String, dynamic>> _tests = [];
   bool _isLoading = true;
 
@@ -19,14 +20,26 @@ class _TestsScreenState extends State<TestsScreen> {
   }
 
   Future<void> _fetchTests() async {
-    final data = await DatabaseHelper().queryAllTests();
+    final dbHelper = DatabaseHelper();
+    final data = await dbHelper.queryAllTests();
     setState(() {
-      _tests = data;
+      _tests = List<Map<String, dynamic>>.from(data);
       _isLoading = false;
     });
   }
 
   void _addTest(String testName) async {
+    if (_tests.any((test) => test['title'] == testName)) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text('Test with this name already exists. Please choose a different name.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      return;
+    }
+
     await DatabaseHelper().insertTest({'title': testName});
     _fetchTests();
   }
@@ -65,6 +78,88 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  void _showEditTestDialog(int testId, String currentTitle) {
+    final TextEditingController testNameController = TextEditingController(text: currentTitle);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Test Name'),
+          content: TextField(
+            controller: testNameController,
+            decoration: InputDecoration(labelText: 'Test Title'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (testNameController.text.isNotEmpty) {
+                  _editTestName(testId, testNameController.text);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _editTestName(int testId, String newTitle) async {
+    if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text('Test with this name already exists. Please choose a different name.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      return;
+    }
+
+    await DatabaseHelper().updateTest(testId, {'title': newTitle});
+    _fetchTests();
+  }
+
+  void _showDeleteConfirmationDialog(int testId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Test'),
+          content: Text('Are you sure you want to delete this test?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteTest(testId);
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteTest(int testId) async {
+    await DatabaseHelper().deleteTest(testId);
+    _fetchTests();
+  }
+
   void _navigateToTestDetailScreen(int testId, String testTitle) {
     Navigator.push(
       context,
@@ -89,52 +184,100 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  void _updateTestOrder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = _tests.removeAt(oldIndex);
+      _tests.insert(newIndex, item);
+
+      // Update the order in the database
+      _updateOrderInDatabase();
+    });
+  }
+
+  Future<void> _updateOrderInDatabase() async {
+    for (int i = 0; i < _tests.length; i++) {
+      await DatabaseHelper().updateTestOrder(_tests[i]['id'], i);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Tests'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _tests.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Tests'),
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Stack(
           children: [
-            Text('No tests available. Please add!'),
-            SizedBox(height: 20),
-            FloatingActionButton(
-              onPressed: _showAddTestDialog,
-              child: Icon(Icons.add),
+            _tests.isEmpty
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('No tests available. Please add!'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _showAddTestDialog,
+                    child: Icon(Icons.add),
+                  ),
+                ],
+              ),
+            )
+                : ReorderableListView(
+              onReorder: _updateTestOrder,
+              padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with button
+              children: [
+                for (int index = 0; index < _tests.length; index++)
+                  ListTile(
+                    key: ValueKey(_tests[index]['id']),
+                    title: Text(_tests[index]['title']),
+                    onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: () => _navigateToAddQuestionScreen(_tests[index]['id']),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title']),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
+            if (_tests.isNotEmpty)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: _showAddTestDialog,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add),
+                        SizedBox(width: 8),
+                        Text('Add Test'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
-      )
-          : Stack(
-        children: [
-          ListView.builder(
-            itemCount: _tests.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(_tests[index]['title']),
-                onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
-                trailing: IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () => _navigateToAddQuestionScreen(_tests[index]['id']),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _showAddTestDialog,
-              child: Icon(Icons.add),
-            ),
-          ),
-        ],
       ),
     );
   }

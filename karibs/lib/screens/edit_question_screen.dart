@@ -79,7 +79,10 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill out all fields')),
+        SnackBar(
+          content: Text('Please fill out all fields'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),),
       );
     }
   }
@@ -106,88 +109,101 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _textController,
-              decoration: InputDecoration(labelText: 'Question Text'),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedType,
-              items: _questionTypes.map((type) {
-                return DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(type),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedType = value;
-                });
-              },
-              decoration: InputDecoration(labelText: 'Question Type'),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              items: _questionCategories.map((category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value;
-                });
-              },
-              decoration: InputDecoration(labelText: 'Question Category'),
-            ),
-            if (_selectedType == 'multiple_choice')
-              Column(
+          : Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
-                  for (int i = 0; i < _choiceControllers.length; i++)
-                    Row(
+                  TextField(
+                    controller: _textController,
+                    decoration: InputDecoration(labelText: 'Question Text'),
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    items: _questionTypes.map((type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(type),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedType = value;
+                      });
+                    },
+                    decoration: InputDecoration(labelText: 'Question Type'),
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    items: _questionCategories.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    },
+                    decoration: InputDecoration(labelText: 'Question Category'),
+                  ),
+                  if (_selectedType == 'multiple_choice')
+                    Column(
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _choiceControllers[i],
-                            decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
+                        for (int i = 0; i < _choiceControllers.length; i++)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _choiceControllers[i],
+                                  decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
+                                ),
+                              ),
+                              Checkbox(
+                                value: _correctChoices[i],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _correctChoices[i] = value!;
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed: () => _removeChoiceField(i),
+                              ),
+                            ],
                           ),
-                        ),
-                        Checkbox(
-                          value: _correctChoices[i],
-                          onChanged: (value) {
-                            setState(() {
-                              _correctChoices[i] = value!;
-                            });
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () => _removeChoiceField(i),
+                        ElevatedButton(
+                          onPressed: _addChoiceField,
+                          child: Text('Add Choice'),
                         ),
                       ],
                     ),
-                  ElevatedButton(
-                    onPressed: _addChoiceField,
-                    child: Text('Add Choice'),
-                  ),
+                  if (_selectedType == 'fill_in_the_blank')
+                    TextField(
+                      controller: _correctAnswerController,
+                      decoration: InputDecoration(labelText: 'Correct Answer'),
+                    ),
+                  SizedBox(height: 16),
                 ],
               ),
-            if (_selectedType == 'fill_in_the_blank')
-              TextField(
-                controller: _correctAnswerController,
-                decoration: InputDecoration(labelText: 'Correct Answer'),
-              ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _updateQuestion,
-              child: Text('Save'),
             ),
-          ],
-        ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _updateQuestion,
+                child: Text('Save'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

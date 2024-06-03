@@ -62,7 +62,8 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE tests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL
+        title TEXT NOT NULL,
+        "order" INTEGER
       )
     ''');
     await db.execute('''
@@ -105,6 +106,7 @@ class DatabaseHelper {
         CREATE TABLE tests (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL
+          "order" INTEGER
         )
       ''');
       await db.execute('''
@@ -243,6 +245,34 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> updateTest(int testId, Map<String, dynamic> row) async {
+    final db = await database;
+    await db.update(
+      'tests',
+      row,
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+  Future<void> updateTestOrder(int testId, int order) async {
+    final db = await database;
+    await db.update(
+      'tests',
+      {'order': order},
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> queryAllTests() async {
+    final db = await database;
+    return await db.query(
+      'tests',
+      orderBy: '"order" ASC',
+    );
+  }
+
   Future<int> deleteQuestion(int questionId) async {
     Database db = await database;
     await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]); // Delete choices first
@@ -311,10 +341,10 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first : null;
   }
 
-  Future<List<Map<String, dynamic>>> queryAllTests() async {
+  /*Future<List<Map<String, dynamic>>> queryAllTests() async {
     Database db = await database;
     return await db.query('tests');
-  }
+  }*/
 
   Future<List<Map<String, dynamic>>> queryAllQuestions(int testId) async {
     Database db = await database;

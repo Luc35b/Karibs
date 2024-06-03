@@ -67,6 +67,33 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  void _showDeleteConfirmationDialog(int questionId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Question'),
+          content: Text('Are you sure you want to delete this question?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteQuestion(questionId);
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _deleteQuestion(int questionId) async {
     await DatabaseHelper().deleteQuestion(questionId);
     _fetchQuestions();
@@ -90,6 +117,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       ),
     );
   }
+
   void _showChooseClassDialog() {
     showDialog(
       context: context,
@@ -128,102 +156,119 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.testTitle),
-        actions: [IconButton(
-          onPressed: _showChooseClassDialog,
-          icon: Icon(Icons.class_),
-        )],
+        actions: [
+          IconButton(
+            onPressed: _showChooseClassDialog,
+            icon: Icon(Icons.class_),
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : _questions.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('No questions available. Please add!'),
-            SizedBox(height: 20),
-            FloatingActionButton(
-              onPressed: _navigateToAddQuestionScreen,
-              child: Icon(Icons.add),
-            ),
-          ],
-        ),
-      )
-          : ReorderableListView(
-        onReorder: _updateQuestionOrder,
+          : Stack(
         children: [
-          for (int index = 0; index < _questions.length; index++)
-            ListTile(
-              key: ValueKey(_questions[index]['id']),
-              title: Text(_questions[index]['text']),
-              subtitle: Text('Type: ${_questions[index]['type']}'),
-              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-              trailing: Row(
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+            child: _questions.isEmpty
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('No questions available. Please add!'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _navigateToAddQuestionScreen,
+                    child: Icon(Icons.add),
+                  ),
+                ],
+              ),
+            )
+                : Column(
+              children: [
+                ReorderableListView(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+                  onReorder: _updateQuestionOrder,
+                  children: [
+                    for (int index = 0; index < _questions.length; index++)
+                      ListTile(
+                        key: ValueKey(_questions[index]['id']),
+                        title: Text(_questions[index]['text']),
+                        subtitle: Text('Type: ${_questions[index]['type']}'),
+                        onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => _deleteQuestion(_questions[index]['id']),
+                  if (_questions.isNotEmpty)
+                    SizedBox(height: 16),
+                  if (_questions.isNotEmpty)
+                    FloatingActionButton(
+                      onPressed: _navigateToAddQuestionScreen,
+                      child: Icon(Icons.add),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Flexible(
+                        child: ElevatedButton(
+                          onPressed: _generateAndPrintQuestionsPdf,
+                          child: FittedBox(
+                            child: Row(
+                              children: [
+                                Icon(Icons.print),
+                                SizedBox(width: 4),
+                                Text('Print Questions'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: ElevatedButton(
+                          onPressed: _generateAndPrintAnswerKeyPdf,
+                          child: FittedBox(
+                            child: Row(
+                              children: [
+                                Icon(Icons.print),
+                                SizedBox(width: 4),
+                                Text('Print Answer Key'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
+          ),
         ],
       ),
-      bottomNavigationBar: _questions.isNotEmpty
-          ? BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Flexible(
-                child: ElevatedButton(
-                  onPressed: _generateAndPrintQuestionsPdf,
-                  child: FittedBox(
-                    child: Row(
-                      children: [
-                        Icon(Icons.print),
-                        SizedBox(width: 4),
-                        Text('Print Questions'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Flexible(
-                child: ElevatedButton(
-                  onPressed: _generateAndPrintAnswerKeyPdf,
-                  child: FittedBox(
-                    child: Row(
-                      children: [
-                        Icon(Icons.print),
-                        SizedBox(width: 4),
-                        Text('Print Answer Key'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      )
-          : null,
-      floatingActionButton: _questions.isEmpty
-          ? null
-          : FloatingActionButton(
-        onPressed: _navigateToAddQuestionScreen,
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
@@ -287,4 +332,3 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     );
   }
 }
-

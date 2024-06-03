@@ -6,7 +6,7 @@ import 'database/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database
+  await DatabaseHelper().deleteDatabaseFile(); // Deletes the existing database, remove when testing
   runApp(MyApp());
 }
 
