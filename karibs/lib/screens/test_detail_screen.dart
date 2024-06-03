@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
@@ -28,7 +29,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Future<void> _fetchQuestions() async {
     final data = await DatabaseHelper().queryAllQuestions(widget.testId);
     setState(() {
-      _questions = data;
+      _questions = List<Map<String, dynamic>>.from(data);
       _isLoading = false;
     });
   }
@@ -52,6 +53,23 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         builder: (context) => QuestionDetailScreen(questionId: questionId),
       ),
     );
+  }
+
+  void _navigateToEditQuestionScreen(int questionId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditQuestionScreen(
+          questionId: questionId,
+          onQuestionUpdated: _fetchQuestions,
+        ),
+      ),
+    );
+  }
+
+  void _deleteQuestion(int questionId) async {
+    await DatabaseHelper().deleteQuestion(questionId);
+    _fetchQuestions();
   }
 
   void _generateAndPrintQuestionsPdf() async {
@@ -86,6 +104,24 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  void _updateQuestionOrder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = _questions.removeAt(oldIndex);
+      _questions.insert(newIndex, item);
+
+      // Update the order in the database
+      _updateOrderInDatabase();
+    });
+  }
+
+  Future<void> _updateOrderInDatabase() async {
+    for (int i = 0; i < _questions.length; i++) {
+      await DatabaseHelper().updateQuestionOrder(_questions[i]['id'], i);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,15 +149,30 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           ],
         ),
       )
-          : ListView.builder(
-        itemCount: _questions.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(_questions[index]['text']),
-            subtitle: Text('Type: ${_questions[index]['type']}'),
-            onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-          );
-        },
+          : ReorderableListView(
+        onReorder: _updateQuestionOrder,
+        children: [
+          for (int index = 0; index < _questions.length; index++)
+            ListTile(
+              key: ValueKey(_questions[index]['id']),
+              title: Text(_questions[index]['text']),
+              subtitle: Text('Type: ${_questions[index]['type']}'),
+              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => _deleteQuestion(_questions[index]['id']),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: _questions.isNotEmpty
           ? BottomAppBar(

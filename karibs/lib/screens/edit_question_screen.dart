@@ -1,68 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/pdf_gen.dart';
 
-class AddQuestionScreen extends StatefulWidget {
-  final int testId;
-  final Function onQuestionAdded;
+class EditQuestionScreen extends StatefulWidget {
+  final int questionId;
+  final Function onQuestionUpdated;
 
-  AddQuestionScreen({required this.testId, required this.onQuestionAdded});
+  EditQuestionScreen({required this.questionId, required this.onQuestionUpdated});
 
   @override
-  _AddQuestionScreenState createState() => _AddQuestionScreenState();
+  _EditQuestionScreenState createState() => _EditQuestionScreenState();
 }
 
-class _AddQuestionScreenState extends State<AddQuestionScreen> {
+class _EditQuestionScreenState extends State<EditQuestionScreen> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _correctAnswerController = TextEditingController(); // Controller for the correct answer
   String? _selectedType;
-  String? _selectedCategory; // New field for category
+  String? _selectedCategory;
   final List<String> _questionTypes = ['multiple_choice', 'fill_in_the_blank'];
-  final List<String> _questionCategories = ['Vocab', 'Comprehension']; // New list of categories
+  final List<String> _questionCategories = ['Vocab', 'Comprehension'];
   List<TextEditingController> _choiceControllers = [];
   List<bool> _correctChoices = [];
-  int? _questionOrder;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initializeQuestionOrder();
+    _loadQuestion();
   }
 
-  Future<void> _initializeQuestionOrder() async {
-    final questions = await DatabaseHelper().queryAllQuestions(widget.testId);
+  void _loadQuestion() async {
+    var question = await DatabaseHelper().queryQuestion(widget.questionId);
+    var choices = await DatabaseHelper().queryQuestionChoices(widget.questionId);
+
     setState(() {
-      _questionOrder = questions.length + 1;
+      _textController.text = question?['text'];
+      _selectedType = question?['type'];
+      _selectedCategory = question?['category'];
+      if (_selectedType == 'multiple_choice') {
+        _choiceControllers = choices.map((choice) {
+          var controller = TextEditingController(text: choice['choice_text']);
+          return controller;
+        }).toList();
+        _correctChoices = choices.map((choice) => choice['is_correct'] == 1).toList();
+      } else if (_selectedType == 'fill_in_the_blank') {
+        _correctAnswerController.text = choices.isNotEmpty ? choices[0]['choice_text'] : '';
+      }
+      _isLoading = false;
     });
   }
 
-  void _addQuestion() async {
-    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategory != null && _questionOrder != null) { // Check for selected category
-      int questionId = await DatabaseHelper().insertQuestion({
+  void _updateQuestion() async {
+    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategory != null) {
+      await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,
-        'category': _selectedCategory, // Include category in insertion
-        'test_id': widget.testId,
-        'order': _questionOrder,
+        'category': _selectedCategory,
       });
+
+      await DatabaseHelper().deleteQuestionChoices(widget.questionId);
 
       if (_selectedType == 'multiple_choice') {
         for (int i = 0; i < _choiceControllers.length; i++) {
           await DatabaseHelper().insertQuestionChoice({
-            'question_id': questionId,
+            'question_id': widget.questionId,
             'choice_text': _choiceControllers[i].text,
             'is_correct': _correctChoices[i] ? 1 : 0,
           });
         }
       } else if (_selectedType == 'fill_in_the_blank') {
         await DatabaseHelper().insertQuestionChoice({
-          'question_id': questionId,
+          'question_id': widget.questionId,
           'choice_text': _correctAnswerController.text,
           'is_correct': 1,
         });
       }
 
-      widget.onQuestionAdded();
+      widget.onQuestionUpdated();
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -89,9 +102,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add New Question'),
+        title: Text('Edit Question'),
       ),
-      body: Padding(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -116,7 +131,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             ),
             DropdownButtonFormField<String>(
               value: _selectedCategory,
-              items: _questionCategories.map((category) { // Add dropdown for category
+              items: _questionCategories.map((category) {
                 return DropdownMenuItem<String>(
                   value: category,
                   child: Text(category),
@@ -127,7 +142,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   _selectedCategory = value;
                 });
               },
-              decoration: InputDecoration(labelText: 'Question Category'), // Add label for category
+              decoration: InputDecoration(labelText: 'Question Category'),
             ),
             if (_selectedType == 'multiple_choice')
               Column(
@@ -168,7 +183,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _addQuestion,
+              onPressed: _updateQuestion,
               child: Text('Save'),
             ),
           ],
