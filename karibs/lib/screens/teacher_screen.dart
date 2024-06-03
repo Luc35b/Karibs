@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/screens/classes_screen.dart';
+import 'package:karibs/screens/teacher_dashboard.dart';
 import 'package:karibs/screens/tests_screen.dart';
+
+const Color DeepPurple = Color(0xFF250A4E);
+const Color MidPurple = Color(0xFFCBB5D6);
+const Color LightPurple = Color(0xFFEFDAF9);
+const Color NotWhite = Color(0xFFEFEBF1);
+const Color White = Colors.white;
 
 class TeacherScreen extends StatelessWidget {
   @override
@@ -8,11 +14,14 @@ class TeacherScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Teacher Screen'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
