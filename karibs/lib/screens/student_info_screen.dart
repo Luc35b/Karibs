@@ -131,6 +131,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     return max.toDouble();
   }
 
+
   String _formatDate(double value) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
     return '${date.day}/${date.month}';

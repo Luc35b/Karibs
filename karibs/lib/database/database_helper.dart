@@ -6,7 +6,6 @@ import 'dart:io';
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
-
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
@@ -25,6 +24,7 @@ class DatabaseHelper {
       version: 2, // Increment the version to trigger the upgrade
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
+      readOnly: false,
     );
   }
 
@@ -210,6 +210,37 @@ class DatabaseHelper {
       {'name': newName},
       where: 'id = ?',
       whereArgs: [studentId],
+    );
+  }
+
+
+  Future<int> updateReportTitle(int reportId, String newName) async{
+    Database db = await database;
+    return await db.update(
+      'reports',
+      {'title': newName},
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+  }
+
+  Future<int> updateReportNotes(int reportId, String newName) async{
+    Database db = await database;
+    return await db.update(
+      'reports',
+      {'notes': newName},
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+  }
+
+  Future<int> updateReportScore(int reportId, int newScore) async{
+    Database db = await database;
+    return await db.update(
+      'reports',
+      {'score': newScore},
+      where: 'id = ?',
+      whereArgs: [reportId],
     );
   }
 
