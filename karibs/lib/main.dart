@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database
+  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database, remove when done testing
   runApp(
     MultiProvider(
       providers: [
