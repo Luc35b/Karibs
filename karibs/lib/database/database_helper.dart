@@ -297,6 +297,12 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first : null;
   }
 
+  Future<Map<String, dynamic>?> queryReport(int reportId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query('reports', where: 'id = ?', whereArgs: [reportId]);
+    return result.isNotEmpty ? result.first : null;
+  }
+
   Future<List<Map<String, dynamic>>> queryAllTests() async {
     Database db = await database;
     return await db.query('tests');

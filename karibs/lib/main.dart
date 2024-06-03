@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'screens/teacher_screen.dart';
 import 'screens/student_screen.dart';
 import 'database/database_helper.dart';
+import 'database/database_students.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database
+  await ExamDatabaseHelper.instance.database;
   runApp(MyApp());
 }
 
