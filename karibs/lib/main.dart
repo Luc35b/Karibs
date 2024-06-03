@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
-import 'screens/teacher_screen.dart';
+import 'screens/teacher_dashboard.dart';
 import 'screens/student_screen.dart';
 import 'database/database_helper.dart';
 import 'package:provider/provider.dart';
@@ -94,7 +94,7 @@ class MainScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => TeacherScreen()),
+                              MaterialPageRoute(builder: (context) => TeacherDashboard()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -103,7 +103,7 @@ class MainScreen extends StatelessWidget {
                             side: BorderSide(width: 2, color: MidPurple),
                             padding: EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
+                              borderRadius: BorderRadius.circular(5),
                             ),
                           ),
                           child: Text('I\'m a Teacher', style: GoogleFonts.raleway(fontSize: 28, color: DeepPurple)),
@@ -122,7 +122,7 @@ class MainScreen extends StatelessWidget {
                             side: BorderSide(width: 2, color: MidPurple),
                             padding: EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
+                              borderRadius: BorderRadius.circular(5),
                             ),
                           ),
                           child: Text('I\'m a Student', style: GoogleFonts.raleway(fontSize: 28, color: DeepPurple)),
