@@ -51,7 +51,9 @@ class DatabaseHelper {
         date TEXT NOT NULL,
         title TEXT NOT NULL,
         notes TEXT,
-        score INTEGER,
+        score DOUBLE,
+        vocab_score DOUBLE,
+        comp_score DOUBLE,
         test_id INTEGER,
         student_id INTEGER NOT NULL,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
@@ -70,6 +72,7 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         category TEXT NOT NULL,
         test_id INTEGER NOT NULL,
+        "order" INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
       )
     ''');
@@ -111,6 +114,7 @@ class DatabaseHelper {
           type TEXT NOT NULL,
           category TEXT NOT NULL,
           test_id INTEGER NOT NULL,
+          "order" INTEGER NOT NULL DEFAULT 0,
           FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
         )
       ''');
@@ -209,6 +213,7 @@ class DatabaseHelper {
     );
   }
 
+
   Future<int> updateReportTitle(int reportId, String newName) async{
     Database db = await database;
     return await db.update(
@@ -239,6 +244,53 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> updateQuestion(int questionId, Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.update(
+      'questions',
+      row,
+      where: 'id = ?',
+      whereArgs: [questionId],
+    );
+  }
+
+  Future<int> updateQuestionChoice(int choiceId, Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.update(
+      'question_choices',
+      row,
+      where: 'id = ?',
+      whereArgs: [choiceId],
+    );
+  }
+
+  Future<void> updateQuestionOrder(int questionId, int newOrder) async {
+    final db = await database;
+    await db.update(
+      'questions',
+      {'order': newOrder},
+      where: 'id = ?',
+      whereArgs: [questionId],
+    );
+  }
+
+  Future<int> deleteQuestion(int questionId) async {
+    Database db = await database;
+    await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]); // Delete choices first
+    return await db.delete('questions', where: 'id = ?', whereArgs: [questionId]);
+  }
+
+  Future<int> deleteQuestionChoice(int choiceId) async {
+    Database db = await database;
+    return await db.delete('question_choices', where: 'id = ?', whereArgs: [choiceId]);
+  }
+
+  Future<List<Map<String, dynamic>>> queryQuestionChoices(int questionId) async {
+    Database db = await database;
+    return await db.query('question_choices', where: 'question_id = ?', whereArgs: [questionId]);
+  }
+
+
   Future<int> deleteClass(int id) async {
     Database db = await database;
     return await db.delete('classes', where: 'id = ?', whereArgs: [id]);
@@ -257,11 +309,6 @@ class DatabaseHelper {
   Future<int> deleteTest(int id) async {
     Database db = await database;
     return await db.delete('tests', where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<int> deleteQuestion(int id) async {
-    Database db = await database;
-    return await db.delete('questions', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> deleteQuestionChoices(int questionId) async {
@@ -353,4 +400,30 @@ class DatabaseHelper {
     }
     return null;
   }
+
+  Future<String?> getClassName(int classId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'classes',
+      columns: ['name'],
+      where: 'id = ?',
+      whereArgs: [classId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['name'] as String?;
+    }
+    return null;
+  }
+
+  Future<List<Map<String, dynamic>>> getQuestionsByTestId(int testId) async {
+    Database db = await database;
+    return await db.query(
+      'questions',
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+
+
 }
