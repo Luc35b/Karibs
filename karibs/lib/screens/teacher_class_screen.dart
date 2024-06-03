@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/providers/student_grading_provider.dart';
+import 'package:provider/provider.dart';
 import 'student_info_screen.dart';
 import 'add_student_screen.dart';
 
@@ -53,14 +55,27 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
-    if(widget.refresh){
+    if (widget.refresh) {
       _fetchStudents();
     }
+    super.didChangeDependencies();
   }
 
   Future<void> _fetchStudents() async {
     final data = await DatabaseHelper().queryAllStudents(widget.classId);
+    if(data.length > 0) {
+      for (var i = 0; i < data.length; i++) {
+        var x = await DatabaseHelper().queryAverageScore(data[i]['id']);
+        print("avg score for student " + data[i]['id'].toString() + " is: " +
+            x.toString());
+        if (x != null) {
+          String stat = changeStatus(x);
+          final status = await DatabaseHelper().updateStudentStatus(
+              data[i]['id'], stat);
+        }
+      }
+    }
+    print('hi');
     setState(() {
       _students = data;
       _filteredStudents = List.from(_students);
@@ -77,12 +92,13 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddStudentScreen(
-          classId: widget.classId,
-          onStudentAdded: (student) {
-            _addStudent(student);
-          },
-        ),
+        builder: (context) =>
+            AddStudentScreen(
+              classId: widget.classId,
+              onStudentAdded: (student) {
+                _addStudent(student);
+              },
+            ),
       ),
     );
   }
@@ -123,6 +139,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _filterStudents(_searchController.text);
     });
   }
+
   void _showStatusFilterDialog() {
     showDialog(
       context: context,
@@ -159,120 +176,139 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Teacher Class Screen'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Stack(
-        children: [
-          Column(
+    return Consumer<StudentGradingProvider>(
+      builder: (context, studentGradingProvider, child) {
+        // Listen for changes and refresh data when 'grade' method is called
+        if (studentGradingProvider.update > 0) {
+          print(studentGradingProvider.update);
+          _fetchStudents();
+          print(_students);
+          print('fetched students');
+        }
+
+        print("Ok");
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Teacher Class Screen'),
+          ),
+          body: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.filter_list),
-                      onPressed: _showStatusFilterDialog,
-                    ),
-                    SizedBox(width: 10,),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: _filterStudents,
-                        decoration: InputDecoration(
-                          labelText: 'Search by student name',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.filter_list),
+                          onPressed: _showStatusFilterDialog,
                         ),
-                      ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: _filterStudents,
+                            decoration: InputDecoration(
+                              labelText: 'Search by student name',
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
                     ),
-                    SizedBox(width: 8),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _students.isNotEmpty
-                    ? ListView.builder(
-                  itemCount: _filteredStudents.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: getStatusColor(
-                                    _filteredStudents[index]['status']),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${_filteredStudents[index]['average_score']?.round() ?? ''}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                  ),
+                  Expanded(
+                    child: _students.isNotEmpty
+                        ? ListView.builder(
+                      itemCount: _filteredStudents.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          margin: EdgeInsets.all(10),
+                          child: ListTile(
+                            title: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: getStatusColor(
+                                        _filteredStudents[index]
+                                        ['status']),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${_filteredStudents[index]['average_score']
+                                          ?.round() ?? ''}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                SizedBox(width: 16),
+                                Text(
+                                  '${_filteredStudents[index]['name']}',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 16),
-                            Text(
-                              '${_filteredStudents[index]['name']}',
-                              style: TextStyle(
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        subtitle: Text(_filteredStudents[index]['status'] ?? 'No status'),
-                        onTap: () {
-                          _navigateToStudentInfoScreen(
-                              _filteredStudents[index]['id']);
-                        },
+                            subtitle: Text(
+                                _filteredStudents[index]['status'] ??
+                                    'No status'),
+                            onTap: () {
+                              _navigateToStudentInfoScreen(
+                                  _filteredStudents[index]['id']);
+                            },
+                          ),
+                        );
+                      },
+                    )
+                        : Center(
+                      child: Text(
+                        'No students available. \nPlease add!',
+                        style: TextStyle(fontSize: 30),
                       ),
-                    );
-                  },
-                )
-                    : Center(
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                left: 115,
+                bottom: 10,
+                child: ElevatedButton(
+                  onPressed: _navigateToAddStudentScreen,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                   child: Text(
-                    'No students available. \nPlease add!',
-                    style: TextStyle(fontSize: 30),
+                    'Add Student +',
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
               ),
             ],
           ),
-          Positioned(
-            left: 115,
-            bottom: 10,
-            child: ElevatedButton(
-              onPressed: _navigateToAddStudentScreen,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-              child: Text(
-                'Add Student +',
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

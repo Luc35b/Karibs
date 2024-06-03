@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/database/database_helper.dart';
+import 'package:provider/provider.dart';
+import '../database/database_helper.dart';
+import '../providers/student_grading_provider.dart';
+import 'package:karibs/providers/student_grading_provider.dart';
 
 class TestGradeScreen extends StatefulWidget {
   final int classId;
@@ -23,7 +26,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   int? _selectedStudentId;
   bool _isLoading = true;
   Map<String, int> sub_scores = {};
-  Map<int, bool> questionCorrectness = {};
+  Map<int, int> questionCorrectness = {};
 
   @override
   void initState() {
@@ -69,21 +72,31 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _initializeQuestionCorrectness() {
     questionCorrectness.clear();
     for (var question in _questions) {
-      questionCorrectness[question['id']] = false;
+      questionCorrectness[question['id']] = 0;
     }
   }
 
   void _markCorrect(int questionId, String category) {
     setState(() {
-      questionCorrectness[questionId] = true;
-      sub_scores[category] = (sub_scores[category] ?? 0) + 1;
+      if (questionCorrectness[questionId] == -1) {
+        questionCorrectness[questionId] = 1;
+        sub_scores[category] = ((sub_scores[category])! + 1);
+      } else if (questionCorrectness[questionId] == 0) {
+        questionCorrectness[questionId] = 1;
+        sub_scores[category] = ((sub_scores[category])! + 1);
+      }
     });
   }
 
   void _markIncorrect(int questionId, String category) {
     setState(() {
-      questionCorrectness[questionId] = false;
-      sub_scores[category] = (sub_scores[category] ?? 0) - 1;
+      if (questionCorrectness[questionId] == 1) {
+        questionCorrectness[questionId] = -1;
+        sub_scores[category] = ((sub_scores[category])! - 1);
+      }
+      if (questionCorrectness[questionId] == 0) {
+        questionCorrectness[questionId] = -1;
+      }
     });
   }
 
@@ -93,8 +106,18 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     int totalCorrect = sub_scores.values.fold(0, (sum, score) => sum + score);
 
     double totalScore = (totalCorrect / totalQuestions) * 100;
-    double vocabScore = (sub_scores['vocab'] ?? 0) / totalQuestions * 100;
-    double compScore = (sub_scores['comp'] ?? 0) / totalQuestions * 100;
+    double vocabScore = (sub_scores['Vocab'] ?? 0) / totalQuestions * 100;
+    double compScore = (sub_scores['Comprehension'] ?? 0) / totalQuestions * 100;
+
+    print(
+        {
+          'student_id': _selectedStudentId!,
+          'test_id': widget.testId,
+          'total_score': totalScore,
+          'vocab_score': vocabScore,
+          'comp_score': compScore,
+        }
+    );
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -104,8 +127,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         'total_score': totalScore,
         'vocab_score': vocabScore,
         'comp_score': compScore,
-      }
-      );
+      });
       await DatabaseHelper().insertReport({
         'student_id': _selectedStudentId!,
         'test_id': widget.testId,
@@ -118,6 +140,9 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       });
       // Show a confirmation message or navigate back
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully')));
+
+      // Notify the provider that a student has been graded
+      Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
 
@@ -177,10 +202,12 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   return ListTile(
                     title: Text(_questions[index]['text']),
                     subtitle: Text(category),
-                    tileColor: questionCorrectness[questionId] == true
+                    tileColor: questionCorrectness[questionId] == 1
                         ? Colors.green.withOpacity(0.2)
-                        : questionCorrectness[questionId] == false
+                        : questionCorrectness[questionId] == -1
                         ? Colors.red.withOpacity(0.2)
+                        : questionCorrectness[questionId] == 0
+                        ? Colors.grey.withOpacity(0.2)
                         : null,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
