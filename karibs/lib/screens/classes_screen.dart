@@ -107,8 +107,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 margin: EdgeInsets.all(10),
                 child: ListTile(
                   title: Text(_classes[index]['name'], style: TextStyle(fontSize: 30),),
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => TeacherClassScreen(classId: _classes[index]['id'],refresh: true),

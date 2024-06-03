@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'student_info_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'add_report_screen.dart';
+import 'student_info_screen.dart';
+import 'package:karibs/database/database_helper.dart';
+import 'edit_report_screen.dart';
+
 
 
 class BarGraph extends StatelessWidget {
@@ -61,14 +66,44 @@ class BarGraph extends StatelessWidget {
 }
 
 
-class ReportDetailScreen extends StatelessWidget {
+class ReportDetailScreen extends StatefulWidget{
   final Map<String, dynamic> report;
 
   ReportDetailScreen({required this.report});
 
   @override
+  _ReportDetailScreenState createState() => _ReportDetailScreenState();
+}
+
+class _ReportDetailScreenState extends State<ReportDetailScreen> {
+  double score = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    score = widget.report['score']?.toDouble() ?? 0;
+  }
+
+  void _navigateToEditReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditReportScreen(report: widget.report),
+      ),
+    ).then((reportData) {
+      if (reportData != null) {
+        // Refresh the screen or perform any other action after adding a report
+        setState(() {
+
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    double score = report['score']?.toDouble() ?? 0;
+
+    double score = widget.report['score']?.toDouble() ?? 0;
     return Scaffold(
       appBar: AppBar(
         title: Text('Report Details'),
@@ -80,11 +115,37 @@ class ReportDetailScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                report['title'],
+                widget.report['title'],
                 style: TextStyle(fontSize: 24),
               ),
             ),
           ),
+          Align(
+            alignment: Alignment.topRight,
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to the edit report screen when the button is pressed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditReportScreen(
+                      report: widget.report,
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text('Edit Report', style: TextStyle(fontSize: 16),),
+            ),
+          ),
+
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
@@ -92,11 +153,11 @@ class ReportDetailScreen extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: getReportColor(report['score']), // You can change the color as needed
+                  color: getReportColor(widget.report['score']), // You can change the color as needed
                 ),
                 padding: EdgeInsets.all(20),
                 child: Text(
-                  '${report['score']}',
+                  '${widget.report['score']}',
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
@@ -116,7 +177,7 @@ class ReportDetailScreen extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'Notes: ${report['notes']}',
+                  'Notes: ${widget.report['notes']}',
                   style: TextStyle(fontSize: 20),
                 ),
               ),

@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_screen.dart';
 import 'screens/student_screen.dart';
 import 'database/database_helper.dart';
+import 'package:provider/provider.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().deleteDatabaseFile(); // Deletes the existing database, remove when testing
-  runApp(MyApp());
+  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database, remove when done testing
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => StudentGradingProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 
