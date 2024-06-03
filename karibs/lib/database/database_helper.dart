@@ -328,7 +328,11 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> queryAllStudents(int classId) async {
     Database db = await database;
-    return await db.query('students', where: 'class_id = ?', whereArgs: [classId]);
+    List<Map<String,dynamic>> students = await db.query('students', where: 'class_id = ?', whereArgs: [classId]);
+    for (var i = 0; i < students.length; i++) {
+      queryAverageScore(i);
+    }
+    return students;
   }
 
   Future<List<Map<String, dynamic>>> queryAllReports(int studentId) async {
