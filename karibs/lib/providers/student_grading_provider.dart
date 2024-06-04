@@ -15,5 +15,9 @@ class StudentGradingProvider extends ChangeNotifier {
     print('notified listeners');
   }
 
+  void reset() {
+    _update = 0;
+  }
+
 
 }

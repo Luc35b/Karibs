@@ -235,8 +235,13 @@ class DatabaseHelper {
       whereArgs: [reportId],
     );
   }
+  Future<Map<String,dynamic>?> queryReport(int reportId) async {
+    Database db = await database;
+    List<Map<String,dynamic>> rep = await db.query('reports', where: 'id = ?', whereArgs: [reportId]);
+    return rep.isNotEmpty ? rep.first : null;
+  }
 
-  Future<int> updateReportScore(int reportId, int newScore) async{
+  Future<int> updateReportScore(int reportId, double newScore) async{
     Database db = await database;
     return await db.update(
       'reports',
@@ -431,6 +436,15 @@ class DatabaseHelper {
         whereArgs: [studentId],
       );
       return avgScore;
+    }
+    else {
+      Null avgScore = null;
+      await db.update(
+        'students',
+        {'average_score': avgScore},
+        where: 'id = ?',
+        whereArgs: [studentId],
+      );
     }
     return null;
   }

@@ -363,7 +363,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                       title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
                       subtitle: Text(_reports[index]['notes']),
                       trailing: SizedBox(
-                        width: 85,
+                        width: 120,
                         child: Row(
                           children: [
                             Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),

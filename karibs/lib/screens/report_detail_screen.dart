@@ -67,43 +67,58 @@ class BarGraph extends StatelessWidget {
 
 
 class ReportDetailScreen extends StatefulWidget{
-  final Map<String, dynamic> report;
+  final int reportId;
 
-  ReportDetailScreen({required this.report});
+  ReportDetailScreen({required this.reportId});
 
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
 }
 
 class _ReportDetailScreenState extends State<ReportDetailScreen> {
-  double score = 0;
+  Map<String,dynamic> reportInfo = {};
+  String reportTitle = " ";
+  String reportNotes = " ";
+  double reportScore = 0.0;
+
 
   @override
   void initState() {
     super.initState();
-    score = widget.report['score']?.toDouble() ?? 0;
+    queryReportInformation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    queryReportInformation();
+    super.didChangeDependencies();
+  }
+
+  Future<void> queryReportInformation() async {
+    var x = await DatabaseHelper().queryReport(widget.reportId);
+    setState(() {
+      reportInfo = x!;
+      reportTitle = x['title'];
+      reportNotes = x['notes'];
+      reportScore = x['score'];
+    });
   }
 
   void _navigateToEditReportScreen() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditReportScreen(report: widget.report),
+        builder: (context) => EditReportScreen(reportId:widget.reportId),
       ),
-    ).then((reportData) {
-      if (reportData != null) {
-        // Refresh the screen or perform any other action after adding a report
-        setState(() {
-
-        });
-      }
+    ).then((_) {
+      print("updating report info");
+      queryReportInformation();
     });
   }
 
   @override
   Widget build(BuildContext context) {
 
-    double score = widget.report['score']?.toDouble() ?? 0;
     return Scaffold(
       appBar: AppBar(
         title: Text('Report Details'),
@@ -115,7 +130,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                widget.report['title'],
+                reportTitle,
                 style: TextStyle(fontSize: 24),
               ),
             ),
@@ -125,14 +140,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to the edit report screen when the button is pressed
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditReportScreen(
-                      report: widget.report,
-                    ),
-                  ),
-                );
+                _navigateToEditReportScreen();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey,
@@ -153,11 +161,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: getReportColor(widget.report['score']), // You can change the color as needed
+                  color: getReportColor(reportScore), // You can change the color as needed
                 ),
                 padding: EdgeInsets.all(20),
                 child: Text(
-                  '${widget.report['score']}',
+                  '${reportScore}',
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
@@ -167,7 +175,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             alignment: Alignment.center,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: BarGraph(score: score),
+              child: BarGraph(score: reportScore),
             ),
           ),
           Align(
@@ -177,7 +185,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'Notes: ${widget.report['notes']}',
+                  'Notes: ${reportNotes}',
                   style: TextStyle(fontSize: 20),
                 ),
               ),

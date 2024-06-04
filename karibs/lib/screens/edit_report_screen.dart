@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/screens/report_detail_screen.dart';
 
 class EditReportScreen extends StatefulWidget {
-  final Map<String, dynamic> report;
+  final int reportId;
 
-  EditReportScreen({required this.report});
+  EditReportScreen({required this.reportId});
 
   @override
   _EditReportScreenState createState() => _EditReportScreenState();
 }
 
 class _EditReportScreenState extends State<EditReportScreen> {
+  Map<String, dynamic> report = {};
+  int studentId = 0;
   late TextEditingController _titleController;
   late TextEditingController _notesController;
   late TextEditingController _scoreController;
@@ -20,10 +21,28 @@ class _EditReportScreenState extends State<EditReportScreen> {
   @override
   void initState() {
     super.initState();
+    _titleController = TextEditingController();
+    _notesController = TextEditingController();
+    _scoreController = TextEditingController();
     _databaseHelper = DatabaseHelper();
-    _titleController = TextEditingController(text: widget.report['title']);
-    _notesController = TextEditingController(text: widget.report['notes']);
-    _scoreController = TextEditingController(text: widget.report['score'].toString());
+    _fetchReport();
+  }
+
+  void _fetchReport() async {
+    var x = await _databaseHelper.queryReport(widget.reportId);
+
+    if (x != null) {
+
+      setState(() {
+
+        report = x;
+
+        _titleController.text = report['title'];
+        _notesController.text = report['notes'];
+        _scoreController.text = report['score'].toString();
+        studentId = x['student_id'];
+      });
+    }
   }
 
   @override
@@ -37,47 +56,44 @@ class _EditReportScreenState extends State<EditReportScreen> {
   void _saveChanges() async {
     String newTitle = _titleController.text;
     String newNotes = _notesController.text;
-    int newScore = int.tryParse(_scoreController.text) ?? 0;
+    double newScore = double.tryParse(_scoreController.text) ?? report['score'];
 
-    // Update the report details in the database
-    await _databaseHelper.updateReportTitle(widget.report['id'], newTitle);
-    await _databaseHelper.updateReportNotes(widget.report['id'], newNotes);
-    await _databaseHelper.updateReportScore(widget.report['id'], newScore);
 
-    setState(() {
-      widget.report['title'] = newTitle;
-      widget.report['notes'] = newNotes;
-      widget.report['score'] = newScore;
-    });
+    await _databaseHelper.updateReportTitle(widget.reportId, newTitle);
+    await _databaseHelper.updateReportNotes(widget.reportId, newNotes);
+    await _databaseHelper.updateReportScore(widget.reportId, newScore);
+
+
+
+    Navigator.of(context).pop(true);
   }
 
   void _deleteReport() async {
-    // Show a confirmation dialog
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Student'),
-        content: Text('Are you sure you want to delete this student?'),
+        title: Text('Delete Report'),
+        content: Text('Are you sure you want to delete this report?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false), // Cancel
+            onPressed: () => Navigator.of(context).pop(false),
             child: Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true), // Confirm
+            onPressed: () => Navigator.of(context).pop(true),
             child: Text('Delete'),
           ),
         ],
       ),
     );
-    // Delete the student if confirmed
+
     if (confirmDelete == true) {
-      await DatabaseHelper().deleteReport(widget.report['id']);
-      Navigator.pop(context, true);
-      Navigator.pop(context, true);// Navigate back to the previous screen
+      await _databaseHelper.deleteReport(widget.reportId);
+
+      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +101,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
       appBar: AppBar(
         title: Text('Edit Report'),
         actions: [
-          IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete))
+          IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
         ],
       ),
       body: Padding(
@@ -110,10 +126,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                _saveChanges();
-                Navigator.of(context).pop(widget.report);
-              },
+              onPressed: _saveChanges,
               child: Text('Save Changes'),
             ),
           ],
