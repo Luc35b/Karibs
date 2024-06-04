@@ -152,40 +152,150 @@ class _P1T2State extends State<P1T2> {
   ];
 
   bool submitted = false;
+  int currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Primary 1: Exam 2'),
+        title: Text('Primary 1: Exam 3'),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            for (var section in _getSections())
-              Column(
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20),
                   Text(
-                    section['section'],
+                    questions[currentIndex]['section'],
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  ..._buildQuestions(section['questions']),
                   SizedBox(height: 20),
+                  _buildQuestion(questions[currentIndex]),
                 ],
               ),
+            ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () async {
-                _checkSubmit();
+              onPressed: () {
+                if (submitted) {
+                  setState(() {
+                    if (currentIndex < questions.length - 1) {
+                      currentIndex++; // Move to the next question
+                      submitted = false;
+                    }
+                    else{
+                      _checkSubmit();
+                    }
+                  });
+                } else {
+                  submitAnswer();
+                }
               },
-              child: Text('Submit'),
+              child: Text(submitted ? 'Next' : 'Submit'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildQuestion(Map<String, dynamic> question) {
+    String? chosenAnswer = question['selectedOption'];
+    String correctAnswer = question['answer'];
+    bool isMultipleChoice = question['type'] == 'multiple_choice';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          question['question'],
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        if (isMultipleChoice)
+          Column(
+            children: List.generate(
+              question['options'].length,
+                  (index) {
+                String option = question['options'][index];
+                bool isChosen = chosenAnswer == option;
+                bool isCorrect = submitted && option == correctAnswer;
+
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 4.0),
+                  decoration: BoxDecoration(
+                    color: submitColor(isChosen, isCorrect, submitted),
+                    border: Border.all(
+                      // color: isChosen
+                      //     ? Colors.red
+                      //     : (submitted && isCorrect ? Colors.green : Colors.grey),
+                    ),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: RadioListTile<String>(
+                    title: Text(option),
+                    value: option,
+                    groupValue: chosenAnswer,
+                    onChanged: submitted
+                        ? null
+                        : (value) {
+                      setState(() {
+                        question['selectedOption'] = value!;
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
+          )
+        else if (question['type'] == 'fill_in_the_blank')
+          TextField(
+            enabled: !submitted,
+            onChanged: (value) {
+              setState(() {
+                question['userAnswer'] = value;
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'Enter your answer',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        if (submitted && isMultipleChoice)
+          if(chosenAnswer==correctAnswer)
+            Text(
+              'Good job! Correct answer is: $correctAnswer',
+              style: TextStyle(color: Colors.green),
+            ),
+        if(chosenAnswer != correctAnswer && submitted && isMultipleChoice)
+          Text(
+            'Correct Answer: $correctAnswer',
+            style: TextStyle(color: Colors.red),
+          ),
+      ],
+    );
+  }
+
+  Color submitColor(bool chosen, bool correct, bool submit){
+    if(submit){
+      if(correct){
+        return Color(0xFFAED581);
+      }
+      else if(chosen){
+        return Color(0xFFFF8A65);
+      }
+    }
+    return Colors.white;
+  }
+
+  void submitAnswer() {
+    setState(() {
+      submitted = true;
+    });
   }
 
   void _checkSubmit() async {
@@ -217,67 +327,6 @@ class _P1T2State extends State<P1T2> {
         ),
       );// Navigate back to the previous screen
     }
-  }
-
-  List<Map<String, dynamic>> _getSections() {
-    Set<String> sectionNames = questions.map<String>((question) => question['section']).toSet();
-    List<Map<String, dynamic>> sections = [];
-    for (var sectionName in sectionNames) {
-      List<Map<String, dynamic>> sectionQuestions = questions.where((question) => question['section'] == sectionName).toList();
-      sections.add({'section': sectionName, 'questions': sectionQuestions});
-    }
-    return sections;
-  }
-
-  List<Widget> _buildQuestions(List<Map<String, dynamic>> questions) {
-    return [
-      for (var question in questions)
-        _buildQuestion(question),
-    ];
-  }
-
-  Widget _buildQuestion(Map<String, dynamic> question) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            question['question'],
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          if (question['type'] == 'multiple_choice')
-            Column(
-              children: List.generate(
-                question['options'].length,
-                    (index) => RadioListTile(
-                  title: Text(question['options'][index]),
-                  value: question['options'][index],
-                  groupValue: question['selectedOption'],
-                  onChanged: (value) {
-                    setState(() {
-                      question['selectedOption'] = value;
-                    });
-                  },
-                ),
-              ),
-            )
-          else if (question['type'] == 'fill_in_the_blank')
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  question['userAnswer'] = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Enter your answer',
-                border: OutlineInputBorder(),
-              ),
-            ),
-        ],
-      ),
-    );
   }
 
   double calculateGrade() {

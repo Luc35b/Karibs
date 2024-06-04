@@ -71,12 +71,12 @@ class GradeLevelCard extends StatelessWidget {
         );
       }
       else if(grade == 'Primary 1' && index==2){
-      //   Navigator.push(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => P1T3(),
-      //     ),
-      //   );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => P1T3(),
+          ),
+        );
       }
     }
     return Card(
