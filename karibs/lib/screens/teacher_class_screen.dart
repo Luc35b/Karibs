@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
 import 'student_info_screen.dart';
-import 'add_student_screen.dart';
+
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
   final bool refresh;
+
 
   TeacherClassScreen({required this.classId, required this.refresh});
 
@@ -45,6 +47,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _filteredStudents = [];
   bool _isLoading = true;
   TextEditingController _searchController = TextEditingController();
+  //final TextEditingController _studentNameController = TextEditingController();
   String _selectedStatus = 'All';
 
   @override
@@ -75,7 +78,6 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         }
       }
     }
-    print('hi');
     setState(() {
       _students = data;
       _filteredStudents = List.from(_students);
@@ -83,23 +85,41 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
-  void _addStudent(Map<String, dynamic> student) async {
-    await DatabaseHelper().insertStudent(student);
+  void _addStudent(String studentName) async{
+    await DatabaseHelper().insertStudent({'name': studentName, 'class_id': widget.classId, 'status': "No status"});
     _fetchStudents();
   }
+  void _showAddStudentDialog() {
+    final TextEditingController studentNameController = TextEditingController();
 
-  void _navigateToAddStudentScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            AddStudentScreen(
-              classId: widget.classId,
-              onStudentAdded: (student) {
-                _addStudent(student);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add New Student'),
+          content: TextField(
+            controller: studentNameController,
+            decoration: InputDecoration(labelText: 'Student Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
               },
+              child: Text('Cancel'),
             ),
-      ),
+            TextButton(
+              onPressed: () {
+                if (studentNameController.text.isNotEmpty) {
+                  _addStudent(studentNameController.text);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -186,126 +206,170 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           print('fetched students');
         }
 
-        print("Ok");
-
         return Scaffold(
           appBar: AppBar(
             title: Text('Teacher Class Screen'),
+            backgroundColor: DeepPurple,
+            foregroundColor: White,
           ),
           body: _isLoading
               ? Center(child: CircularProgressIndicator())
-              : Stack(
+              : SingleChildScrollView(
+          child: Stack(
             children: [
               Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.filter_list),
-                          onPressed: _showStatusFilterDialog,
+                  SizedBox(height: 10,),
+
+                  Container(margin: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: MidPurple,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(3, 3), // Shadow position
                         ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: _filterStudents,
-                            decoration: InputDecoration(
-                              labelText: 'Search by student name',
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(),
-                            ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10,),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.filter_list,
+                                  color: White,
+                                ),
+                                onPressed: _showStatusFilterDialog,
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: _filterStudents,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: NotWhite,
+                                    labelText: 'Search by student name',
+                                    prefixIcon: Icon(Icons.search),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 8),
+                        Container(
+                          height: 450,
+                          margin: EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: NotWhite,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: Offset(3,3),
+                              )
+                            ]
+                          ),
+                          child: _students.isNotEmpty
+                              ? ListView.builder(
+                            itemCount: _filteredStudents.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: White,
+                                  border: Border.all(color: DeepPurple, width: 1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                margin: EdgeInsets.all(10),
+                                child: ListTile(
+                                  title: Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: getStatusColor(
+                                              _filteredStudents[index]
+                                              ['status']),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${_filteredStudents[index]['average_score']
+                                                ?.round() ?? ''}',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Text(
+                                        '${_filteredStudents[index]['name']}',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  subtitle: Text(
+                                      _filteredStudents[index]['status'] ??
+                                          'No status'),
+                                  onTap: () {
+                                    _navigateToStudentInfoScreen(
+                                        _filteredStudents[index]['id']);
+                                  },
+                                ),
+                              );
+                            },
+                          )
+                              : Center(
+                            child: Text(
+                              'No students available. \nPlease add!',
+                              style: TextStyle(fontSize: 30),
+                            ),
+                          ),
+
+                        ),
+                        SizedBox(height: 10,),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: _students.isNotEmpty
-                        ? ListView.builder(
-                      itemCount: _filteredStudents.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          margin: EdgeInsets.all(10),
-                          child: ListTile(
-                            title: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: getStatusColor(
-                                        _filteredStudents[index]
-                                        ['status']),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${_filteredStudents[index]['average_score']
-                                          ?.round() ?? ''}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 16),
-                                Text(
-                                  '${_filteredStudents[index]['name']}',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Text(
-                                _filteredStudents[index]['status'] ??
-                                    'No status'),
-                            onTap: () {
-                              _navigateToStudentInfoScreen(
-                                  _filteredStudents[index]['id']);
-                            },
-                          ),
-                        );
-                      },
-                    )
-                        : Center(
-                      child: Text(
-                        'No students available. \nPlease add!',
-                        style: TextStyle(fontSize: 30),
+                  SizedBox(height: 10,),
+                  ElevatedButton(
+                    onPressed: _showAddStudentDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      side: BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
                       ),
+                    ),
+                    child: Text(
+                      'Add Student +',
+                      style: TextStyle(fontSize: 28),
                     ),
                   ),
                 ],
-              ),
-              Positioned(
-                left: 115,
-                bottom: 10,
-                child: ElevatedButton(
-                  onPressed: _navigateToAddStudentScreen,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  child: Text(
-                    'Add Student +',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ),
+
               ),
             ],
+          ),
           ),
         );
       },

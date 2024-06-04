@@ -90,8 +90,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          :
-      Column(
+          : SingleChildScrollView(
+      child:Column(
         children: [
           SizedBox(height: 100),
           Container(margin: EdgeInsets.symmetric(horizontal: 20),
@@ -263,6 +263,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ),
           SizedBox(height: 15),
         ],
+      ),
       ),
     );
   }
