@@ -37,8 +37,28 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     });
   }
   void _deleteClass(int classId) async{
-    await DatabaseHelper().deleteClass(classId);
-    _fetchClasses(); //refresh screen after delete
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Class'),
+        content: Text('Are you sure you want to delete this class?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Cancel
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Confirm
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    // Delete the student if confirmed
+    if (confirmDelete == true) {
+      await DatabaseHelper().deleteClass(classId);
+      _fetchClasses();//refresh screen after delete
+    }
   }
 
   void _addClass(String className) async {

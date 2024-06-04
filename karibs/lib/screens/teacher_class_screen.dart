@@ -26,7 +26,21 @@ Color getStatusColor(String currStatus) {
     case 'Needs help':
       return Colors.red;
     case 'No status':
-      return Colors.blueGrey;
+      return LightPurple;
+    default:
+      return Colors.white;
+  }
+}
+Color getStatusColorFill(String currStatus) {
+  switch (currStatus) {
+    case 'Doing well':
+      return Color(0xFFBBFABB);
+    case 'Doing okay':
+      return Color(0xFFFAECBB);
+    case 'Needs help':
+      return Color(0xFFFABBBB);
+    case 'No status':
+      return Color(0xFFD8D0DB);
     default:
       return Colors.white;
   }
@@ -295,44 +309,67 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                                 child: ListTile(
                                   title: Row(
                                     children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: getStatusColor(
-                                              _filteredStudents[index]
-                                              ['status']),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${_filteredStudents[index]['average_score']
-                                                ?.round() ?? ''}',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                      SizedBox(
+                                        width: 85,
+                                        child: Column(
+                                          //status column
+                                          children: [
+                                            Row( //to center the icon above status
+                                              children: [
+                                                SizedBox(width: 15,),
+                                                Container(
+                                                  width: 45,
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(color: getStatusColor(
+                                                        _filteredStudents[index]
+                                                        ['status']), width: 2),
+                                                    color:
+                                                    getStatusColorFill(
+                                                        _filteredStudents[index]
+                                                        ['status']),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      '${_filteredStudents[index]['average_score']
+                                                          ?.round() ?? ''}',
+                                                      style: TextStyle(
+                                                        color: DeepPurple,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
+
+                                            Text(
+                                                _filteredStudents[index]['status'] ??
+                                                    'No status'
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      SizedBox(width: 16),
+
+                                      SizedBox(width: 25),
                                       Text(
-                                        '${_filteredStudents[index]['name']}',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                        ),
+                                    '${_filteredStudents[index]['name']}',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 30,
                                       ),
+                                    ), //Name
                                     ],
                                   ),
-                                  subtitle: Text(
-                                      _filteredStudents[index]['status'] ??
-                                          'No status'),
-                                  onTap: () {
-                                    _navigateToStudentInfoScreen(
-                                        _filteredStudents[index]['id']);
-                                  },
+
+                              onTap: () {
+                              _navigateToStudentInfoScreen(
+                              _filteredStudents[index]['id']);
+                              },
                                 ),
                               );
+
                             },
                           )
                               : Center(
