@@ -36,6 +36,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       _isLoading = false;
     });
   }
+  void _deleteClass(int classId) async{
+    await DatabaseHelper().deleteClass(classId);
+    _fetchClasses(); //refresh screen after delete
+  }
 
   void _addClass(String className) async {
     await DatabaseHelper().insertClass({'name': className});
@@ -157,11 +161,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 border: Border.all(color: MidPurple, width: 2),
 
                               ),
-                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                               child: ListTile(
                                 title: Text(
                                   _classes[index]['name'],
                                   style: TextStyle(fontSize: 32),
+                                ),
+                                trailing: SizedBox(
+                                  width: 50,
+                                  child: Row(
+                                      children: [
+                                        IconButton(onPressed: () {_deleteClass(_classes[index]['id']);}, icon: Icon(Icons.delete),)
+                                      ]
+                                  ),
                                 ),
                                 onTap: () {
                                   Navigator.push(
