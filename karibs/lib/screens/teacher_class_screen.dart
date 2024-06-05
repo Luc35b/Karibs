@@ -79,7 +79,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   }
 
   Future<void> _fetchStudents() async {
-    final data = await DatabaseHelper().queryAllStudents(widget.classId);
+    var data = await DatabaseHelper().queryAllStudents(widget.classId);
     if(data.length > 0) {
       for (var i = 0; i < data.length; i++) {
         var x = await DatabaseHelper().queryAverageScore(data[i]['id']);
@@ -89,12 +89,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           String stat = changeStatus(x);
           final status = await DatabaseHelper().updateStudentStatus(
               data[i]['id'], stat);
+          print("status: " + data[i]['status']);
+        }
+        else {
+          String stat = "No status";
+          final status = await DatabaseHelper().updateStudentStatus(
+              data[i]['id'], stat);
+          print("status: " + data[i]['status']);
         }
       }
     }
+<
+    data = await DatabaseHelper().queryAllStudents(widget.classId);
+    print('hi');
     setState(() {
       _students = data;
-      _filteredStudents = List.from(_students);
+      _filteredStudents = List.from(data);
       _isLoading = false;
     });
   }
@@ -218,6 +228,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           _fetchStudents();
           print(_students);
           print('fetched students');
+          studentGradingProvider.reset();
         }
 
         return Scaffold(
