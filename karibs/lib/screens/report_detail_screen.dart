@@ -157,32 +157,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
-}
 
-class _ReportDetailScreenState extends State<ReportDetailScreen> {
-  double score = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    score = widget.report['score']?.toDouble() ?? 0;
-  }
-
-  void _navigateToEditReportScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditReportScreen(report: widget.report),
-      ),
-    ).then((reportData) {
-      if (reportData != null) {
-        // Refresh the screen or perform any other action after adding a report
-        setState(() {
-
-        });
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
