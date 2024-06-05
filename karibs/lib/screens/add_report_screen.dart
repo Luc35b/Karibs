@@ -18,7 +18,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
 
   void _addReport() async {
     String scoreText = scoreController.text;
-    int? score = scoreText.isNotEmpty ? int.tryParse(scoreText) : null;
+    double? score = scoreText.isNotEmpty ? double.tryParse(scoreText) : null;
     if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
       if( score != null && (score < 0 || score > 100)){
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,9 +65,9 @@ class _AddReportScreenState extends State<AddReportScreen> {
             TextField(
               controller: scoreController,
               decoration: InputDecoration(labelText: 'Score (optional)'),
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
             ),
             SizedBox(height: 16),
