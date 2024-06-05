@@ -60,6 +60,8 @@ class _AddReportScreenState extends State<AddReportScreen> {
             TextField(
               controller: notesController,
               decoration: InputDecoration(labelText: 'Notes'),
+              keyboardType: TextInputType.multiline,
+              maxLines: 5,
             ),
             SizedBox(height: 32),
             TextField(
