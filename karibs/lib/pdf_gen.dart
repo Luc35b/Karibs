@@ -89,4 +89,44 @@ class PdfGenerator {
     // Print the PDF
     Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Answer Key.pdf');
   }
+
+  Future<void> generateStudentReportPdf(Map<String, dynamic> student, List<Map<String, dynamic>> reports) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              pw.Text('Reports:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              ...reports.map((report) {
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 5),
+                    pw.Text('Notes: ${report['notes']}', style: pw.TextStyle(fontSize: 16)),
+                    pw.SizedBox(height: 5),
+                    pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 16)),
+                    pw.SizedBox(height: 10),
+                  ],
+                );
+              }).toList(),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/${student['name']} - Report.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    // Print the PDF
+    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
+  }
 }
