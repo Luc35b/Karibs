@@ -46,9 +46,19 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Question: ${_question!['text']}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Question: ${_question!['text']}',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Text(
+                  '${_question!['category']}',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
             ),
             SizedBox(height: 20),
             if (_choices.isNotEmpty)

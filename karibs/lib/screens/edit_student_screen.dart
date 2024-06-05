@@ -26,6 +26,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     _fetchStudentData();
   }
 
+  @override
+  void dispose(){
+    _nameController.dispose();
+    super.dispose();
+  }
   void _navigateToAddReportScreen() {
     Navigator.push(
       context,
@@ -72,7 +77,6 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
     _fetchStudentData();
   }
-
 
   void _showAddReportDialog() {
     final TextEditingController titleController = TextEditingController();
@@ -201,7 +205,10 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     }
   }
 
-
+  void _deleteReport(int reportId) async{
+    await DatabaseHelper().deleteReport(reportId);
+    _fetchStudentData(); //refresh screen after delete
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,7 +221,16 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               }
           ),
           actions: [
-            IconButton(onPressed: _deleteStudent, icon: Icon(Icons.delete))
+            IconButton(onPressed: _deleteStudent, icon: Icon(Icons.delete)),
+            IconButton(
+              onPressed: () {
+                // Save the updated name when the user clicks the save button.
+                _updateStudentName(_nameController.text);
+                //navigate back
+                Navigator.of(context).pop(true);
+              },
+              icon: Icon(Icons.save),
+            ),
           ],
       ),
       body: _isLoading
@@ -317,13 +333,27 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
 
             ),
           ),
+
           Expanded(
             child:Padding(
               padding: const EdgeInsets.all(8),
               child: ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
-                  return Container(
+                  return Dismissible(
+                    key: UniqueKey(),
+                    onDismissed: (direction){
+                      _deleteReport(_reports[index]['id']);
+                    },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right:16),
+                        child: Icon(Icons.delete, color: Colors.white),
+                      ),
+                    ),
+                  child: Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[200], // Background color of the box
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
@@ -332,8 +362,17 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     child: ListTile(
                       title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
                       subtitle: Text(_reports[index]['notes']),
-                      trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
+                      trailing: SizedBox(
+                        width: 120,
+                        child: Row(
+                          children: [
+                            Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
+                            IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete),)
+                          ]
+                        ),
+                      ),
                     ),
+                  ),
                   );
                 },
               ),

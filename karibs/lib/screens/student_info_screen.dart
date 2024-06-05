@@ -45,8 +45,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       MaterialPageRoute(
         builder: (context) => AddReportScreen(studentId: widget.studentId),
       ),
-    ).then((result) {
-      if (result != null && result == true) {
+    ).then((_) { {
         // Refresh the screen or perform any other action after adding a report
         _fetchStudentData();
       }
@@ -87,23 +86,8 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
-  void _addReport(String title, String notes, int? score) async {
-    await DatabaseHelper().insertReport({
-      'date': DateTime.now().toIso8601String(),
-      'title': title,
-      'notes': notes,
-      'score': score,
-      'student_id': widget.studentId,
-    });
-    _fetchStudentData();
-  }
 
 
-  void _showAddReportDialog() {
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController notesController = TextEditingController();
-    final TextEditingController scoreController = TextEditingController();
-   }
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
@@ -276,10 +260,13 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ReportDetailScreen(
-                          report: _reports[index],
+                          reportId: _reports[index]['id'],
+
                         ),
                       ),
-                    );
+                    ).then((_){
+                      _fetchStudentData();
+                    });
                   },
                   child: Container(
                     decoration: BoxDecoration(

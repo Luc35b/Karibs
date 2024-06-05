@@ -7,6 +7,7 @@ import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 
 
+
 class BarGraph extends StatelessWidget {
   final double score;
   final double? vocab_score;
@@ -105,9 +106,54 @@ class BarGraph extends StatelessWidget {
 
 
 class ReportDetailScreen extends StatefulWidget{
-  final Map<String, dynamic> report;
+  final int reportId;
 
-  ReportDetailScreen({required this.report});
+  ReportDetailScreen({required this.reportId});
+
+  @override
+  _ReportDetailScreenState createState() => _ReportDetailScreenState();
+}
+
+class _ReportDetailScreenState extends State<ReportDetailScreen> {
+  Map<String,dynamic> reportInfo = {};
+  String reportTitle = " ";
+  String reportNotes = " ";
+  double reportScore = 0.0;
+
+
+  @override
+  void initState() {
+    super.initState();
+    queryReportInformation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    queryReportInformation();
+    super.didChangeDependencies();
+  }
+
+  Future<void> queryReportInformation() async {
+    var x = await DatabaseHelper().queryReport(widget.reportId);
+    setState(() {
+      reportInfo = x!;
+      reportTitle = x['title'];
+      reportNotes = x['notes'];
+      reportScore = x['score'];
+    });
+  }
+
+  void _navigateToEditReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditReportScreen(reportId:widget.reportId),
+      ),
+    ).then((_) {
+      print("updating report info");
+      queryReportInformation();
+    });
+  }
 
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
@@ -140,10 +186,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('Score: ${widget.report['score']}');
-    print('Comprehension Score: ${widget.report['comprehension_score']}');
-    print('Vocabulary Score: ${widget.report['vocab_score']}');
-    double score = widget.report['score']?.toDouble() ?? 0;
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Report Details'),
@@ -155,7 +199,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                widget.report['title'],
+
+                reportTitle,
                 style: TextStyle(fontSize: 24),
               ),
             ),
@@ -165,14 +210,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to the edit report screen when the button is pressed
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditReportScreen(
-                      report: widget.report,
-                    ),
-                  ),
-                );
+
+                _navigateToEditReportScreen();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey,
@@ -193,11 +232,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: getReportColor(widget.report['score']), // You can change the color as needed
+
+                  color: getReportColor(reportScore), // You can change the color as needed
                 ),
                 padding: EdgeInsets.all(20),
                 child: Text(
-                  '${widget.report['score']}',
+                  '${reportScore}',
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
@@ -207,8 +247,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             alignment: Alignment.center,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: BarGraph(score: score, vocab_score: widget.report['vocab_score'],
-                comprehension_score: widget.report['comprehension_score'],),
+
+              child: BarGraph(score: reportScore),
             ),
           ),
           Align(
@@ -218,7 +258,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'Notes: ${widget.report['notes']}',
+
+                  'Notes: ${reportNotes}',
                   style: TextStyle(fontSize: 20),
                 ),
               ),
