@@ -56,7 +56,8 @@ class DatabaseHelper {
         comp_score DOUBLE,
         test_id INTEGER,
         student_id INTEGER NOT NULL,
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
       )
     ''');
     await db.execute('''
@@ -96,6 +97,16 @@ class DatabaseHelper {
         comp_score DOUBLE,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
         FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE student_test_question (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_test_id INTEGER NOT NULL, 
+        question_id INTEGER NOT NULL,
+        got_correct INTEGER NOT NULL,
+        FOREIGN KEY (student_test_id) REFERENCES student_tests (id) ON DELETE CASCADE,
+        FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
       )
     ''');
   }
@@ -193,6 +204,81 @@ class DatabaseHelper {
   Future<int> insertStudentTest(Map<String, dynamic> row) async {
     Database db = await database;
     return await db.insert('student_tests', row);
+  }
+
+  Future<int> insertStudentTestQuestion(Map<String,dynamic> row) async {
+    Database db = await database;
+    return await db.insert('student_test_question', row);
+  }
+
+  Future<List<Map<String, dynamic>>> getQuestionsForStudentTest(int studentId, int testId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT questions.id as question_id, questions.text as question_text, questions.type as question_type, questions.category as question_category, questions.test_id, student_test_question.got_correct
+      FROM questions
+      INNER JOIN student_test_question ON questions.id = student_test_question.question_id
+      INNER JOIN student_tests ON student_tests.id = student_test_question.student_test_id
+      WHERE student_tests.student_id = ? AND student_tests.test_id = ?
+    ''', [studentId, testId]);
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getQuestionsAndAnswersForReport(int reportId) async {
+    final db = await database;
+
+    // Fetch questions and whether the student got them correct
+    final List<Map<String, dynamic>> questionsResult = await db.rawQuery('''
+      SELECT 
+        questions.id AS question_id, 
+        questions.text AS question_text, 
+        questions.type AS question_type, 
+        questions.category AS question_category, 
+        questions.test_id, 
+        student_test_question.got_correct
+      FROM reports
+      INNER JOIN student_tests ON reports.student_id = student_tests.student_id AND reports.test_id = student_tests.test_id
+      INNER JOIN student_test_question ON student_tests.id = student_test_question.student_test_id
+      INNER JOIN questions ON student_test_question.question_id = questions.id
+      WHERE reports.id = ?
+    ''', [reportId]);
+
+    // Fetch choices for the questions
+    final List<Map<String, dynamic>> choicesResult = await db.rawQuery('''
+      SELECT 
+        question_choices.question_id AS question_id, 
+        question_choices.id AS choice_id, 
+        question_choices.choice_text, 
+        question_choices.is_correct
+      FROM question_choices
+      INNER JOIN questions ON question_choices.question_id = questions.id
+      INNER JOIN student_test_question ON questions.id = student_test_question.question_id
+      INNER JOIN student_tests ON student_test_question.student_test_id = student_tests.id
+      INNER JOIN reports ON student_tests.student_id = reports.student_id AND student_tests.test_id = reports.test_id
+      WHERE reports.id = ?
+    ''', [reportId]);
+
+    return {
+      'questions': questionsResult,
+      'choices': choicesResult,
+    };
+  }
+
+  Future<int?> getStudentTestId(int studentId, int testId) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'student_tests',
+      columns: ['id'],
+      where: 'student_id = ? AND test_id = ?',
+      whereArgs: [studentId, testId],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['id'] as int?;
+    } else {
+      return null;
+    }
   }
 
   Future<int> updateStudentStatus(int studentId, String newStatus) async {
