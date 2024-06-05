@@ -107,11 +107,15 @@ class PdfGenerator {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                      ],
+                    ),
                     pw.SizedBox(height: 5),
                     pw.Text('Notes: ${report['notes']}', style: pw.TextStyle(fontSize: 16)),
-                    pw.SizedBox(height: 5),
-                    pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 16)),
                     pw.SizedBox(height: 10),
                   ],
                 );
@@ -121,6 +125,7 @@ class PdfGenerator {
         },
       ),
     );
+
 
     final output = await getTemporaryDirectory();
     final file = File('${output.path}/${student['name']} - Report.pdf');

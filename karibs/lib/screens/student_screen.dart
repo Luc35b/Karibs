@@ -13,31 +13,97 @@ class StudentScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          GradeLevelCard(
-            grade: 'Primary 1',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.7, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 1',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          GradeLevelCard(
-            grade: 'Primary 2',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.75, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 2',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          GradeLevelCard(
-            grade: 'Primary 3',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.8, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 3',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          GradeLevelCard(
-            grade: 'Primary 4',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.85, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 4',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          GradeLevelCard(
-            grade: 'Primary 5',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.9, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 5',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          GradeLevelCard(
-            grade: 'Primary 6',
-            exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: ModalRoute.of(context)!.animation!,
+                curve: Interval(0.95, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
+              ),
+            ),
+            child: GradeLevelCard(
+              grade: 'Primary 6',
+              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
+            ),
           ),
-          // Add more GradeLevelCard widgets for other grade levels
+          // Add more SlideTransition widgets for other grade levels
         ],
       ),
     );

@@ -100,6 +100,46 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
+  void _showEditClassDialog(int classId, String currentClassName) {
+    final TextEditingController classNameController = TextEditingController(text: currentClassName);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Class Name'),
+          content: TextField(
+            controller: classNameController,
+            decoration: InputDecoration(labelText: 'Class Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (classNameController.text.isNotEmpty) {
+                  _editClassName(classId, classNameController.text);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _editClassName(int classId, String newClassName) async {
+    await DatabaseHelper().updateClass(classId, {'name': newClassName});
+    _fetchClasses();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,13 +227,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   _classes[index]['name'],
                                   style: TextStyle(fontSize: 32),
                                 ),
-                                trailing: SizedBox(
-                                  width: 50,
-                                  child: Row(
-                                      children: [
-                                        IconButton(onPressed: () {_deleteClass(_classes[index]['id']);}, icon: Icon(Icons.delete),)
-                                      ]
-                                  ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name']);},
+                                      icon: Icon(Icons.edit),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {_deleteClass(_classes[index]['id']);},
+                                      icon: Icon(Icons.delete),
+                                    ),
+                                  ],
                                 ),
                                 onTap: () {
                                   Navigator.push(
@@ -207,6 +252,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   );
                                 },
                               ),
+
+
                             );
                           },
                         ),

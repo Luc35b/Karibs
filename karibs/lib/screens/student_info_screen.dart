@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/pdf_gen.dart'; // Import your PdfGenerator class
 import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
@@ -15,14 +16,12 @@ class StudentInfoScreen extends StatefulWidget {
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
 }
 
-Color getReportColor(double currScore){
-  if(currScore >= 70){
+Color getReportColor(double currScore) {
+  if (currScore >= 70) {
     return Colors.green;
-  }
-  else if(currScore >=50){
+  } else if (currScore >= 50) {
     return Color(0xFFe6cc00);
-  }
-  else{
+  } else {
     return Colors.red;
   }
 }
@@ -45,36 +44,34 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       MaterialPageRoute(
         builder: (context) => AddReportScreen(studentId: widget.studentId),
       ),
-    ).then((_) { {
-        // Refresh the screen or perform any other action after adding a report
+    ).then((result) {
+      if (result != null && result == true) {
         _fetchStudentData();
       }
     });
   }
+
   void _navigateToEditStudentScreen() {
-    final result = Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditStudentScreen(studentId: widget.studentId),
       ),
     ).then((result) {
       if (result != null && result == true) {
-        // Refresh the screen or perform any other action after adding a report
         _fetchStudentData();
       }
     });
   }
 
-
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
     final averageScore = await DatabaseHelper().queryAverageScore(widget.studentId);
-    if(averageScore != null){
+    if (averageScore != null) {
       String newStatus = changeStatus(averageScore);
       final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
     }
-    // Convert the read-only list to a mutable list before sorting
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
 
@@ -86,21 +83,35 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  void _addReport(String title, String notes, int? score) async {
+    await DatabaseHelper().insertReport({
+      'date': DateTime.now().toIso8601String(),
+      'title': title,
+      'notes': notes,
+      'score': score,
+      'student_id': widget.studentId,
+    });
+    _fetchStudentData();
+  }
 
-
+  Future<void> _generatePdf() async {
+    if (_student != null) {
+      await PdfGenerator().generateStudentReportPdf(_student!, _reports);
+    }
+  }
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
     for (var report in _reports) {
       int id = report['id'];
-      double score = report['score'] != null ? report['score'].toDouble(): 0.0;
+      double score = report['score'] != null ? report['score'].toDouble() : 0.0;
       spots.add(FlSpot(id.toDouble(), score));
     }
     return spots;
   }
 
   double _getMinX() {
-    if(_reports.isEmpty){
+    if (_reports.isEmpty) {
       return 0.0;
     }
     int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
@@ -108,13 +119,12 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   }
 
   double _getMaxX() {
-    if(_reports.isEmpty){
+    if (_reports.isEmpty) {
       return 0.0;
     }
     int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
   }
-
 
   String _formatDate(double value) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
@@ -130,40 +140,45 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop(true);
-          }
-        )
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.picture_as_pdf),
+            onPressed: _generatePdf,
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(
         children: [
-            Row(
-              children: [
-                SizedBox(width: 20,),
-                if(_student !=null)
-                  Expanded(child:
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        _student!['name'],
-                        style: TextStyle(
-                            fontSize: 48, fontWeight: FontWeight.bold),
-                      ),
+          Row(
+            children: [
+              SizedBox(width: 20,),
+              if (_student != null)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      _student!['name'],
+                      style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                     ),
                   ),
+                ),
               ElevatedButton(
                 onPressed: _navigateToEditStudentScreen,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Text('Edit Student', style: TextStyle(fontSize: 16),),
+                child: Text('Edit Student', style: TextStyle(fontSize: 16)),
               ),
-                SizedBox(width: 20,),
+              SizedBox(width: 20,),
             ],
           ),
           if (_averageScore != null)
@@ -175,7 +190,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               ),
             ),
           SizedBox(
-            height: 300, // Provide a fixed height for the chart
+            height: 300,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: _reports.isEmpty
@@ -183,9 +198,8 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30),),
+                    Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30)),
                     SizedBox(height: 20),
-
                   ],
                 ),
               )
@@ -201,7 +215,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       showTitles: true,
                       getTitles: (value) {
                         int index = value.toInt();
-                        if(value >=0 && value< _reports.length){
+                        if (value >= 0 && value < _reports.length) {
                           return _reports[index]['title'] ?? '';
                         }
                         return '';
@@ -229,56 +243,52 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                  child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
                 ElevatedButton(
                   onPressed: _navigateToAddReportScreen,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
                   child: Text('Add Report'),
                 ),
-              ]
-
+              ],
             ),
           ),
           Expanded(
-            child:Padding(
+            child: Padding(
               padding: const EdgeInsets.all(8),
               child: ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                      onTap: () {
-                    // Navigate to another screen when a report is tapped
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReportDetailScreen(
-                          reportId: _reports[index]['id'],
-
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportDetailScreen(
+                            reportId: _reports[index]['id'],
+                          ),
                         ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: getReportColor(_reports[index]['score']).withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ).then((_){
-                      _fetchStudentData();
-                    });
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: getReportColor(_reports[index]['score']).withOpacity(0.7), // Background color of the box
-                      borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
+                        trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
+                      ),
                     ),
-                    margin: EdgeInsets.only(bottom: 8), // Margin between boxes
-                    child: ListTile(
-                      title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
-                      trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
-                    ),
-                  ));
+                  );
                 },
               ),
             ),
