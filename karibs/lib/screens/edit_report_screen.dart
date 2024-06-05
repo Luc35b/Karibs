@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 
+
 class EditReportScreen extends StatefulWidget {
   final int reportId;
 
@@ -11,8 +12,10 @@ class EditReportScreen extends StatefulWidget {
 }
 
 class _EditReportScreenState extends State<EditReportScreen> {
+
   Map<String, dynamic> report = {};
   int studentId = 0;
+
   late TextEditingController _titleController;
   late TextEditingController _notesController;
   late TextEditingController _scoreController;
@@ -94,13 +97,13 @@ class _EditReportScreenState extends State<EditReportScreen> {
       Navigator.of(context).pop(true);
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Report'),
         actions: [
+
           IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
         ],
       ),
@@ -126,6 +129,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
+
               onPressed: _saveChanges,
               child: Text('Save Changes'),
             ),

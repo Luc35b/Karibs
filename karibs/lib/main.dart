@@ -3,6 +3,7 @@ import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/student_screen.dart';
 import 'database/database_helper.dart';
+import 'database/database_students.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 

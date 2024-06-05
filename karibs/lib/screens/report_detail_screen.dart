@@ -10,11 +10,18 @@ import 'edit_report_screen.dart';
 
 class BarGraph extends StatelessWidget {
   final double score;
+  final double? vocab_score;
+  final double? comprehension_score;
 
-  BarGraph({required this.score});
+  BarGraph({required this.score, this.vocab_score, this.comprehension_score});
+
 
   @override
   Widget build(BuildContext context) {
+    print('Score: $score');
+    print('Comprehension Score: $comprehension_score');
+    print('Vocabulary Score: $vocab_score');
+
     return Container(
       width: 400,
       height: 350,
@@ -38,8 +45,18 @@ class BarGraph extends StatelessWidget {
               //style: TextStyle(color: Colors.black, fontSize: 14),
               margin: 10,
               reservedSize: 14,
-              getTitles: (value) {
-                return '';
+              interval: 1, // Set the interval to 1 to show titles for each bar
+              getTitles: (double value) {
+                switch (value.toInt()) {
+                  case 0:
+                    return 'Score';
+                  case 1:
+                    return 'Vocabulary';
+                  case 2:
+                    return 'Comprehension';
+                  default:
+                    return ''; // Empty string for other bars
+                }
               },
             ),
           ),
@@ -53,6 +70,28 @@ class BarGraph extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   y: score,
+                  colors: [Colors.blueGrey],
+                  width: 16,
+                ),
+              ],
+            ),
+            if(vocab_score != null)
+            BarChartGroupData(
+              x: 1,
+              barRods: [
+                BarChartRodData(
+                  y: vocab_score!,
+                  colors: [Colors.blueGrey],
+                  width: 16,
+                ),
+              ],
+            ),
+            if(comprehension_score != null)
+            BarChartGroupData(
+              x: 2,
+              barRods: [
+                BarChartRodData(
+                  y: comprehension_score!,
                   colors: [Colors.blueGrey],
                   width: 16,
                 ),
@@ -117,7 +156,37 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   @override
+  _ReportDetailScreenState createState() => _ReportDetailScreenState();
+}
+
+class _ReportDetailScreenState extends State<ReportDetailScreen> {
+  double score = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    score = widget.report['score']?.toDouble() ?? 0;
+  }
+
+  void _navigateToEditReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditReportScreen(report: widget.report),
+      ),
+    ).then((reportData) {
+      if (reportData != null) {
+        // Refresh the screen or perform any other action after adding a report
+        setState(() {
+
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+
 
     return Scaffold(
       appBar: AppBar(
@@ -130,6 +199,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
+
                 reportTitle,
                 style: TextStyle(fontSize: 24),
               ),
@@ -140,6 +210,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to the edit report screen when the button is pressed
+
                 _navigateToEditReportScreen();
               },
               style: ElevatedButton.styleFrom(
@@ -161,6 +232,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
+
                   color: getReportColor(reportScore), // You can change the color as needed
                 ),
                 padding: EdgeInsets.all(20),
@@ -175,6 +247,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             alignment: Alignment.center,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
+
               child: BarGraph(score: reportScore),
             ),
           ),
@@ -185,6 +258,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 child: Text(
+
                   'Notes: ${reportNotes}',
                   style: TextStyle(fontSize: 20),
                 ),

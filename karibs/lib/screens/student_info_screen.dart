@@ -52,7 +52,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
   void _navigateToEditStudentScreen() {
-    Navigator.push(
+    final result = Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditStudentScreen(studentId: widget.studentId),
