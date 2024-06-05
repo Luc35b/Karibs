@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
@@ -25,6 +26,7 @@ Color getReportColor(double currScore){
   else{
     return Colors.red;
   }
+
 }
 
 class _StudentInfoScreenState extends State<StudentInfoScreen> {
@@ -93,8 +95,11 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     List<FlSpot> spots = [];
     for (var report in _reports) {
       int id = report['id'];
-      double score = report['score'] != null ? report['score'].toDouble(): 0.0;
-      spots.add(FlSpot(id.toDouble(), score));
+      if(report['score'] != null){
+        double score = report['score'];
+        spots.add(FlSpot(id.toDouble(), score));
+      }
+      //double score = report['score'] != null ? report['score'].toDouble(): 0.0;
     }
     return spots;
   }
@@ -125,7 +130,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_student != null ? _student!['name'] : 'Student Info'),
+        title: Text('Student Info'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -137,6 +144,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           ? Center(child: CircularProgressIndicator())
           : Column(
         children: [
+            SizedBox(height: 10,),
             Row(
               children: [
                 SizedBox(width: 20,),
@@ -147,18 +155,19 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       child: Text(
                         _student!['name'],
                         style: TextStyle(
-                            fontSize: 48, fontWeight: FontWeight.bold),
+                            fontSize: 36, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
               ElevatedButton(
                 onPressed: _navigateToEditStudentScreen,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  foregroundColor: Colors.white,
+                  backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  side: BorderSide(width: 1, color: DeepPurple),
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: Text('Edit Student', style: TextStyle(fontSize: 16),),
@@ -183,7 +192,30 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30),),
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                      decoration: BoxDecoration(
+                        color: DeepPurple,
+                        border: Border.all(width: 2, color: DeepPurple),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(5),
+                          bottomLeft: Radius.circular(5),
+                          bottomRight: Radius.circular(30),
+                        ),
+
+                        //borderRadius: BorderRadius.circular(30), // Rounded corners for all
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(3, 3), // Shadow position
+                          ),
+                        ],
+                      ),
+                      child:Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
+                    ),
+
                     SizedBox(height: 20),
 
                   ],
@@ -234,14 +266,15 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 ElevatedButton(
                   onPressed: _navigateToAddReportScreen,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
+                    backgroundColor: White,
+                    foregroundColor: DeepPurple,
+                    side: BorderSide(width: 1, color: DeepPurple),
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: Text('Add Report'),
+                  child: Text('Add Report', style: TextStyle(fontSize: 20)),
                 ),
               ]
 
@@ -270,7 +303,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: getReportColor(_reports[index]['score']).withOpacity(0.7), // Background color of the box
+                      color: (_reports[index]['score'] != null)
+                          ? getReportColor(_reports[index]['score']).withOpacity(0.7)
+                          : NotWhite,
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                     ),
                     margin: EdgeInsets.only(bottom: 8), // Margin between boxes
@@ -286,6 +321,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           ),
         ],
       ),
+
     );
   }
 }
