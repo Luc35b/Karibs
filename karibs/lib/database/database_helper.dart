@@ -215,6 +215,17 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> updateClass(int classId, Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.update(
+      'classes',
+      row,
+      where: 'id = ?',
+      whereArgs: [classId],
+    );
+  }
+
+
   Future<int> updateReportTitle(int reportId, String newName) async{
     Database db = await database;
     return await db.update(
