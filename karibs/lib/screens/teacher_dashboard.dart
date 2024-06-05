@@ -36,6 +36,30 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       _isLoading = false;
     });
   }
+  void _deleteClass(int classId) async{
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Class'),
+        content: Text('Are you sure you want to delete this class?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Cancel
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Confirm
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    // Delete the student if confirmed
+    if (confirmDelete == true) {
+      await DatabaseHelper().deleteClass(classId);
+      _fetchClasses();//refresh screen after delete
+    }
+  }
 
   void _addClass(String className) async {
     await DatabaseHelper().insertClass({'name': className});
@@ -86,8 +110,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          :
-      Column(
+          : SingleChildScrollView(
+      child:Column(
         children: [
           SizedBox(height: 100),
           Container(margin: EdgeInsets.symmetric(horizontal: 20),
@@ -157,11 +181,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 border: Border.all(color: MidPurple, width: 2),
 
                               ),
-                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                               child: ListTile(
                                 title: Text(
                                   _classes[index]['name'],
                                   style: TextStyle(fontSize: 32),
+                                ),
+                                trailing: SizedBox(
+                                  width: 50,
+                                  child: Row(
+                                      children: [
+                                        IconButton(onPressed: () {_deleteClass(_classes[index]['id']);}, icon: Icon(Icons.delete),)
+                                      ]
+                                  ),
                                 ),
                                 onTap: () {
                                   Navigator.push(
@@ -251,6 +283,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ),
           SizedBox(height: 15),
         ],
+      ),
       ),
     );
   }

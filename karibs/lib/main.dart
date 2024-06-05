@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const Color DeepPurple = Color(0xFF250A4E);
-const Color MidPurple = Color(0xFFCBB5D6);
-const Color LightPurple = Color(0xFFEFDAF9);
+const Color MidPurple = Color(0xFF7c6c94);
+const Color LightPurple = Color(0xFFD3BEFA);
 const Color NotWhite = Color(0xFFEFEBF1);
 const Color White = Colors.white;
 
