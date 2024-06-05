@@ -99,7 +99,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         }
       }
     }
-<
+
     data = await DatabaseHelper().queryAllStudents(widget.classId);
     print('hi');
     setState(() {

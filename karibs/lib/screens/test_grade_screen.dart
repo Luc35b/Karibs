@@ -103,11 +103,21 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _saveGradingResults() async {
     // Calculate total score and sub-scores
     int totalQuestions = _questions.length;
+    int vocabQuestions = 0;
+    int compQuestions = 0;
+    for(int i = 0; i < totalQuestions; i++) {
+      if(_questions[i]['category'] == 'Vocab') {
+        vocabQuestions++;
+      }
+      else{
+        compQuestions++;
+      }
+    }
     int totalCorrect = sub_scores.values.fold(0, (sum, score) => sum + score);
 
     double totalScore = (totalCorrect / totalQuestions) * 100;
-    double vocabScore = (sub_scores['Vocab'] ?? 0) / totalQuestions * 100;
-    double compScore = (sub_scores['Comprehension'] ?? 0) / totalQuestions * 100;
+    double vocabScore = (sub_scores['Vocab'] ?? 0) / vocabQuestions * 100;
+    double compScore = (sub_scores['Comprehension'] ?? 0) / compQuestions * 100;
 
     print(
         {
