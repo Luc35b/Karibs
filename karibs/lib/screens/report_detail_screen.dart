@@ -10,94 +10,96 @@ import 'edit_report_screen.dart';
 
 class BarGraph extends StatelessWidget {
   final double score;
-  final double? vocab_score;
-  final double? comprehension_score;
+  final double? vocabScore;
+  final double? comprehensionScore;
 
-  BarGraph({required this.score, this.vocab_score, this.comprehension_score});
+  BarGraph({required this.score, this.vocabScore, this.comprehensionScore});
 
+  void _showToolTip(BuildContext context, Offset tapPosition) {
+    // Implementation of _showToolTip
+  }
 
   @override
   Widget build(BuildContext context) {
-    print('Score: $score');
-    print('Comprehension Score: $comprehension_score');
-    print('Vocabulary Score: $vocab_score');
-
-    return Container(
-      width: 400,
-      height: 350,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: 100,
-          titlesData: FlTitlesData(
-            leftTitles: SideTitles(
-              showTitles: true,
-              //textStyle: TextStyle(color: Colors.black, fontSize: 14),
-              margin: 10,
-              reservedSize: 14,
-              interval: 20,
-              getTitles: (value) {
-                return value.toInt().toString();
-              },
+    return GestureDetector(
+      onTapDown: (TapDownDetails details) =>
+          _showToolTip(context, details.globalPosition),
+      child: Container(
+        width: 400,
+        height: 350,
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY: 100,
+            titlesData: FlTitlesData(
+              leftTitles: SideTitles(
+                showTitles: true,
+                margin: 10,
+                reservedSize: 14,
+                interval: 20,
+                getTitles: (value) {
+                  return value.toInt().toString();
+                },
+              ),
+              bottomTitles: SideTitles(
+                showTitles: true,
+                margin: 10,
+                reservedSize: 14,
+                interval: 1,
+                getTitles: (double value) {
+                  switch (value.toInt()) {
+                    case 0:
+                      return 'Vocabulary';
+                    case 1:
+                      return 'Comprehension';
+                    case 2:
+                      return 'Overall';
+                    default:
+                      return '';
+                  }
+                },
+              ),
             ),
-            bottomTitles: SideTitles(
-              showTitles: true,
-              //style: TextStyle(color: Colors.black, fontSize: 14),
-              margin: 10,
-              reservedSize: 14,
-              interval: 1, // Set the interval to 1 to show titles for each bar
-              getTitles: (double value) {
-                switch (value.toInt()) {
-                  case 0:
-                    return 'Score';
-                  case 1:
-                    return 'Vocabulary';
-                  case 2:
-                    return 'Comprehension';
-                  default:
-                    return ''; // Empty string for other bars
-                }
-              },
+            borderData: FlBorderData(
+              show: true,
+              border: Border.all(color: Colors.grey),
             ),
+            barGroups: [
+              BarChartGroupData(
+                x:0,
+                barsSpace: 8,
+                barRods: [
+                  BarChartRodData(
+                    y: vocabScore ?? 0, // Display vocab score as blue bar
+                    colors: [Colors.blue],
+                    width: 16,
+                  ),
+                ]
+              ),
+              BarChartGroupData(
+                  x:1,
+                  barsSpace: 8,
+                  barRods: [
+                    BarChartRodData(
+                      y: comprehensionScore ?? 0, // Display vocab score as blue bar
+                      colors: [Colors.blue],
+                      width: 16,
+                    ),
+                  ]
+              ),
+              BarChartGroupData(
+                  x:2,
+                  barsSpace: 8,
+                  barRods: [
+                    BarChartRodData(
+                      y: score ?? 0, // Display vocab score as blue bar
+                      colors: [Colors.blue],
+                      width: 16,
+                    ),
+                  ]
+              ),
+            ],
           ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border.all(color: Colors.grey),
-          ),
-          barGroups: [
-            BarChartGroupData(
-              x: 0,
-              barRods: [
-                BarChartRodData(
-                  y: score,
-                  colors: [Colors.blueGrey],
-                  width: 16,
-                ),
-              ],
-            ),
-            if(vocab_score != null)
-            BarChartGroupData(
-              x: 1,
-              barRods: [
-                BarChartRodData(
-                  y: vocab_score!,
-                  colors: [Colors.blueGrey],
-                  width: 16,
-                ),
-              ],
-            ),
-            if(comprehension_score != null)
-            BarChartGroupData(
-              x: 2,
-              barRods: [
-                BarChartRodData(
-                  y: comprehension_score!,
-                  colors: [Colors.blueGrey],
-                  width: 16,
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -119,6 +121,8 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   String reportTitle = " ";
   String reportNotes = " ";
   double reportScore = 0.0;
+  double? vocab = 0.0;
+  double? comprehension = 0.0;
 
 
   @override
@@ -140,6 +144,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       reportTitle = x['title'];
       reportNotes = x['notes'];
       reportScore = x['score'];
+      vocab = x['vocab_score'];
+      comprehension = x['comp_score'];
+      print('vocab score: '+ vocab.toString());
+      print('comp score: '+ comprehension.toString());
+
     });
   }
 
@@ -212,7 +221,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 ),
                 padding: EdgeInsets.all(20),
                 child: Text(
-                  '${reportScore}',
+                  '${reportScore.toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
@@ -223,7 +232,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
 
-              child: BarGraph(score: reportScore),
+              child: BarGraph(score: reportScore, vocabScore: vocab, comprehensionScore: comprehension,),
             ),
           ),
           Align(

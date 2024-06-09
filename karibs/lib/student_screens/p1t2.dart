@@ -158,7 +158,7 @@ class _P1T2State extends State<P1T2> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Primary 1: Exam 3'),
+        title: Text('Primary 1: Exam 2'),
       ),
       body: SingleChildScrollView(
         child: Column(

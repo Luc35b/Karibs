@@ -277,7 +277,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     child: ListTile(
                       title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
                       subtitle: Text(_reports[index]['notes']),
-                      trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
+                      trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30),),
                     ),
                   ));
                 },
