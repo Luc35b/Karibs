@@ -175,6 +175,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           fontSize: 36, fontWeight: FontWeight.bold),
                     ),
                   ),
+                  ),
                 ElevatedButton(
                   onPressed: _navigateToEditStudentScreen,
                   style: ElevatedButton.styleFrom(
