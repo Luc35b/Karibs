@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/pdf_gen.dart'; // Import your PdfGenerator class
 import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
@@ -16,14 +17,12 @@ class StudentInfoScreen extends StatefulWidget {
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
 }
 
-Color getReportColor(double currScore){
-  if(currScore >= 70){
+Color getReportColor(double currScore) {
+  if (currScore >= 70) {
     return Colors.green;
-  }
-  else if(currScore >=50){
+  } else if (currScore >= 50) {
     return Color(0xFFe6cc00);
-  }
-  else{
+  } else {
     return Colors.red;
   }
 
@@ -47,36 +46,34 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       MaterialPageRoute(
         builder: (context) => AddReportScreen(studentId: widget.studentId),
       ),
-    ).then((_) { {
-        // Refresh the screen or perform any other action after adding a report
+    ).then((result) {
+      if (result != null && result == true) {
         _fetchStudentData();
       }
     });
   }
+
   void _navigateToEditStudentScreen() {
-    final result = Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditStudentScreen(studentId: widget.studentId),
       ),
     ).then((result) {
       if (result != null && result == true) {
-        // Refresh the screen or perform any other action after adding a report
         _fetchStudentData();
       }
     });
   }
 
-
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
     final averageScore = await DatabaseHelper().queryAverageScore(widget.studentId);
-    if(averageScore != null){
+    if (averageScore != null) {
       String newStatus = changeStatus(averageScore);
       final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
     }
-    // Convert the read-only list to a mutable list before sorting
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
 
@@ -88,8 +85,22 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  void _addReport(String title, String notes, int? score) async {
+    await DatabaseHelper().insertReport({
+      'date': DateTime.now().toIso8601String(),
+      'title': title,
+      'notes': notes,
+      'score': score,
+      'student_id': widget.studentId,
+    });
+    _fetchStudentData();
+  }
 
-
+  Future<void> _generatePdf() async {
+    if (_student != null) {
+      await PdfGenerator().generateStudentReportPdf(_student!, _reports);
+    }
+  }
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
@@ -100,12 +111,13 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
         spots.add(FlSpot(id.toDouble(), score));
       }
       //double score = report['score'] != null ? report['score'].toDouble(): 0.0;
+
     }
     return spots;
   }
 
   double _getMinX() {
-    if(_reports.isEmpty){
+    if (_reports.isEmpty) {
       return 0.0;
     }
     int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
@@ -113,13 +125,12 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   }
 
   double _getMaxX() {
-    if(_reports.isEmpty){
+    if (_reports.isEmpty) {
       return 0.0;
     }
     int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
   }
-
 
   String _formatDate(double value) {
     DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
@@ -137,8 +148,14 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop(true);
-          }
-        )
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.picture_as_pdf),
+            onPressed: _generatePdf,
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -157,7 +174,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       style: TextStyle(
                           fontSize: 36, fontWeight: FontWeight.bold),
                     ),
-                  ),
                   ),
                 ElevatedButton(
                   onPressed: _navigateToEditStudentScreen,
@@ -256,6 +272,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 ),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -335,8 +352,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             ),
           ],
         ),
-
-
 
     );
   }

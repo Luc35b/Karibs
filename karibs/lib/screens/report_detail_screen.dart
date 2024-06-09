@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'student_info_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'add_report_screen.dart';
@@ -155,6 +156,15 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     });
   }
 
+  void _navigateToViewTestGrades() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
+      ),
+    );
+  }
+
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
 
@@ -174,7 +184,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-
                 reportTitle,
                 style: TextStyle(fontSize: 24),
               ),
@@ -185,7 +194,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to the edit report screen when the button is pressed
-
                 _navigateToEditReportScreen();
               },
               style: ElevatedButton.styleFrom(
@@ -240,6 +248,24 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               ),
             ),
           ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to the edit report screen when the button is pressed
+                _navigateToViewTestGrades();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text('View Test Grade', style: TextStyle(fontSize: 16),),
+            ),
+          )
         ],
       ),
     );
