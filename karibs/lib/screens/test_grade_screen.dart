@@ -23,6 +23,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   String? _className;
   List<Map<String, dynamic>> _students = [];
   List<Map<String, dynamic>> _questions = [];
+  Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
   Map<String, int> sub_scores = {};
@@ -69,6 +70,10 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
+  void _initializeQuestionMap() {
+    question_answer_map.clear();
+  }
+
   void _initializeQuestionCorrectness() {
     questionCorrectness.clear();
     for (var question in _questions) {
@@ -85,6 +90,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         questionCorrectness[questionId] = 1;
         sub_scores[category] = ((sub_scores[category])! + 1);
       }
+      question_answer_map[questionId] = 1;
     });
   }
 
@@ -97,6 +103,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       if (questionCorrectness[questionId] == 0) {
         questionCorrectness[questionId] = -1;
       }
+      question_answer_map[questionId] = -1;
     });
   }
 
@@ -148,6 +155,25 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         'vocab_score': vocabScore,
         'comp_score': compScore,
       });
+
+      int? student_test_id = await DatabaseHelper().getStudentTestId(_selectedStudentId!, widget.testId);
+
+      print(question_answer_map);
+
+      question_answer_map.forEach((key,value) async {
+        await DatabaseHelper().insertStudentTestQuestion({
+          'student_test_id': student_test_id,
+          'question_id': key,
+          'got_correct': value
+        });
+        print({
+          'student_test_id': student_test_id,
+          'question_id': key,
+          'got_correct': value
+        });
+      });
+
+
       // Show a confirmation message or navigate back
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully')));
 
@@ -184,6 +210,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   _selectedStudentId = newValue;
                   _initializeSubScores(); // Clear sub_scores when a new student is selected
                   _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
+                  _initializeQuestionMap();
                 });
               },
               items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
