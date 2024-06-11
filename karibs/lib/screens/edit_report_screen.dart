@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 
 
 class EditReportScreen extends StatefulWidget {
@@ -102,6 +103,8 @@ class _EditReportScreenState extends State<EditReportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Report'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
         actions: [
 
           IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
@@ -120,6 +123,8 @@ class _EditReportScreenState extends State<EditReportScreen> {
             TextField(
               controller: _notesController,
               decoration: InputDecoration(labelText: 'Notes'),
+              keyboardType: TextInputType.multiline,
+              maxLines: 5,
             ),
             SizedBox(height: 16),
             TextField(
