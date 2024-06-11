@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/main.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
 import 'student_info_screen.dart';
+import 'teacher_dashboard.dart';
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;

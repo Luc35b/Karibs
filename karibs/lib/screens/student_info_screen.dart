@@ -25,7 +25,6 @@ Color getReportColor(double currScore) {
   } else {
     return Colors.red;
   }
-
 }
 
 class _StudentInfoScreenState extends State<StudentInfoScreen> {

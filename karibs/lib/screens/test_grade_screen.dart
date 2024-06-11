@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
+import 'teacher_class_screen.dart';
 
 class TestGradeScreen extends StatefulWidget {
   final int classId;
@@ -182,6 +183,16 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
+  void _goToTeacherDashboard(int classId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TeacherClassScreen(classId: classId,refresh: true,)),
+    ).then((_){
+      _fetchClassName();
+      _fetchStudents();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -267,15 +278,31 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                 },
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
-                  ? _saveGradingResults
-                  : null,
-              child: Text('Save Grades'),
-            ),
-          ),
+      Center(
+        child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+      ElevatedButton(
+      onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
+      ? () {
+      _saveGradingResults(); // Navigate to TeacherDashboard after saving results
+      }
+          : null,
+      child: Text('Save Grades'),
+      ),
+      SizedBox(width: 42), // Add some space between the buttons
+      ElevatedButton(
+      onPressed: () {
+      _goToTeacherDashboard(widget.classId); // Navigate to TeacherDashboard after saving results
+      },
+      child: Text('Go to Class'),
+      ),
+      ],
+      ),
+      )
+      )
         ],
       ),
     );
