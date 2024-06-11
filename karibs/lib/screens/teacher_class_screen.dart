@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/main.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
 import 'student_info_screen.dart';
+import 'teacher_dashboard.dart';
 
 
 class TeacherClassScreen extends StatefulWidget {
@@ -236,6 +236,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             title: Text('Teacher Class Screen'),
             backgroundColor: DeepPurple,
             foregroundColor: White,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+          );
+          },
+          ),
           ),
           body: _isLoading
               ? Center(child: CircularProgressIndicator())

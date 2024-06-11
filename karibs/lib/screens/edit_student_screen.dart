@@ -5,6 +5,16 @@ import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/main.dart';
 
+Color getReportColor(double currScore) {
+  if (currScore >= 70) {
+    return Colors.green;
+  } else if (currScore >= 50) {
+    return Color(0xFFe6cc00);
+  } else {
+    return Colors.red;
+  }
+}
+
 class EditStudentScreen extends StatefulWidget {
   final int studentId;
 
@@ -395,7 +405,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[200], // Background color of the box
+                      color: getReportColor(_reports[index]['score']).withOpacity(0.5), // Background color of the box
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                     ),
                     margin: EdgeInsets.only(bottom: 8), // Margin between boxes
