@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
+import 'package:karibs/main.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -155,11 +157,20 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
         actions: [
-          IconButton(
-            onPressed: _showChooseClassDialog,
-            icon: Icon(Icons.class_),
+          TextButton(
+              onPressed: _showChooseClassDialog,
+              child: Text('Grade Test', style: GoogleFonts.raleway(color: White),),
+              style: TextButton.styleFrom(
+                side: BorderSide(color: Colors.white, width: 1),
+                //padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
           ),
         ],
       ),
@@ -174,11 +185,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  SizedBox(height:20),
                   Text('No questions available. Please add!'),
                   SizedBox(height: 20),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
                     onPressed: _navigateToAddQuestionScreen,
-                    child: Icon(Icons.add),
+                    child: Text('Add Question +'),
                   ),
                 ],
               ),

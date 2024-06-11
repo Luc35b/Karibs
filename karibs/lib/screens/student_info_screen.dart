@@ -300,10 +300,11 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             ),
             Expanded(
               child:Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200], // Shaded background color
+                    border: Border.all(color: DeepPurple, width: 1),
                     borderRadius: BorderRadius.circular(10), // Rounded corners for the box
                     boxShadow: [
                       BoxShadow(
