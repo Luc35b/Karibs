@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/screens/student_screen.dart';
+import 'package:karibs/student_screens/student_screen.dart';
 import 'score_screen.dart';
 
 class P1T3 extends StatefulWidget {
@@ -160,6 +160,7 @@ class _P1T3State extends State<P1T3> {
   bool submitted = false;
   int currentIndex = 0;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,6 +209,8 @@ class _P1T3State extends State<P1T3> {
       ),
     );
   }
+
+
 
   Widget _buildQuestion(Map<String, dynamic> question) {
     String? chosenAnswer = question['selectedOption'];

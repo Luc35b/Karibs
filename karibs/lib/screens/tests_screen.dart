@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/main.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class TestsScreen extends StatefulWidget {
   @override
@@ -209,23 +212,23 @@ class _TestsScreenState extends State<TestsScreen> {
       key: _scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
+          foregroundColor: White,
+          backgroundColor: DeepPurple,
           title: Text('Tests'),
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())
-            : Stack(
+            :Stack(
           children: [
             _tests.isEmpty
                 ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('No tests available. Please add!'),
+                  Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
+                  Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
                   SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _showAddTestDialog,
-                    child: Icon(Icons.add),
-                  ),
+
                 ],
               ),
             )
@@ -258,19 +261,30 @@ class _TestsScreenState extends State<TestsScreen> {
                   ),
               ],
             ),
-            if (_tests.isNotEmpty)
+            //if (_tests.isNotEmpty)
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
                     onPressed: _showAddTestDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add),
+                        Text('Add Test', style: GoogleFonts.raleway(fontSize: 24),),
                         SizedBox(width: 8),
-                        Text('Add Test'),
+                        Icon(Icons.add),
+
+
                       ],
                     ),
                   ),

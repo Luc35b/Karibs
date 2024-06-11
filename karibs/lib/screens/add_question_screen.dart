@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 //import 'package:karibs/pdf_gen.dart';
 
 class AddQuestionScreen extends StatefulWidget {
@@ -93,6 +94,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
         title: Text('Add New Question'),
       ),
       body: Stack(

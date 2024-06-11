@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 
 class AddReportScreen extends StatefulWidget {
   final int studentId;
@@ -46,6 +47,8 @@ class _AddReportScreenState extends State<AddReportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add New Report'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
