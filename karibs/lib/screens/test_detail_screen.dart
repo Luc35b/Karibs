@@ -163,7 +163,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         actions: [
           TextButton(
               onPressed: _showChooseClassDialog,
-              child: Text('Grade Test', style: GoogleFonts.raleway(color: White),),
+              child: Text('Grade', style: GoogleFonts.raleway(color: White),),
               style: TextButton.styleFrom(
                 side: BorderSide(color: Colors.white, width: 1),
                 //padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -186,7 +186,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height:20),
-                  Text('No questions available. Please add!'),
+                  Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
                   SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -199,7 +199,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       ),
                     ),
                     onPressed: _navigateToAddQuestionScreen,
-                    child: Text('Add Question +'),
+                    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20),),
                   ),
                 ],
               ),
@@ -255,6 +255,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     children: [
                       Flexible(
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: White,
+                            foregroundColor: DeepPurple,
+                            side: BorderSide(width: 1, color: DeepPurple),
+                          ),
                           onPressed: _generateAndPrintQuestionsPdf,
                           child: FittedBox(
                             child: Row(
@@ -270,6 +275,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       SizedBox(width: 8),
                       Flexible(
                         child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: White,
+                            foregroundColor: DeepPurple,
+                            side: BorderSide(width: 1, color: DeepPurple),
+                          ),
                           onPressed: _generateAndPrintAnswerKeyPdf,
                           child: FittedBox(
                             child: Row(
