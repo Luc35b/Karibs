@@ -22,7 +22,7 @@ class BarGraph extends StatelessWidget {
   BarGraph({required this.score, this.vocabScore, this.comprehensionScore});
 
   Color getScoreColor(double score) {
-    if (score >= 80) {
+    if (score >= 70) {
       return Colors.green;
     } else if (score >= 50) {
       return Colors.yellow;
@@ -233,7 +233,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   Color getStatusColorFill(double currStatus) {
-    if(currStatus >=80) {
+    if(currStatus >=70) {
       return Color(0xFFBBFABB);
     }
     else if (currStatus >=50){
@@ -332,7 +332,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   Color getReportColor(double score) {
-    if (score >= 80) {
+    if (score >= 70) {
       return Colors.green;
     } else if (score >= 50) {
       return Colors.yellow;
