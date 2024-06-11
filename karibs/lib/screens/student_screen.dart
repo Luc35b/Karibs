@@ -4,7 +4,60 @@ import '../student_screens/p1t1.dart';
 import '../student_screens/p1t2.dart';
 import '../student_screens/p1t3.dart';
 
-class StudentScreen extends StatelessWidget {
+class StudentScreen extends StatefulWidget {
+  @override
+  _StudentScreenState createState() => _StudentScreenState();
+}
+
+class _StudentScreenState extends State<StudentScreen> with TickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2), // total duration of all animations
+    );
+    _controller.forward(); // start the animation
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget buildSlideTransition(int index, String grade, List<String> exams) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        double start = index * 0.1;
+        double end = start + 0.2;
+        if (end > 1.0) end = 1.0;
+
+        final animation = Tween<Offset>(
+          begin: Offset(-1, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(start, end, curve: Curves.fastOutSlowIn),
+          ),
+        );
+
+        return SlideTransition(
+          position: animation,
+          child: child,
+        );
+      },
+      child: GradeLevelCard(
+        grade: grade,
+        exams: exams,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,96 +66,12 @@ class StudentScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.7, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 1',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.75, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 2',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.8, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 3',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.85, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 4',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.9, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 5',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-1, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: ModalRoute.of(context)!.animation!,
-                curve: Interval(0.95, 1.0, curve: Curves.fastOutSlowIn),  // Use Curves.fastOutSlowIn curve
-              ),
-            ),
-            child: GradeLevelCard(
-              grade: 'Primary 6',
-              exams: ['Exam 1', 'Exam 2', 'Exam 3'],
-            ),
-          ),
+          buildSlideTransition(0, 'Primary 1', ['Exam 1', 'Exam 2', 'Exam 3']),
+          buildSlideTransition(1, 'Primary 2', ['Exam 1', 'Exam 2', 'Exam 3']),
+          buildSlideTransition(2, 'Primary 3', ['Exam 1', 'Exam 2', 'Exam 3']),
+          buildSlideTransition(3, 'Primary 4', ['Exam 1', 'Exam 2', 'Exam 3']),
+          buildSlideTransition(4, 'Primary 5', ['Exam 1', 'Exam 2', 'Exam 3']),
+          buildSlideTransition(5, 'Primary 6', ['Exam 1', 'Exam 2', 'Exam 3']),
           // Add more SlideTransition widgets for other grade levels
         ],
       ),
@@ -118,25 +87,22 @@ class GradeLevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    void chooseScreen(int index){
-      if(grade == 'Primary 1' && index==0){
+    void chooseScreen(int index) {
+      if (grade == 'Primary 1' && index == 0) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => P1T1(),
           ),
         );
-      }
-      else if(grade == 'Primary 1' && index==1){
+      } else if (grade == 'Primary 1' && index == 1) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => P1T2(),
           ),
         );
-      }
-      else if(grade == 'Primary 1' && index==2){
+      } else if (grade == 'Primary 1' && index == 2) {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -145,6 +111,7 @@ class GradeLevelCard extends StatelessWidget {
         );
       }
     }
+
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

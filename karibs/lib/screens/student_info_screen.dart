@@ -142,12 +142,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             Navigator.of(context).pop(true);
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.picture_as_pdf),
-            onPressed: _generatePdf,
-          ),
-        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -257,9 +251,23 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   ),
                   child: Text('Add Report'),
                 ),
+                SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _generatePdf,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text('PDF'),
+                ),
               ],
             ),
           ),
+          SizedBox(width: 8),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8),
