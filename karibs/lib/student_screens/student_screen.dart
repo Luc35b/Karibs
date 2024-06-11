@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_students.dart';
-import '../student_screens/p1t1.dart';
-import '../student_screens/p1t2.dart';
-import '../student_screens/p1t3.dart';
+import 'p1t1.dart';
+import 'p1t2.dart';
+import 'p1t3.dart';
 
 class StudentScreen extends StatefulWidget {
   @override
@@ -113,6 +113,9 @@ class GradeLevelCard extends StatelessWidget {
     }
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(2),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -137,7 +140,10 @@ class GradeLevelCard extends StatelessWidget {
                   child: Container(
                     width: 100,
                     margin: EdgeInsets.all(8.0),
-                    color: Colors.deepPurple,
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple,
+                      borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
+                    ),
                     child: Center(
                       child: Text(
                         exams[index],

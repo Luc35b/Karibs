@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/screens/student_screen.dart';
+import 'package:karibs/student_screens/student_screen.dart';
 
 class ScoreScreen extends StatelessWidget {
   final double grade;
