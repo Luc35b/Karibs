@@ -239,7 +239,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     else if (currStatus >=50){
       return Color(0xFFFAECBB);
     }
-    else if (currStatus >= 0) {
+    else if (currStatus >= 0.01) {
       return Color(0xFFFABBBB);
     }
     else {
@@ -336,8 +336,11 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       return Colors.green;
     } else if (score >= 50) {
       return Colors.yellow;
-    } else {
+    } else if (score >= 0.01){
       return Colors.red;
+    }
+    else {
+      return Colors.blueGrey;
     }
   }
 }
