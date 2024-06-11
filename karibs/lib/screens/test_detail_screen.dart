@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
+import 'package:karibs/main.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -113,7 +115,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => TestGradeScreen(classId: classId, testTitle: widget.testTitle, testId: widget.testId)
+        builder: (context) => TestGradeScreen(
+          classId: classId,
+          testTitle: widget.testTitle,
+          testId: widget.testId,
+        ),
       ),
     );
   }
@@ -155,13 +161,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.deepPurple,
         title: Text(widget.testTitle),
-        actions: [
-          IconButton(
-            onPressed: _showChooseClassDialog,
-            icon: Icon(Icons.class_),
-          ),
-        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -174,11 +176,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('No questions available. Please add!'),
+                  SizedBox(height: 20),
+                  Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
                   SizedBox(height: 20),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.deepPurple,
+                      side: BorderSide(width: 2, color: Colors.deepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
                     onPressed: _navigateToAddQuestionScreen,
-                    child: Icon(Icons.add),
+                    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
                   ),
                 ],
               ),
@@ -216,54 +228,81 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             ),
           ),
           Align(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.bottomLeft,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_questions.isNotEmpty)
-                    SizedBox(height: 16),
-                  if (_questions.isNotEmpty)
-                    FloatingActionButton(
-                      onPressed: _navigateToAddQuestionScreen,
-                      child: Icon(Icons.add),
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Flexible(
-                        child: ElevatedButton(
+              child: _questions.isNotEmpty
+                  ? ElevatedButton(
+    style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.deepPurple,
+    side: BorderSide(width: 2, color: Colors.deepPurple),
+    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(15),
+    ),
+    ),
+    onPressed: _navigateToAddQuestionScreen,
+    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+    )
+                  : Container(),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: FloatingActionButton(
+                onPressed: () {
+                  showMenu(
+                    context: context,
+                    position: RelativeRect.fromLTRB(0.0, 0.0, 1.0, 1.0),
+                    items: [
+                      PopupMenuItem<int>(
+                        value: 0,
+                        child: TextButton(
                           onPressed: _generateAndPrintQuestionsPdf,
-                          child: FittedBox(
-                            child: Row(
-                              children: [
-                                Icon(Icons.print),
-                                SizedBox(width: 4),
-                                Text('Print Questions'),
-                              ],
-                            ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.print),
+                              SizedBox(width: 8),
+                              Text('Print Questions'),
+                            ],
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Flexible(
-                        child: ElevatedButton(
+
+                      PopupMenuItem<int>(
+                        value: 1,
+                        child: TextButton(
                           onPressed: _generateAndPrintAnswerKeyPdf,
-                          child: FittedBox(
-                            child: Row(
-                              children: [
-                                Icon(Icons.print),
-                                SizedBox(width: 4),
-                                Text('Print Answer Key'),
-                              ],
-                            ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.print),
+                              SizedBox(width: 8),
+                              Text('Print Answer Key'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem<int>(
+                        value: 2,
+                        child: TextButton(
+                          onPressed: _showChooseClassDialog,
+                          child: Row(
+                            children: [
+                              Icon(Icons.grade),
+                              SizedBox(width: 8),
+                              Text('Grade'),
+                            ],
                           ),
                         ),
                       ),
                     ],
-                  ),
-                ],
+                    elevation: 8.0,
+                  );
+                },
+                child: Icon(Icons.menu),
               ),
             ),
           ),
@@ -303,32 +342,33 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Choose Class'),
-      content: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Container(
-        width: double.minPositive, // Adjust the width to fit the content
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: _classes.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(_classes[index]['name']),
-              onTap: () {
-                widget.onClassSelected(_classes[index]['id']);
-              },
-            );
-          },
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Cancel'),
-        ),
-      ],
+        title: Text('Choose Class'),
+    content: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Container(
+    width: double.minPositive, // Adjust the width to fit the content
+    child: ListView.builder(
+    shrinkWrap: true,
+    itemCount: _classes.length,
+    itemBuilder: (context, index) {
+    return ListTile(
+    title: Text(_classes[index]['name']),
+    onTap: () {
+    widget.onClassSelected(_classes[index]['id']);
+    },
+    );
+    },
+    ),
+    ),
+    actions: [
+    TextButton(
+    onPressed: () {
+    Navigator.of(context).pop();
+    },
+    child: Text('Cancel'),
+    ),
+    ],
     );
   }
 }
+
