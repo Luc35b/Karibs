@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
+import '../pdf_gen.dart';
 import 'student_info_screen.dart';
 import 'teacher_dashboard.dart';
-
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
   final bool refresh;
-
 
   TeacherClassScreen({required this.classId, required this.refresh});
 
@@ -31,6 +30,7 @@ Color getStatusColor(String currStatus) {
       return Colors.white;
   }
 }
+
 Color getStatusColorFill(String currStatus) {
   switch (currStatus) {
     case 'Doing well':
@@ -61,8 +61,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _filteredStudents = [];
   bool _isLoading = true;
   TextEditingController _searchController = TextEditingController();
-  //final TextEditingController _studentNameController = TextEditingController();
   String _selectedStatus = 'All';
+  String _className = '';
 
   @override
   void initState() {
@@ -79,29 +79,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   }
 
   Future<void> _fetchStudents() async {
+    _className = await DatabaseHelper().getClassName(widget.classId) ?? '';
     var data = await DatabaseHelper().queryAllStudents(widget.classId);
-    if(data.length > 0) {
+    if (data.isNotEmpty) {
       for (var i = 0; i < data.length; i++) {
         var x = await DatabaseHelper().queryAverageScore(data[i]['id']);
-        print("avg score for student " + data[i]['id'].toString() + " is: " +
-            x.toString());
         if (x != null) {
           String stat = changeStatus(x);
-          final status = await DatabaseHelper().updateStudentStatus(
-              data[i]['id'], stat);
-          print("status: " + data[i]['status']);
-        }
-        else {
+          await DatabaseHelper().updateStudentStatus(data[i]['id'], stat);
+        } else {
           String stat = "No status";
-          final status = await DatabaseHelper().updateStudentStatus(
-              data[i]['id'], stat);
-          print("status: " + data[i]['status']);
+          await DatabaseHelper().updateStudentStatus(data[i]['id'], stat);
         }
       }
     }
 
     data = await DatabaseHelper().queryAllStudents(widget.classId);
-    print('hi');
     setState(() {
       _students = data;
       _filteredStudents = List.from(data);
@@ -109,10 +102,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
-  void _addStudent(String studentName) async{
-    await DatabaseHelper().insertStudent({'name': studentName, 'class_id': widget.classId, 'status': "No status"});
+  void _addStudent(String studentName) async {
+    await DatabaseHelper().insertStudent({
+      'name': studentName,
+      'class_id': widget.classId,
+      'status': "No status"
+    });
     _fetchStudents();
   }
+
   void _showAddStudentDialog() {
     final TextEditingController studentNameController = TextEditingController();
 
@@ -217,219 +215,239 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
   }
 
+  Future<void> _generateAndPrintPdf() async {
+    final pdfGenerator = PdfGenerator();
+    double averageGrade = 0;
+    if (_students.isNotEmpty) {
+      averageGrade = _students
+          .map((student) => student['average_score'])
+          .reduce((a, b) => a + b) /
+          _students.length;
+    }
+    await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<StudentGradingProvider>(
-      builder: (context, studentGradingProvider, child) {
-        // Listen for changes and refresh data when 'grade' method is called
-        if (studentGradingProvider.update > 0) {
-          print(studentGradingProvider.update);
-          _fetchStudents();
-          print(_students);
-          print('fetched students');
-          studentGradingProvider.reset();
-        }
+        builder: (context, studentGradingProvider, child) {
+      if (studentGradingProvider.update > 0) {
+        _fetchStudents();
+        studentGradingProvider.reset();
+      }
 
-        return Scaffold(
+      return Scaffold(
           appBar: AppBar(
-            title: Text('Teacher Class Screen'),
-            backgroundColor: DeepPurple,
-            foregroundColor: White,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back), // Use the back arrow icon
-          onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => TeacherDashboard()),
-          );
-          },
+          title: Text('Teacher Class Screen'),
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
+    ),
+    body: _isLoading
+    ? Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+    child: Stack(
+    children: [
+    Column(
+    children: [
+    SizedBox(height: 10),
+    Container(
+    margin: EdgeInsets.all(10),
+    decoration: BoxDecoration(
+    color: MidPurple,
+    borderRadius: BorderRadius.only(
+    topLeft: Radius.circular(30),
+    bottomRight: Radius.circular(30),
+    ),
+    boxShadow: [
+    BoxShadow(
+    color: Colors.black12,
+    blurRadius: 10,
+    offset: Offset(3, 3),
+    ),
+    ],
+    ),
+    child: Column(
+    children: [
+    SizedBox(height: 10),
+    Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Row(
+    children: [
+    IconButton(
+    icon: Icon(
+    Icons.filter_list,
+    color: White,
+    ),
+    onPressed: _showStatusFilterDialog,
+    ),
+    SizedBox(width: 8),
+    Expanded(
+    child: TextField(
+    controller: _searchController,
+    onChanged: _filterStudents,
+    decoration: InputDecoration(
+    filled: true,
+    fillColor: NotWhite,
+    labelText: 'Search by student name',
+    prefixIcon: Icon(Icons.search),
+    border: OutlineInputBorder(),
+    ),
+    ),
+    ),
+    SizedBox(width: 8),
+    ],
+    ),
+    ),
+    Container(
+    height: 450,
+    margin: EdgeInsets.all(15),
+    decoration: BoxDecoration(
+    color: NotWhite,
+    borderRadius: BorderRadius.circular(10),
+    boxShadow: [
+    BoxShadow(
+    color: Colors.black12,
+    blurRadius: 10,
+    offset: Offset(3, 3),
+    ),
+    ],
+    ),
+    child: _students.isNotEmpty
+    ? ListView.builder(
+    itemCount: _filteredStudents.length,
+    itemBuilder: (context, index) {
+    return Container(
+    decoration: BoxDecoration(
+    color: White,
+    border: Border.all(
+    color: DeepPurple, width: 1),
+    borderRadius:
+    BorderRadius.circular(8),
+    ),
+    margin: EdgeInsets.all(10),
+    child: ListTile(
+    title: Row(
+    children: [
+    SizedBox(
+    width: 85,
+    child: Column(
+    children: [
+    Row(
+    children: [
+    SizedBox(width: 15),
+      Container(
+        width: 45,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+              color: getStatusColor(
+                  _filteredStudents[index]
+                  ['status']),
+              width: 2),
+          color:
+          getStatusColorFill(
+              _filteredStudents[index]
+              ['status']),
+        ),
+        child: Center(
+          child: Text(
+            '${_filteredStudents[index]['average_score']
+                ?.round() ?? ''}',
+            style: TextStyle(
+              color: DeepPurple,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          ),
-          body: _isLoading
-              ? Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  SizedBox(height: 10,),
-
-                  Container(margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: MidPurple,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(3, 3), // Shadow position
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 10,),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.filter_list,
-                                  color: White,
-                                ),
-                                onPressed: _showStatusFilterDialog,
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  controller: _searchController,
-                                  onChanged: _filterStudents,
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: NotWhite,
-                                    labelText: 'Search by student name',
-                                    prefixIcon: Icon(Icons.search),
-                                    border: OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: 450,
-                          margin: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: NotWhite,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 10,
-                                offset: Offset(3,3),
-                              )
-                            ]
-                          ),
-                          child: _students.isNotEmpty
-                              ? ListView.builder(
-                            itemCount: _filteredStudents.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: White,
-                                  border: Border.all(color: DeepPurple, width: 1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                margin: EdgeInsets.all(10),
-                                child: ListTile(
-                                  title: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 85,
-                                        child: Column(
-                                          //status column
-                                          children: [
-                                            Row( //to center the icon above status
-                                              children: [
-                                                SizedBox(width: 15,),
-                                                Container(
-                                                  width: 45,
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(color: getStatusColor(
-                                                        _filteredStudents[index]
-                                                        ['status']), width: 2),
-                                                    color:
-                                                    getStatusColorFill(
-                                                        _filteredStudents[index]
-                                                        ['status']),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      '${_filteredStudents[index]['average_score']
-                                                          ?.round() ?? ''}',
-                                                      style: TextStyle(
-                                                        color: DeepPurple,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-
-                                            Text(
-                                                _filteredStudents[index]['status'] ??
-                                                    'No status'
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      SizedBox(width: 25),
-                                      Text(
-                                    '${_filteredStudents[index]['name']}',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 30,
-                                      ),
-                                    ), //Name
-                                    ],
-                                  ),
-
-                              onTap: () {
-                              _navigateToStudentInfoScreen(
-                              _filteredStudents[index]['id']);
-                              },
-                                ),
-                              );
-
-                            },
-                          )
-                              : Center(
-                            child: Text(
-                              'No students available. \nPlease add!',
-                              style: TextStyle(fontSize: 30),
-                            ),
-                          ),
-
-                        ),
-                        SizedBox(height: 10,),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10,),
-                  ElevatedButton(
-                    onPressed: _showAddStudentDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: White,
-                      foregroundColor: DeepPurple,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      side: BorderSide(width: 1, color: DeepPurple),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: Text(
-                      'Add Student +',
-                      style: TextStyle(fontSize: 28),
-                    ),
-                  ),
-                ],
-
-              ),
-            ],
-          ),
-          ),
-        );
+        ),
+      ),
+    ],
+    ),
+      Text(
+          _filteredStudents[index]['status'] ??
+              'No status'
+      ),
+    ],
+    ),
+    ),
+      SizedBox(width: 25),
+      Text(
+        '${_filteredStudents[index]['name']}',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 30,
+        ),
+      ), //Name
+    ],
+    ),
+      onTap: () {
+        _navigateToStudentInfoScreen(
+            _filteredStudents[index]['id']);
       },
+    ),
+    );
+    },
+    )
+        : Center(
+      child: Text(
+        'No students available. \nPlease add!',
+        style: TextStyle(fontSize: 30),
+      ),
+    ),
+    ),
+      SizedBox(height: 10),
+    ],
+    ),
+    ),
+      SizedBox(height: 10),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: _showAddStudentDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: White,
+              foregroundColor: DeepPurple,
+              padding: EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 12),
+              side: BorderSide(width: 1, color: DeepPurple),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: Text(
+              'Add Student +',
+              style: TextStyle(fontSize: 28),
+            ),
+          ),
+          SizedBox(width: 20),
+          ElevatedButton(
+            onPressed: _generateAndPrintPdf,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: White,
+              foregroundColor: DeepPurple,
+              padding: EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 12),
+              side: BorderSide(width: 1, color: DeepPurple),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: Text(
+              'PDF',
+              style: TextStyle(fontSize: 28),
+            ),
+          ),
+        ],
+      ),
+    ],
+    ),
+    ],
+    ),
+    ),
+      );
+        },
     );
   }
 }
+

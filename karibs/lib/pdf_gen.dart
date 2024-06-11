@@ -134,4 +134,41 @@ class PdfGenerator {
     // Print the PDF
     Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
   }
+
+  Future<void> generateClassReportPdf(
+      String className, double averageGrade, List<Map<String, dynamic>> students) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          children: [
+            pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 18)),
+            pw.SizedBox(height: 10),
+            pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            ...students.map((student) {
+              return pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(student['name'], style: pw.TextStyle(fontSize: 16)),
+                  pw.Text(student['average_score']?.toStringAsFixed(2) ?? 'N/A', style: pw.TextStyle(fontSize: 16)),
+                ],
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/$className - Report.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    // Print the PDF
+    await Printing.sharePdf(bytes: await pdf.save(), filename: '$className - Report.pdf');
+  }
+
 }
