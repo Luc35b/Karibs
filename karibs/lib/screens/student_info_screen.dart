@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 import 'package:karibs/pdf_gen.dart'; // Import your PdfGenerator class
 import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
@@ -24,6 +25,7 @@ Color getReportColor(double currScore) {
   } else {
     return Colors.red;
   }
+
 }
 
 class _StudentInfoScreenState extends State<StudentInfoScreen> {
@@ -104,8 +106,12 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     List<FlSpot> spots = [];
     for (var report in _reports) {
       int id = report['id'];
-      double score = report['score'] != null ? report['score'].toDouble() : 0.0;
-      spots.add(FlSpot(id.toDouble(), score));
+      if(report['score'] != null){
+        double score = report['score'];
+        spots.add(FlSpot(id.toDouble(), score));
+      }
+      //double score = report['score'] != null ? report['score'].toDouble(): 0.0;
+
     }
     return spots;
   }
@@ -135,7 +141,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_student != null ? _student!['name'] : 'Student Info'),
+        title: Text('Student Info'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -145,32 +153,35 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : Column(
+          :Column(
         children: [
+          //SizedBox(height: 10,),
           Row(
             children: [
               SizedBox(width: 20,),
-              if (_student != null)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      _student!['name'],
-                      style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                    ),
+              if(_student !=null)
+                Expanded(child:
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(
+                    _student!['name'],
+                    style: TextStyle(
+                        fontSize: 36, fontWeight: FontWeight.bold),
                   ),
+                ),
                 ),
               ElevatedButton(
                 onPressed: _navigateToEditStudentScreen,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5),
+                  backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  side: BorderSide(width: 1, color: DeepPurple),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('Edit Student', style: TextStyle(fontSize: 16)),
+                child: Text('Edit', style: TextStyle(fontSize: 16),),
               ),
               SizedBox(width: 20,),
             ],
@@ -184,7 +195,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               ),
             ),
           SizedBox(
-            height: 300,
+            height: 300, // Provide a fixed height for the chart
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: _reports.isEmpty
@@ -192,8 +203,32 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30)),
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                      decoration: BoxDecoration(
+                        color: DeepPurple,
+                        border: Border.all(width: 2, color: DeepPurple),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(5),
+                          bottomLeft: Radius.circular(5),
+                          bottomRight: Radius.circular(30),
+                        ),
+
+                        //borderRadius: BorderRadius.circular(30), // Rounded corners for all
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(3, 3), // Shadow position
+                          ),
+                        ],
+                      ),
+                      child:Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
+                    ),
+
                     SizedBox(height: 20),
+
                   ],
                 ),
               )
@@ -209,7 +244,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       showTitles: true,
                       getTitles: (value) {
                         int index = value.toInt();
-                        if (value >= 0 && value < _reports.length) {
+                        if(value >=0 && value< _reports.length){
                           return _reports[index]['title'] ?? '';
                         }
                         return '';
@@ -232,77 +267,101 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               ),
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: [
-                Expanded(
-                  child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                ),
-                ElevatedButton(
-                  onPressed: _navigateToAddReportScreen,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                children: [
+                  Expanded(
+                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                   ),
-                  child: Text('Add Report'),
-                ),
-                SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _generatePdf,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                  ElevatedButton(
+                    onPressed: _navigateToAddReportScreen,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 1, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
+                    child: Text('Add Report', style: TextStyle(fontSize: 20)),
                   ),
-                  child: Text('PDF'),
-                ),
-              ],
+                  SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _generatePdf,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 1, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Text('PDF', style: TextStyle(fontSize: 20)),
+                  ),
+                ]
+
             ),
           ),
-          SizedBox(width: 8),
           Expanded(
-            child: Padding(
+            child:Padding(
               padding: const EdgeInsets.all(8),
-              child: ListView.builder(
-                itemCount: _reports.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReportDetailScreen(
-                            reportId: _reports[index]['id'],
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: getReportColor(_reports[index]['score']).withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      margin: EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
-                        trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
-                      ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200], // Shaded background color
+                  borderRadius: BorderRadius.circular(10), // Rounded corners for the box
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5), // Shadow color
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: Offset(0, 3), // Shadow position
                     ),
-                  );
-                },
+                  ],
+                ),
+                child: ListView.builder(
+                  itemCount: _reports.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                        onTap: () {
+                          // Navigate to another screen when a report is tapped
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReportDetailScreen(
+                                reportId: _reports[index]['id'],
+
+                              ),
+                            ),
+                          ).then((_){
+                            _fetchStudentData();
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: (_reports[index]['score'] != null)
+                                ? getReportColor(_reports[index]['score']).withOpacity(0.7)
+                                : NotWhite,
+                            borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                          ),
+                          margin: EdgeInsets.only(bottom: 8), // Margin between boxes
+                          child: ListTile(
+                            title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
+                            subtitle: Text(_reports[index]['notes']),
+                            trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
+                          ),
+                        ));
+                  },
+                ),
               ),
             ),
           ),
         ],
       ),
+
     );
   }
 }

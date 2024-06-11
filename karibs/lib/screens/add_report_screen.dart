@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:karibs/database/database_helper.dart';
 
 class AddReportScreen extends StatefulWidget {
@@ -16,12 +17,24 @@ class _AddReportScreenState extends State<AddReportScreen> {
   final TextEditingController scoreController = TextEditingController();
 
   void _addReport() async {
+    String scoreText = scoreController.text;
+    double? score = scoreText.isNotEmpty ? double.tryParse(scoreText) : null;
     if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
+      if( score != null && (score < 0 || score > 100)){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Score must be a number between 0 and 100'),
+          ),
+        );
+        return;
+      }
+
+
       await DatabaseHelper().insertReport({
         'date': DateTime.now().toIso8601String(),
         'title': titleController.text,
         'notes': notesController.text,
-        'score': scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
+        'score': score,
+        //'score': scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
         'student_id': widget.studentId,
       });
       Navigator.of(context).pop(true); // Pop the screen and pass true as result
@@ -47,12 +60,17 @@ class _AddReportScreenState extends State<AddReportScreen> {
             TextField(
               controller: notesController,
               decoration: InputDecoration(labelText: 'Notes'),
+              keyboardType: TextInputType.multiline,
+              maxLines: 5,
             ),
             SizedBox(height: 32),
             TextField(
               controller: scoreController,
               decoration: InputDecoration(labelText: 'Score (optional)'),
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
             ),
             SizedBox(height: 16),
             Row(
