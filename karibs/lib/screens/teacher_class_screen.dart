@@ -22,6 +22,8 @@ Color getStatusColor(String currStatus) {
       return Colors.green;
     case 'Doing okay':
       return Color(0xFFe6cc00);
+    case 'Doing poorly':
+      return Colors.orange;
     case 'Needs help':
       return Colors.red;
     case 'No status':
@@ -37,6 +39,8 @@ Color getStatusColorFill(String currStatus) {
       return Color(0xFFBBFABB);
     case 'Doing okay':
       return Color(0xFFFAECBB);
+    case 'Doing poorly':
+      return Color(0xFFFFB68F);
     case 'Needs help':
       return Color(0xFFFABBBB);
     case 'No status':
@@ -51,6 +55,8 @@ String changeStatus(double avgScore) {
     return 'Doing well';
   } else if (avgScore >= 50) {
     return 'Doing okay';
+  } else if(avgScore >= 20) {
+    return 'Doing poorly';
   } else {
     return 'Needs help';
   }
@@ -201,6 +207,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               'All',
               'Doing well',
               'Doing okay',
+              'Doing poorly',
               'Needs help',
               'No status'
             ].map((String value) {

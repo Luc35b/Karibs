@@ -7,11 +7,13 @@ import 'package:karibs/main.dart';
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Colors.green;
+    return Color(0xFFBBFABB);
   } else if (currScore >= 50) {
     return Color(0xFFe6cc00);
-  } else {
-    return Colors.red;
+  } else if (currScore >=20) {
+    return Color(0xFFFFB68F);
+  }else {
+    return Color(0xFFFA6478);
   }
 }
 
