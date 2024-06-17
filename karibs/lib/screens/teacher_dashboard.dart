@@ -68,6 +68,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   void _showAddClassDialog() {
     final TextEditingController classNameController = TextEditingController();
+    final FocusNode focusNode = FocusNode();
 
     showDialog(
       context: context,
@@ -76,6 +77,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           title: Text('Add New Class'),
           content: TextField(
             controller: classNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Class Name'),
           ),
           actions: [
@@ -97,11 +100,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    );
+    ).then((_){
+      focusNode.dispose();
+    });
+
+    Future.delayed(Duration(milliseconds: 100), (){
+      focusNode.requestFocus();
+    });
   }
 
   void _showEditClassDialog(int classId, String currentClassName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
+    final FocusNode focusNode = FocusNode();
 
     showDialog(
       context: context,
@@ -110,6 +120,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           title: Text('Edit Class Name'),
           content: TextField(
             controller: classNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Class Name'),
           ),
           actions: [
@@ -131,7 +143,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    );
+    ).then((_) {
+      focusNode.dispose();
+    });
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   void _editClassName(int classId, String newClassName) async {
