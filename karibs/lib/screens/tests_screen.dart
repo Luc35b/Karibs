@@ -218,49 +218,107 @@ class _TestsScreenState extends State<TestsScreen> {
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())
-            :Stack(
+            : SingleChildScrollView(
+        child:Column(
           children: [
-            _tests.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
-                  Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
-                  SizedBox(height: 20),
-
+            SizedBox(height: 70),
+            Container(margin: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: MidPurple,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(3, 3), // Shadow position
+                  ),
                 ],
               ),
-            )
-                : ReorderableListView(
-              onReorder: _updateTestOrder,
-              padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with button
-              children: [
-                for (int index = 0; index < _tests.length; index++)
-                  ListTile(
-                    key: ValueKey(_tests[index]['id']),
-                    title: Text(_tests[index]['title']),
-                    onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.add),
-                          onPressed: () => _navigateToAddQuestionScreen(_tests[index]['id']),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title']),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
+                    child: Text(
+                      'MY EXAMS',
+                      style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
+                    ),
+                  ),
+                  Container(
+                    height: 400,
+                    margin: EdgeInsets.only(left:20, right:20, bottom: 20),
+                    decoration: BoxDecoration(
+                      color: NotWhite,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(3, 3), // Shadow position
                         ),
                       ],
                     ),
+                    child: _tests.isEmpty
+                      ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
+                          Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
+                          SizedBox(height: 20),
+
+                        ],
+                      ),
+                    )
+                    :ReorderableListView(
+                  onReorder: _updateTestOrder,
+                  padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with button
+        children: [
+          for (int index = 0; index < _tests.length; index++)
+            Container(
+              key: ValueKey(_tests[index]['id']),
+              margin: EdgeInsets.symmetric(vertical:4, horizontal: 16),
+              decoration: BoxDecoration(
+                color: White,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0,3),
                   ),
-              ],
+                ],
+              ),
+              child: ListTile(
+                title: Text(_tests[index]['title']),
+                onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title']),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      color: Colors.red[900],
+                      onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
+                    ),
+                  ],
+                ),
+              ),
             ),
+        ],
+      ),
+                  ),
+                ],
+              ),
+            ),
+
+
             //if (_tests.isNotEmpty)
               Align(
                 alignment: Alignment.bottomCenter,
@@ -291,6 +349,7 @@ class _TestsScreenState extends State<TestsScreen> {
                 ),
               ),
           ],
+        ),
         ),
       ),
     );
