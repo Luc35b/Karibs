@@ -241,6 +241,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           title: Text('Teacher Class Screen'),
           backgroundColor: DeepPurple,
           foregroundColor: White,
+          leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+          );
+        },
+      ),
     ),
     body: _isLoading
     ? Center(child: CircularProgressIndicator())

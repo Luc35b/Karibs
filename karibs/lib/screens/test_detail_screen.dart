@@ -161,8 +161,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
       ),
       body: _isLoading
@@ -181,9 +181,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
-                      side: BorderSide(width: 2, color: Colors.deepPurple),
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
                       padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -234,9 +234,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: _questions.isNotEmpty
                   ? ElevatedButton(
     style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: Colors.deepPurple,
-    side: BorderSide(width: 2, color: Colors.deepPurple),
+    backgroundColor: White,
+    foregroundColor: DeepPurple,
+    side: BorderSide(width: 2, color: DeepPurple),
     padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
     shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(15),

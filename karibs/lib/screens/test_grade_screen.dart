@@ -197,7 +197,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Grade Test for ${widget.testTitle}'),
+        title: Text('Grade Exam for ${widget.testTitle}'),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -207,7 +207,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Grading details for class $_className and test ${widget.testTitle}',
+                'Grading details for class: $_className and exam: ${widget.testTitle}',
                 style: TextStyle(fontSize: 20),
               ),
             ),

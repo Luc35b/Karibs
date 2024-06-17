@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/main.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final int questionId;
@@ -35,6 +36,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
         title: Text('Question Details'),
       ),
       body: _isLoading

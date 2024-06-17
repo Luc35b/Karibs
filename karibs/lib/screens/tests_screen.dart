@@ -35,7 +35,7 @@ class _TestsScreenState extends State<TestsScreen> {
     if (_tests.any((test) => test['title'] == testName)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
-          content: Text('Test with this name already exists. Please choose a different name.'),
+          content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
         ),
@@ -54,10 +54,10 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Test'),
+          title: Text('Add New Exam'),
           content: TextField(
             controller: testNameController,
-            decoration: InputDecoration(labelText: 'Test Title'),
+            decoration: InputDecoration(labelText: 'Exam Title'),
           ),
           actions: [
             TextButton(
@@ -88,10 +88,10 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit Test Name'),
+          title: Text('Edit Exam Name'),
           content: TextField(
             controller: testNameController,
-            decoration: InputDecoration(labelText: 'Test Title'),
+            decoration: InputDecoration(labelText: 'Exam Title'),
           ),
           actions: [
             TextButton(
@@ -119,7 +119,7 @@ class _TestsScreenState extends State<TestsScreen> {
     if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
-          content: Text('Test with this name already exists. Please choose a different name.'),
+          content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
         ),
@@ -136,8 +136,8 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Test'),
-          content: Text('Are you sure you want to delete this test?'),
+          title: Text('Delete Exam'),
+          content: Text('Are you sure you want to delete this exam?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -214,7 +214,7 @@ class _TestsScreenState extends State<TestsScreen> {
         appBar: AppBar(
           foregroundColor: White,
           backgroundColor: DeepPurple,
-          title: Text('Tests'),
+          title: Text('Exams'),
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())
@@ -225,7 +225,7 @@ class _TestsScreenState extends State<TestsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
+                  Text('No exams available.', style: GoogleFonts.raleway(fontSize: 36)),
                   Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
                   SizedBox(height: 20),
 
@@ -280,7 +280,7 @@ class _TestsScreenState extends State<TestsScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Add Test', style: GoogleFonts.raleway(fontSize: 24),),
+                        Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24),),
                         SizedBox(width: 8),
                         Icon(Icons.add),
 
