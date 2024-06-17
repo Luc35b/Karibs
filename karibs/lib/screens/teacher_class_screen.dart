@@ -113,7 +113,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _showAddStudentDialog() {
     final TextEditingController studentNameController = TextEditingController();
-
+    final FocusNode focusNode = FocusNode();
     showDialog(
       context: context,
       builder: (context) {
@@ -121,6 +121,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           title: Text('Add New Student'),
           content: TextField(
             controller: studentNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Student Name'),
           ),
           actions: [
@@ -142,7 +144,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           ],
         );
       },
-    );
+    ).then((_) {
+      focusNode.dispose();
+    });
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
