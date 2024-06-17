@@ -49,15 +49,22 @@ class _TestsScreenState extends State<TestsScreen> {
 
   void _showAddTestDialog() {
     final TextEditingController testNameController = TextEditingController();
+    FocusNode focusNode = FocusNode();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('Add New Test'),
-          content: TextField(
-            controller: testNameController,
-            decoration: InputDecoration(labelText: 'Test Title'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return TextField(
+                controller: testNameController,
+                focusNode: focusNode,
+                autofocus: true,
+                decoration: InputDecoration(labelText: 'Test Title'),
+              );
+            },
           ),
           actions: [
             TextButton(
@@ -78,11 +85,19 @@ class _TestsScreenState extends State<TestsScreen> {
           ],
         );
       },
-    );
+    ).then((_){
+      focusNode.dispose();
+    });
+
+    Future.delayed(Duration(milliseconds: 50), () {
+      focusNode.requestFocus();
+    });
   }
 
   void _showEditTestDialog(int testId, String currentTitle) {
     final TextEditingController testNameController = TextEditingController(text: currentTitle);
+    final FocusNode focusNode = FocusNode();
+
 
     showDialog(
       context: context,
@@ -91,6 +106,8 @@ class _TestsScreenState extends State<TestsScreen> {
           title: Text('Edit Test Name'),
           content: TextField(
             controller: testNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Test Title'),
           ),
           actions: [
@@ -112,7 +129,13 @@ class _TestsScreenState extends State<TestsScreen> {
           ],
         );
       },
-    );
+    ).then((_){
+      focusNode.dispose();
+    });
+
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   void _editTestName(int testId, String newTitle) async {
@@ -279,9 +302,10 @@ class _TestsScreenState extends State<TestsScreen> {
           for (int index = 0; index < _tests.length; index++)
             Container(
               key: ValueKey(_tests[index]['id']),
-              margin: EdgeInsets.symmetric(vertical:4, horizontal: 16),
+              margin: EdgeInsets.only(top:12, left: 16, right: 16),
               decoration: BoxDecoration(
                 color: White,
+                border: Border.all(color: DeepPurple, width: 1),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
@@ -293,7 +317,7 @@ class _TestsScreenState extends State<TestsScreen> {
                 ],
               ),
               child: ListTile(
-                title: Text(_tests[index]['title']),
+                title: Text(_tests[index]['title'], style: GoogleFonts.raleway(fontSize: 22)),
                 onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
