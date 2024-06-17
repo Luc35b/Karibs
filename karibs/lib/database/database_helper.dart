@@ -537,7 +537,7 @@ class DatabaseHelper {
       return avgScore;
     }
     else {
-      Null avgScore = null;
+      Null avgScore;
       await db.update(
         'students',
         {'average_score': avgScore},

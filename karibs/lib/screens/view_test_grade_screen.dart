@@ -4,7 +4,7 @@ import '../database/database_helper.dart';
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
 
-  ViewTestGradeScreen({required this.reportId});
+  const ViewTestGradeScreen({super.key, required this.reportId});
 
   @override
   _ViewTestGradeScreenState createState() => _ViewTestGradeScreenState();
@@ -46,16 +46,16 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test Grade Details'),
+        title: const Text('Test Grade Details'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           Container(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             color: Colors.grey[200],
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.check, color: Colors.green),
                 SizedBox(width: 8),
@@ -73,7 +73,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
               itemBuilder: (context, index) {
                 final question = _questions[index];
                 return Card(
-                  margin: EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.all(10.0),
                   color: question['got_correct'] == 1 ? Colors.green[100] : Colors.red[100],
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -82,14 +82,14 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                       children: [
                         Text(
                           question['question_text'],
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text('Category: ${question['question_category']}'),
-                        Divider(),
-                        Text(
+                        const Divider(),
+                        const Text(
                           'Choices:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -101,7 +101,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                               color: choice['is_correct'] == 1 ? Colors.green : Colors.red,
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),

@@ -6,7 +6,7 @@ import 'package:karibs/main.dart';
 class EditReportScreen extends StatefulWidget {
   final int reportId;
 
-  EditReportScreen({required this.reportId});
+  const EditReportScreen({super.key, required this.reportId});
 
   @override
   _EditReportScreenState createState() => _EditReportScreenState();
@@ -76,16 +76,16 @@ class _EditReportScreenState extends State<EditReportScreen> {
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Report'),
-        content: Text('Are you sure you want to delete this report?'),
+        title: const Text('Delete Report'),
+        content: const Text('Are you sure you want to delete this report?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete'),
+            child: const Text('Delete', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),
@@ -102,12 +102,12 @@ class _EditReportScreenState extends State<EditReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Report'),
+        title: const Text('Edit Report'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
         actions: [
 
-          IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
+          IconButton(onPressed: _deleteReport, icon: const Icon(Icons.delete)),
         ],
       ),
       body: Padding(
@@ -117,26 +117,26 @@ class _EditReportScreenState extends State<EditReportScreen> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextField(
               controller: _notesController,
-              decoration: InputDecoration(labelText: 'Notes'),
+              decoration: const InputDecoration(labelText: 'Notes'),
               keyboardType: TextInputType.multiline,
               maxLines: 5,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextField(
               controller: _scoreController,
-              decoration: InputDecoration(labelText: 'Score'),
+              decoration: const InputDecoration(labelText: 'Score'),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
 
               onPressed: _saveChanges,
-              child: Text('Save Changes'),
+              child: const Text('Save Changes'),
             ),
           ],
         ),

@@ -5,7 +5,7 @@ class EditQuestionScreen extends StatefulWidget {
   final int questionId;
   final Function onQuestionUpdated;
 
-  EditQuestionScreen({required this.questionId, required this.onQuestionUpdated});
+  const EditQuestionScreen({super.key, required this.questionId, required this.onQuestionUpdated});
 
   @override
   _EditQuestionScreenState createState() => _EditQuestionScreenState();
@@ -79,7 +79,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),),
@@ -105,10 +105,10 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Question'),
+        title: const Text('Edit Question'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Stack(
         children: [
           SingleChildScrollView(
@@ -119,7 +119,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                 children: [
                   TextField(
                     controller: _textController,
-                    decoration: InputDecoration(labelText: 'Question Text'),
+                    decoration: const InputDecoration(labelText: 'Question Text'),
                   ),
                   DropdownButtonFormField<String>(
                     value: _selectedType,
@@ -134,7 +134,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                         _selectedType = value;
                       });
                     },
-                    decoration: InputDecoration(labelText: 'Question Type'),
+                    decoration: const InputDecoration(labelText: 'Question Type'),
                   ),
                   DropdownButtonFormField<String>(
                     value: _selectedCategory,
@@ -149,7 +149,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                         _selectedCategory = value;
                       });
                     },
-                    decoration: InputDecoration(labelText: 'Question Category'),
+                    decoration: const InputDecoration(labelText: 'Question Category'),
                   ),
                   if (_selectedType == 'multiple_choice')
                     Column(
@@ -172,23 +172,23 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete),
+                                icon: const Icon(Icons.delete),
                                 onPressed: () => _removeChoiceField(i),
                               ),
                             ],
                           ),
                         ElevatedButton(
                           onPressed: _addChoiceField,
-                          child: Text('Add Choice'),
+                          child: const Text('Add Choice'),
                         ),
                       ],
                     ),
                   if (_selectedType == 'fill_in_the_blank')
                     TextField(
                       controller: _correctAnswerController,
-                      decoration: InputDecoration(labelText: 'Correct Answer'),
+                      decoration: const InputDecoration(labelText: 'Correct Answer'),
                     ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -199,7 +199,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: _updateQuestion,
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ),
           ),

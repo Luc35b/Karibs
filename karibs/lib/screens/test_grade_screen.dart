@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
-import 'package:karibs/providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
 
 class TestGradeScreen extends StatefulWidget {
@@ -10,7 +9,7 @@ class TestGradeScreen extends StatefulWidget {
   final String testTitle;
   final int testId;
 
-  TestGradeScreen({
+  const TestGradeScreen({super.key, 
     required this.classId,
     required this.testTitle,
     required this.testId,
@@ -157,18 +156,18 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         'comp_score': compScore,
       });
 
-      int? student_test_id = await DatabaseHelper().getStudentTestId(_selectedStudentId!, widget.testId);
+      int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, widget.testId);
 
       print(question_answer_map);
 
       question_answer_map.forEach((key,value) async {
         await DatabaseHelper().insertStudentTestQuestion({
-          'student_test_id': student_test_id,
+          'student_test_id': studentTestId,
           'question_id': key,
           'got_correct': value
         });
         print({
-          'student_test_id': student_test_id,
+          'student_test_id': studentTestId,
           'question_id': key,
           'got_correct': value
         });
@@ -176,7 +175,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
 
 
       // Show a confirmation message or navigate back
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Grades saved successfully')));
 
       // Notify the provider that a student has been graded
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
@@ -200,7 +199,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         title: Text('Grade Test for ${widget.testTitle}'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           if (_className != null)
@@ -208,13 +207,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Grading details for class $_className and test ${widget.testTitle}',
-                style: TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 20),
               ),
             ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: DropdownButton<int>(
-              hint: Text("Select Student"),
+              hint: const Text("Select Student"),
               value: _selectedStudentId,
               onChanged: (int? newValue) {
                 setState(() {
@@ -237,7 +236,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-                style: TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18),
               ),
             ),
           if (_selectedStudentId != null)
@@ -261,13 +260,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.check, color: Colors.green),
+                          icon: const Icon(Icons.check, color: Colors.green),
                           onPressed: () {
                             _markCorrect(questionId, category);
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.clear, color: Colors.red),
+                          icon: const Icon(Icons.clear, color: Colors.red),
                           onPressed: () {
                             _markIncorrect(questionId, category);
                           },
@@ -290,14 +289,14 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       _saveGradingResults(); // Navigate to TeacherDashboard after saving results
       }
           : null,
-      child: Text('Save Grades'),
+      child: const Text('Save Grades'),
       ),
-      SizedBox(width: 42), // Add some space between the buttons
+      const SizedBox(width: 42), // Add some space between the buttons
       ElevatedButton(
       onPressed: () {
       _goToTeacherDashboard(widget.classId); // Navigate to TeacherDashboard after saving results
       },
-      child: Text('Go to Class'),
+      child: const Text('Go to Class'),
       ),
       ],
       ),

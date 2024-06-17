@@ -7,7 +7,7 @@ class AddQuestionScreen extends StatefulWidget {
   final int testId;
   final Function onQuestionAdded;
 
-  AddQuestionScreen({required this.testId, required this.onQuestionAdded});
+  const AddQuestionScreen({super.key, required this.testId, required this.onQuestionAdded});
 
   @override
   _AddQuestionScreenState createState() => _AddQuestionScreenState();
@@ -20,8 +20,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   String? _selectedCategory; // New field for category
   final List<String> _questionTypes = ['multiple_choice', 'fill_in_the_blank'];
   final List<String> _questionCategories = ['Vocab', 'Comprehension']; // New list of categories
-  List<TextEditingController> _choiceControllers = [];
-  List<bool> _correctChoices = [];
+  final List<TextEditingController> _choiceControllers = [];
+  final List<bool> _correctChoices = [];
   int? _questionOrder;
 
   @override
@@ -39,6 +39,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
   void _addQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategory != null && _questionOrder != null) { // Check for selected category
+      BuildContext currentContext = context;
+
       int questionId = await DatabaseHelper().insertQuestion({
         'text': _textController.text,
         'type': _selectedType,
@@ -64,10 +66,12 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       }
 
       widget.onQuestionAdded();
-      Navigator.of(context).pop();
+      if (Navigator.canPop(currentContext)) {
+        Navigator.of(currentContext).pop();
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -75,6 +79,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       );
     }
   }
+
 
   void _addChoiceField() {
     setState(() {
@@ -96,7 +101,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       appBar: AppBar(
         backgroundColor: DeepPurple,
         foregroundColor: White,
-        title: Text('Add New Question'),
+        title: const Text('Add New Question'),
       ),
       body: Stack(
         children: [
@@ -106,7 +111,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               children: [
                 TextField(
                   controller: _textController,
-                  decoration: InputDecoration(labelText: 'Question Text'),
+                  decoration: const InputDecoration(labelText: 'Question Text'),
                 ),
                 DropdownButtonFormField<String>(
                   value: _selectedType,
@@ -121,7 +126,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                       _selectedType = value;
                     });
                   },
-                  decoration: InputDecoration(labelText: 'Question Type'),
+                  decoration: const InputDecoration(labelText: 'Question Type'),
                 ),
                 DropdownButtonFormField<String>(
                   value: _selectedCategory,
@@ -136,7 +141,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                       _selectedCategory = value;
                     });
                   },
-                  decoration: InputDecoration(labelText: 'Question Category'), // Add label for category
+                  decoration: const InputDecoration(labelText: 'Question Category'), // Add label for category
                 ),
                 if (_selectedType == 'multiple_choice')
                   Column(
@@ -159,23 +164,23 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                               },
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete),
+                              icon: const Icon(Icons.delete),
                               onPressed: () => _removeChoiceField(i),
                             ),
                           ],
                         ),
                       ElevatedButton(
                         onPressed: _addChoiceField,
-                        child: Text('Add Choice'),
+                        child: const Text('Add Choice'),
                       ),
                     ],
                   ),
                 if (_selectedType == 'fill_in_the_blank')
                   TextField(
                     controller: _correctAnswerController,
-                    decoration: InputDecoration(labelText: 'Correct Answer'),
+                    decoration: const InputDecoration(labelText: 'Correct Answer'),
                   ),
-                SizedBox(height: 100), // Add spacing to avoid overlap with the button
+                const SizedBox(height: 100), // Add spacing to avoid overlap with the button
               ],
             ),
           ),
@@ -185,7 +190,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: _addQuestion,
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ),
           ),
