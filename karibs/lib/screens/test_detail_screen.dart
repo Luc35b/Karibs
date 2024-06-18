@@ -54,10 +54,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailScreen(
+          builder: (context) => QuestionDetailScreen(
             questionId: questionId,
             subjectId: widget.subjectId,
-        )
+          )
       ),
     );
   }
@@ -171,6 +171,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         foregroundColor: White,
         backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
+        actions: [
+          TextButton(
+            onPressed: _showChooseClassDialog,
+            child: Text(
+              'GRADE',
+              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            style: TextButton.styleFrom(
+              side: BorderSide(color: Colors.white, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -240,18 +255,18 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               padding: const EdgeInsets.all(16.0),
               child: _questions.isNotEmpty
                   ? ElevatedButton(
-    style: ElevatedButton.styleFrom(
-    backgroundColor: White,
-    foregroundColor: DeepPurple,
-    side: BorderSide(width: 2, color: DeepPurple),
-    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(15),
-    ),
-    ),
-    onPressed: _navigateToAddQuestionScreen,
-    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-    )
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  side: BorderSide(width: 2, color: DeepPurple),
+                  padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                onPressed: _navigateToAddQuestionScreen,
+                child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+              )
                   : Container(),
             ),
           ),
@@ -263,7 +278,12 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                 onPressed: () {
                   showMenu(
                     context: context,
-                    position: RelativeRect.fromLTRB(0.0, 0.0, 1.0, 1.0),
+                    position: RelativeRect.fromLTRB(
+                      MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
+                      MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
+                      16, // Padding from right
+                      16, // Padding from bottom
+                    ),
                     items: [
                       PopupMenuItem<int>(
                         value: 0,
@@ -278,7 +298,6 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           ),
                         ),
                       ),
-
                       PopupMenuItem<int>(
                         value: 1,
                         child: TextButton(
@@ -292,24 +311,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           ),
                         ),
                       ),
-                      PopupMenuItem<int>(
-                        value: 2,
-                        child: TextButton(
-                          onPressed: _showChooseClassDialog,
-                          child: Row(
-                            children: [
-                              Icon(Icons.grade),
-                              SizedBox(width: 8),
-                              Text('Grade'),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                     elevation: 8.0,
                   );
                 },
-                child: Icon(Icons.menu),
+                child: Icon(Icons.print),
               ),
             ),
           ),
@@ -350,33 +356,32 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text('Choose Class'),
-    content: _isLoading
-        ? Center(child: CircularProgressIndicator())
-        : Container(
-    width: double.minPositive, // Adjust the width to fit the content
-    child: ListView.builder(
-    shrinkWrap: true,
-    itemCount: _classes.length,
-    itemBuilder: (context, index) {
-    return ListTile(
-    title: Text(_classes[index]['name']),
-    onTap: () {
-    widget.onClassSelected(_classes[index]['id']);
-    },
-    );
-    },
-    ),
-    ),
-    actions: [
-    TextButton(
-    onPressed: () {
-    Navigator.of(context).pop();
-    },
-    child: Text('Cancel'),
-    ),
-    ],
+      title: Text('Choose Class'),
+      content: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+        width: double.minPositive, // Adjust the width to fit the content
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _classes.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_classes[index]['name']),
+              onTap: () {
+                widget.onClassSelected(_classes[index]['id']);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Cancel'),
+        ),
+      ],
     );
   }
 }
-

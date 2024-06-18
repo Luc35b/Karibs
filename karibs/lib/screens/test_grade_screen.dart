@@ -157,7 +157,11 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         );
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully')));
+
+      // Show a confirmation message or navigate back
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully'),
+      duration: Duration(milliseconds: 1500),));
+
 
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
