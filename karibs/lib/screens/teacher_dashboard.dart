@@ -67,58 +67,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   void _showAddClassDialog() {
-    String? selectedCategory; // Nullable string
-
-    TextEditingController customCategoryController = TextEditingController();
-
-    List<String> categories = [
-      'Math',
-      'Science',
-      'History',
-      'Literature',
-      'Custom', // Placeholder for custom category
-    ];
     final TextEditingController classNameController = TextEditingController();
     final FocusNode focusNode = FocusNode();
-
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('Add New Class'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedCategory = newValue;
-                  });
-                  if (newValue == 'Custom') {
-                    customCategoryController.clear(); // Clear text field if custom category selected
-                  }
-                },
-                items: categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-              ),
-              if (selectedCategory == 'Custom')
-                TextFormField(
-                  controller: customCategoryController,
-                  decoration: InputDecoration(labelText: 'Enter custom category'),
-                ),
-            ],
           content: TextField(
             controller: classNameController,
             focusNode: focusNode,
             autofocus: true,
             decoration: InputDecoration(labelText: 'Class Name'),
-
           ),
           actions: [
             TextButton(
@@ -129,17 +90,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () {
-                String categoryToAdd = selectedCategory ?? ''; // Use null-aware operator to handle null
-                if (selectedCategory == 'Custom') {
-                  categoryToAdd = customCategoryController.text.trim();
-                  if (categoryToAdd.isEmpty) {
-                    // Optional: Show error or handle empty custom category
-                    return;
-                  }
+                if (classNameController.text.isNotEmpty) {
+                  _addClass(classNameController.text);
+                  Navigator.of(context).pop();
                 }
-                // Add logic to add the class with the selected category
-                _addClass(categoryToAdd);
-                Navigator.of(context).pop();
               },
               child: Text('Add'),
             ),
@@ -154,8 +108,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       focusNode.requestFocus();
     });
   }
-
-
 
   void _showEditClassDialog(int classId, String currentClassName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
@@ -216,10 +168,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-      child:Column(
-        children: [
-          SizedBox(height: 100),
-          Container(margin: EdgeInsets.symmetric(horizontal: 20),
+        child:Column(
+          children: [
+            SizedBox(height: 100),
+            Container(margin: EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
                 color: MidPurple,
                 //border: Border.all(width: 3),
@@ -236,167 +188,167 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ],
               ),
               child: Column(
-              children:[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
-                  child: Text(
-                    'MY CLASSES',
-                    style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
-                  ),
-                ),
-                Container(
-                  height: 250, // Adjust height as needed
-                  margin: EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: NotWhite,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(3, 3), // Shadow position
-                      ),
-                    ],
-                  ),
-
-                  child: _classes.isEmpty
-                      ? Center(
+                children:[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
                     child: Text(
-                      'No classes available. \n Please add a class.',
-                      style: GoogleFonts.raleway(fontSize: 24),
+                      'MY CLASSES',
+                      style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
                     ),
-                  ) :SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: _classes.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: White, // Background color of the box
-                                //borderRadius: BorderRadius.circular(20), // Rounded corners for the box
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(10),
-                                  topLeft: Radius.circular(10),
-                                  bottomRight: Radius.circular(10),
-                                  bottomLeft: Radius.circular(10),
-                                ),
-                                border: Border.all(color: MidPurple, width: 2),
-
-                              ),
-                              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                              child: ListTile(
-                                title: Text(
-                                  _classes[index]['name'],
-                                  style: TextStyle(fontSize: 32),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name']);},
-                                      icon: Icon(Icons.edit),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {_deleteClass(_classes[index]['id']);},
-                                      color: Colors.red[900],
-                                      icon: Icon(Icons.delete),
-                                    ),
-                                  ],
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TeacherClassScreen(
-                                        classId: _classes[index]['id'],
-                                        refresh: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-
-
-                            );
-                          },
+                  ),
+                  Container(
+                    height: 250, // Adjust height as needed
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: NotWhite,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(3, 3), // Shadow position
                         ),
-                        SizedBox(height: 20),
                       ],
                     ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _showAddClassDialog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: White,
-                    foregroundColor: DeepPurple,
-                    side: BorderSide(width: 2, color: DeepPurple),
-                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+
+                    child: _classes.isEmpty
+                        ? Center(
+                      child: Text(
+                        'No classes available. \n Please add a class.',
+                        style: GoogleFonts.raleway(fontSize: 24),
+                      ),
+                    ) :SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: _classes.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: White, // Background color of the box
+                                  //borderRadius: BorderRadius.circular(20), // Rounded corners for the box
+                                  borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(10),
+                                    topLeft: Radius.circular(10),
+                                    bottomRight: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                  ),
+                                  border: Border.all(color: MidPurple, width: 2),
+
+                                ),
+                                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                child: ListTile(
+                                  title: Text(
+                                    _classes[index]['name'],
+                                    style: TextStyle(fontSize: 32),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name']);},
+                                        icon: Icon(Icons.edit),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {_deleteClass(_classes[index]['id']);},
+                                        color: Colors.red[900],
+                                        icon: Icon(Icons.delete),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TeacherClassScreen(
+                                          classId: _classes[index]['id'],
+                                          refresh: true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+
+
+                              );
+                            },
+                          ),
+                          SizedBox(height: 20),
+                        ],
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'ADD CLASS +',
-                    style: GoogleFonts.raleway(fontSize: 25),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _showAddClassDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: Text(
+                      'ADD CLASS +',
+                      style: GoogleFonts.raleway(fontSize: 25),
+                    ),
                   ),
+                  SizedBox(height: 20),
+
+                ],
+              ),
+            ),
+
+
+            SizedBox(height: 15),
+            Container(margin: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: MidPurple,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                  //topLeft: Radius.circular(30),
+                  //bottomRight: Radius.circular(30),
                 ),
-                SizedBox(height: 20),
-
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(3, 3), // Shadow position
+                  ),
+                ],
               ),
-          ),
 
 
-          SizedBox(height: 15),
-          Container(margin: EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: MidPurple,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-                //topLeft: Radius.circular(30),
-                //bottomRight: Radius.circular(30),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(3, 3), // Shadow position
+            ),
+            SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TestsScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: White,
+                side: BorderSide(width: 2, color: DeepPurple),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-              ],
-            ),
-
-
-          ),
-          SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TestsScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: White,
-              side: BorderSide(width: 2, color: DeepPurple),
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Text(
+                '  MANAGE TESTS  ',
+                style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
               ),
             ),
-            child: Text(
-              '  MANAGE EXAMS  ',
-              style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
-            ),
-          ),
-          SizedBox(height: 15),
-        ],
-      ),
+            SizedBox(height: 15),
+          ],
+        ),
       ),
     );
   }

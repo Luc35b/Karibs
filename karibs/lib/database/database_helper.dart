@@ -33,7 +33,7 @@ class DatabaseHelper {
     CREATE TABLE classes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      subject_id INTEGER NOT NULL,
+      subject_id INTEGER,
       FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
     )
   ''');
