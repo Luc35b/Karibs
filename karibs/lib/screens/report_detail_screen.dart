@@ -262,7 +262,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
-            child: Text('Edit Report', style: GoogleFonts.raleway(color: White)),
+            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
             style: TextButton.styleFrom(
               side: BorderSide(color: Colors.white, width: 1),
               shape: RoundedRectangleBorder(
