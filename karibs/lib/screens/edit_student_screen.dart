@@ -7,11 +7,13 @@ import 'package:karibs/main.dart';
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Colors.green;
+    return Color(0xFFBBFABB);
   } else if (currScore >= 50) {
     return Color(0xFFe6cc00);
-  } else {
-    return Colors.red;
+  } else if (currScore >=20) {
+    return Color(0xFFFFB68F);
+  }else {
+    return Color(0xFFFA6478);
   }
 }
 
@@ -417,7 +419,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         child: Row(
                           children: [
                             Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
-                            IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete),)
+                            IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
                           ]
                         ),
                       ),

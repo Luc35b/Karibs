@@ -78,6 +78,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       'Literature',
       'Custom', // Placeholder for custom category
     ];
+    final TextEditingController classNameController = TextEditingController();
+    final FocusNode focusNode = FocusNode();
+
 
     showDialog(
       context: context,
@@ -110,6 +113,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   decoration: InputDecoration(labelText: 'Enter custom category'),
                 ),
             ],
+          content: TextField(
+            controller: classNameController,
+            focusNode: focusNode,
+            autofocus: true,
+            decoration: InputDecoration(labelText: 'Class Name'),
+
           ),
           actions: [
             TextButton(
@@ -137,13 +146,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    );
+    ).then((_){
+      focusNode.dispose();
+    });
+
+    Future.delayed(Duration(milliseconds: 100), (){
+      focusNode.requestFocus();
+    });
   }
 
 
 
   void _showEditClassDialog(int classId, String currentClassName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
+    final FocusNode focusNode = FocusNode();
 
     showDialog(
       context: context,
@@ -152,6 +168,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           title: Text('Edit Class Name'),
           content: TextField(
             controller: classNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Class Name'),
           ),
           actions: [
@@ -173,7 +191,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    );
+    ).then((_) {
+      focusNode.dispose();
+    });
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   void _editClassName(int classId, String newClassName) async {
@@ -278,6 +301,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     ),
                                     IconButton(
                                       onPressed: () {_deleteClass(_classes[index]['id']);},
+                                      color: Colors.red[900],
                                       icon: Icon(Icons.delete),
                                     ),
                                   ],
