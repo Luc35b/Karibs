@@ -19,22 +19,56 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _tests = [];
+  List<Map<String, dynamic>> _subjects = [];
+
+  List<String> classesList = [
+    'Basic 1',
+    'Basic 2',
+    'Basic 3',
+    'Basic 4',
+    'Basic 5',
+    'Basic 6',
+    'Basic 7',
+    'Basic 8',
+    'Basic 9',
+  ];
+
+  List<String> subjectsList = [
+    'Math',
+    'Science',
+    'History',
+    'English',
+  ];
+
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _fetchClasses();
+    _fetchSubjects();
+    _getOrCreateSubjectId('Math');
+    _getOrCreateSubjectId('Science');
+    _getOrCreateSubjectId('History');
+    _getOrCreateSubjectId('English');
+  }
+
+  Future<void> _fetchSubjects() async{
+    final sData = await DatabaseHelper().queryAllSubjects();
+    setState(() {
+      _subjects = sData;
+    });
   }
 
   Future<void> _fetchClasses() async {
-    final cData = await DatabaseHelper().queryAllClasses();
+    final cData = await DatabaseHelper().queryAllClassesWithSubjects();
     final tData = await DatabaseHelper().queryAllTests();
     setState(() {
       _classes = cData;
       _tests = tData;
       _isLoading = false;
     });
+    print(_classes);
   }
   void _deleteClass(int classId) async{
     bool confirmDelete = await showDialog(
@@ -58,55 +92,314 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     if (confirmDelete == true) {
       await DatabaseHelper().deleteClass(classId);
       _fetchClasses();//refresh screen after delete
+      _fetchSubjects();
     }
   }
 
-  void _addClass(String className) async {
-    await DatabaseHelper().insertClass({'name': className});
-    _fetchClasses();
+  void _addClass(String className, String subjectName) async {
+    // First, check if the subject already exists in the subjects table
+    int subjectId = await _getOrCreateSubjectId(subjectName);
+
+    // Now insert the class into the classes table
+    await DatabaseHelper().insertClass({
+      'name': className,
+      'subject_id': subjectId,
+    });
+
+    _fetchClasses();// Refresh the UI or list of classes
+    _fetchSubjects();
   }
 
+  Future<int> _getOrCreateSubjectId(String subjectName) async {
+    final db = await DatabaseHelper().database;
+
+    // Check if the subject already exists
+    List<Map<String, dynamic>> results = await db.query(
+      'subjects',
+      columns: ['id'],
+      where: 'name = ?',
+      whereArgs: [subjectName],
+    );
+
+    if (results.isNotEmpty) {
+      // Subject exists, return its ID
+      return results.first['id'];
+    } else {
+      // Subject does not exist, insert and return its ID
+      int subjectId = await db.insert('subjects', {'name': subjectName});
+      return subjectId;
+    }
+  }
+
+
+
   void _showAddClassDialog() {
-    final TextEditingController classNameController = TextEditingController();
-    final FocusNode focusNode = FocusNode();
+    String? selectedClass;
+    String? selectedSubject;
+
+    TextEditingController customClassController = TextEditingController();
+    TextEditingController customSubjectController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Add New Class'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Class'),
+                          value: selectedClass,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedClass = newValue;
+                            });
+                            if (newValue == 'Add New Class') {
+                              customClassController.clear();
+                            }
+                          },
+                          items: [
+                            ...classesList.map((classItem) {
+                              return DropdownMenuItem<String>(
+                                value: classItem,
+                                child: Text(classItem),
+                              );
+                            }),
+                            DropdownMenuItem<String>(
+                              value: 'Add New Class',
+                              child: Text('Select Class'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customClassName = await _showCustomClassDialog();
+                          if (customClassName != null && customClassName.isNotEmpty) {
+                            setState(() {
+                              if (!classesList.contains(customClassName)) {
+                                classesList.add(customClassName);
+                              }
+                              selectedClass = customClassName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  if (selectedClass == 'Add New Class')
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: customClassController,
+                          decoration: InputDecoration(labelText: 'Enter custom class'),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Enter additional details for custom class...',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Subject'),
+                          value: selectedSubject,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedSubject = newValue;
+                            });
+                            if (newValue == 'Add New Subject') {
+                              customSubjectController.clear();
+                            }
+                          },
+                          items: [
+                            ...subjectsList.map((subject) {
+                              return DropdownMenuItem<String>(
+                                value: subject,
+                                child: Text(subject),
+                              );
+                            }),
+                            DropdownMenuItem<String>(
+                              value: 'Add New Subject',
+                              child: Text('Select Subject'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customSubjectName = await _showCustomSubjectDialog();
+                          if (customSubjectName != null && customSubjectName.isNotEmpty) {
+                            setState(() {
+                              if (!subjectsList.contains(customSubjectName)) {
+                                subjectsList.add(customSubjectName);
+                              }
+                              selectedSubject = customSubjectName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  if (selectedSubject == 'Add New Subject')
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: customSubjectController,
+                          decoration: InputDecoration(labelText: 'Enter custom subject'),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Enter additional details for custom subject...',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String classToAdd = selectedClass ?? '';
+                    String subjectToAdd = selectedSubject ?? '';
+
+                    if (classToAdd.isNotEmpty && subjectToAdd.isNotEmpty) {
+                      _addClass(classToAdd, subjectToAdd);
+                    }
+
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Add'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+  void _showValidationDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Validation Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Future<String?> _showCustomClassDialog() async {
+    TextEditingController customClassController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
         return AlertDialog(
-          title: Text('Add New Class'),
-          content: TextField(
-            controller: classNameController,
-            focusNode: focusNode,
-            autofocus: true,
-            decoration: InputDecoration(labelText: 'Class Name'),
+          title: Text('Add Custom Class'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: customClassController,
+                decoration: InputDecoration(labelText: 'Enter custom class'),
+              ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog without adding
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                if (classNameController.text.isNotEmpty) {
-                  _addClass(classNameController.text);
-                  Navigator.of(context).pop();
-                }
+                String customClassName = customClassController.text.trim();
+                Navigator.of(context).pop(customClassName); // Return custom class name
               },
               child: Text('Add'),
             ),
           ],
         );
       },
-    ).then((_){
+    );
+  }
+
+  Future<String?> _showCustomSubjectDialog() async {
+    TextEditingController customSubjectController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Custom Subject'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: customSubjectController,
+                decoration: InputDecoration(labelText: 'Enter custom subject'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog without adding
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String customSubjectName = customSubjectController.text.trim();
+                Navigator.of(context).pop(customSubjectName); // Return custom subject name
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+    /*then((_){
       focusNode.dispose();
     });
 
     Future.delayed(Duration(milliseconds: 100), (){
       focusNode.requestFocus();
     });
+    */
+
   }
 
   void _showEditClassDialog(int classId, String currentClassName) {
@@ -154,8 +447,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   void _editClassName(int classId, String newClassName) async {
     await DatabaseHelper().updateClass(classId, {'name': newClassName});
     _fetchClasses();
+    _fetchSubjects();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -164,6 +457,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         title: Text('My Dashboard'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -236,7 +530,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     bottomLeft: Radius.circular(10),
                                   ),
                                   border: Border.all(color: MidPurple, width: 2),
-
                                 ),
                                 margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                                 child: ListTile(
