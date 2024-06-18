@@ -481,6 +481,11 @@ class DatabaseHelper {
     );
   }
 
+  Future<List<Map<String, dynamic>>> queryAllSubjects() async {
+    final db = await database;
+    return await db.query('subjects');
+  }
+
   Future<int> deleteQuestion(int questionId) async {
     Database db = await database;
     await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]); // Delete choices first
