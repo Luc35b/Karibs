@@ -86,7 +86,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: const Text(
+                child: Text(
                   'Cancel', style: TextStyle(fontSize: 20),
                 ),
               ),

@@ -218,10 +218,10 @@ class _TestsScreenState extends State<TestsScreen> {
         appBar: AppBar(
           foregroundColor: White,
           backgroundColor: DeepPurple,
-          title: Text('Tests'),
+          title: const Text('Tests'),
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Stack(
           children: [
             _tests.isEmpty
@@ -231,7 +231,7 @@ class _TestsScreenState extends State<TestsScreen> {
                 children: [
                   Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
                   Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                 ],
               ),
             )
@@ -248,15 +248,15 @@ class _TestsScreenState extends State<TestsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.add),
+                          icon: const Icon(Icons.add),
                           onPressed: () => _navigateToAddQuestionScreen(_tests[index]['id']),
                         ),
                         IconButton(
-                          icon: Icon(Icons.edit),
+                          icon: const Icon(Icons.edit),
                           onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title']),
                         ),
                         IconButton(
-                          icon: Icon(Icons.delete),
+                          icon: const Icon(Icons.delete),
                           onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
                         ),
                       ],
@@ -273,8 +273,8 @@ class _TestsScreenState extends State<TestsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: White,
                     foregroundColor: DeepPurple,
-                    side: BorderSide(width: 2, color: DeepPurple),
-                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12),
+                    side: const BorderSide(width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -283,15 +283,15 @@ class _TestsScreenState extends State<TestsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('Add Test', style: GoogleFonts.raleway(fontSize: 24)),
-                      SizedBox(width: 8),
-                      Icon(Icons.add),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.add),
                     ],
                   ),
                 ),
               ),
             ),
             // Add the HelpOverlay button
-            Positioned(
+            const Positioned(
               top: 8.0,
               right: 12.0,
               child: HelpOverlay(),

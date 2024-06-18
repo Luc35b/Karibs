@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
@@ -36,7 +35,7 @@ class PdfGenerator {
                     pw.SizedBox(height: 20),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           );
         },
@@ -153,7 +152,7 @@ class PdfGenerator {
           children: [
             pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 18)),
+            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
             pw.SizedBox(height: 10),
             pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
@@ -163,11 +162,11 @@ class PdfGenerator {
               return pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text(student['name'], style: pw.TextStyle(fontSize: 16)),
-                  pw.Text(scoreText, style: pw.TextStyle(fontSize: 16)),
+                  pw.Text(student['name'], style: const pw.TextStyle(fontSize: 16)),
+                  pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
                 ],
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

@@ -281,6 +281,85 @@ class DatabaseHelper {
     }
   }
 
+  Future<List<int>> getGradedStudents(int testId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'student_tests',
+      columns: ['student_id'],
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
+    return results.map((row) => row['student_id'] as int).toList();
+  }
+
+  Future<Map<String, dynamic>?> getStudentTestResults(int studentId, int testId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery('''
+    SELECT * FROM student_tests 
+    JOIN student_test_question ON student_tests.id = student_test_question.student_test_id
+    WHERE student_tests.student_id = ? AND student_tests.test_id = ?
+  ''', [studentId, testId]);
+
+    Map<String, dynamic> savedResults = {
+      'student_id': studentId,
+      'test_id': testId,
+      'question_correctness': {},
+    };
+
+    for (var result in results) {
+      int questionId = result['question_id'];
+      int correctness = result['got_correct'];
+      savedResults['question_correctness'][questionId.toString()] = correctness;
+    }
+
+    return savedResults;
+  }
+
+  Future<List<Map<String, dynamic>>> getStudentTestQuestions(int studentId, int testId) async {
+    final db = await database;
+    return await db.query('student_test_questions', where: 'student_id = ? AND test_id = ?', whereArgs: [studentId, testId]);
+  }
+
+  Future<Map<String, dynamic>?> getReportById(int reportId) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'reports',
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<Map<String, dynamic>?> getStudentById(int studentId) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'students',
+      where: 'id = ?',
+      whereArgs: [studentId],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  Future<void> updateReport(int reportId, Map<String, dynamic> updatedReport) async {
+    final db = await database;
+    await db.update(
+      'reports',
+      updatedReport,
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+  }
+
+  Future<void> updateStudentTest(Map<String, dynamic> test) async {
+    final db = await database;
+    await db.update('student_tests', test, where: 'student_id = ? AND test_id = ?', whereArgs: [test['student_id'], test['test_id']]);
+  }
+
+  Future<void> updateStudentTestQuestion(Map<String, dynamic> question) async {
+    final db = await database;
+    await db.update('student_test_question', question, where: 'student_test_id = ? AND question_id = ?', whereArgs: [question['student_test_id'], question['question_id']]);
+  }
+
   Future<int> updateStudentStatus(int studentId, String newStatus) async {
     Database db = await database;
     return await db.update(

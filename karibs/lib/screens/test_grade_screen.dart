@@ -9,11 +9,12 @@ class TestGradeScreen extends StatefulWidget {
   final String testTitle;
   final int testId;
 
-  const TestGradeScreen({super.key, 
+  const TestGradeScreen({
+    Key? key,
     required this.classId,
     required this.testTitle,
     required this.testId,
-  });
+  }) : super(key: key);
 
   @override
   _TestGradeScreenState createState() => _TestGradeScreenState();
@@ -28,6 +29,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   bool _isLoading = true;
   Map<String, int> sub_scores = {};
   Map<int, int> questionCorrectness = {};
+  Set<int> _gradedStudentIds = {};
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     _fetchClassName();
     _fetchStudents();
     _fetchQuestions();
+    _fetchGradedStudents();
   }
 
   Future<void> _fetchClassName() async {
@@ -58,6 +61,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       _questions = questions;
       _initializeSubScores();
       _initializeQuestionCorrectness();
+    });
+  }
+
+  Future<void> _fetchGradedStudents() async {
+    List<int> gradedStudentIds = await DatabaseHelper().getGradedStudents(widget.testId);
+    setState(() {
+      _gradedStudentIds = gradedStudentIds.toSet();
     });
   }
 
@@ -107,16 +117,35 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
-  void _saveGradingResults() async {
+  bool _allQuestionsMarked() {
+    for (var correctness in questionCorrectness.values) {
+      if (correctness == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<void> _saveGradingResults() async {
+    if (!_allQuestionsMarked()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please mark all questions before saving.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      return;
+    }
+
     // Calculate total score and sub-scores
     int totalQuestions = _questions.length;
     int vocabQuestions = 0;
     int compQuestions = 0;
-    for(int i = 0; i < totalQuestions; i++) {
-      if(_questions[i]['category'] == 'Vocab') {
+    for (int i = 0; i < totalQuestions; i++) {
+      if (_questions[i]['category'] == 'Vocab') {
         vocabQuestions++;
-      }
-      else{
+      } else {
         compQuestions++;
       }
     }
@@ -126,15 +155,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     double vocabScore = (sub_scores['Vocab'] ?? 0) / vocabQuestions * 100;
     double compScore = (sub_scores['Comprehension'] ?? 0) / compQuestions * 100;
 
-    print(
-        {
-          'student_id': _selectedStudentId!,
-          'test_id': widget.testId,
-          'total_score': totalScore,
-          'vocab_score': vocabScore,
-          'comp_score': compScore,
-        }
-    );
+    print({
+      'student_id': _selectedStudentId!,
+      'test_id': widget.testId,
+      'total_score': totalScore,
+      'vocab_score': vocabScore,
+      'comp_score': compScore,
+    });
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -160,7 +187,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
 
       print(question_answer_map);
 
-      question_answer_map.forEach((key,value) async {
+      question_answer_map.forEach((key, value) async {
         await DatabaseHelper().insertStudentTestQuestion({
           'student_test_id': studentTestId,
           'question_id': key,
@@ -173,9 +200,20 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         });
       });
 
+      // Immediately add the graded student to the set and refresh the state
+      setState(() {
+        _gradedStudentIds.add(_selectedStudentId!);
+        _selectedStudentId = null;
+      });
 
-      // Show a confirmation message or navigate back
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Grades saved successfully')));
+      // Show a confirmation message
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Grades saved successfully'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+          )
+      );
 
       // Notify the provider that a student has been graded
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
@@ -185,8 +223,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _goToTeacherDashboard(int classId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TeacherClassScreen(classId: classId,refresh: true,)),
-    ).then((_){
+      MaterialPageRoute(builder: (context) => TeacherClassScreen(classId: classId, refresh: true)),
+    ).then((_) {
       _fetchClassName();
       _fetchStudents();
     });
@@ -195,115 +233,132 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Grade Test for ${widget.testTitle}'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          if (_className != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+        appBar: AppBar(
+          title: Text('Grade Test for ${widget.testTitle}'),
+        ),
+        body: Stack(
+            children: [
+        _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+    children: [
+    if (_className != null)
+    Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Text(
+    'Grading details for class $_className and test ${widget.testTitle}',
+    style: const TextStyle(fontSize: 20),
+    ),
+    ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: DropdownButton<int>(
+          hint: const Text("Select Student"),
+          value: _selectedStudentId,
+          onChanged: (int? newValue) {
+            setState(() {
+              _selectedStudentId = newValue;
+              _initializeSubScores(); // Clear sub_scores when a new student is selected
+              _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
+              _initializeQuestionMap();
+            });
+          },
+          items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
+            return DropdownMenuItem<int>(
+              value: student['id'],
+              enabled: !_gradedStudentIds.contains(student['id']), // Disable graded students
               child: Text(
-                'Grading details for class $_className and test ${widget.testTitle}',
-                style: const TextStyle(fontSize: 20),
+                student['name'],
+                style: TextStyle(
+                  color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black, // Change color based on grading status
+                ),
               ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<int>(
-              hint: const Text("Select Student"),
-              value: _selectedStudentId,
-              onChanged: (int? newValue) {
-                setState(() {
-                  _selectedStudentId = newValue;
-                  _initializeSubScores(); // Clear sub_scores when a new student is selected
-                  _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
-                  _initializeQuestionMap();
-                });
-              },
-              items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
-                return DropdownMenuItem<int>(
-                  value: student['id'],
-                  child: Text(student['name']),
-                );
-              }).toList(),
-            ),
+            );
+          }).toList(),
+        ),
+      ),
+
+      if (_selectedStudentId != null)
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
+            style: const TextStyle(fontSize: 18),
           ),
-          if (_selectedStudentId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          if (_selectedStudentId != null)
-            Expanded(
-              child: ListView.builder(
-                itemCount: _questions.length,
-                itemBuilder: (context, index) {
-                  int questionId = _questions[index]['id'];
-                  String category = _questions[index]['category'];
-                  return ListTile(
-                    title: Text(_questions[index]['text']),
-                    subtitle: Text(category),
-                    tileColor: questionCorrectness[questionId] == 1
-                        ? Colors.green.withOpacity(0.2)
-                        : questionCorrectness[questionId] == -1
-                        ? Colors.red.withOpacity(0.2)
-                        : questionCorrectness[questionId] == 0
-                        ? Colors.grey.withOpacity(0.2)
-                        : null,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.check, color: Colors.green),
-                          onPressed: () {
-                            _markCorrect(questionId, category);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.red),
-                          onPressed: () {
-                            _markIncorrect(questionId, category);
-                          },
-                        ),
-                      ],
+        ),
+      if (_selectedStudentId != null)
+        Expanded(
+          child: ListView.builder(
+            itemCount: _questions.length,
+            itemBuilder: (context, index) {
+              int questionId = _questions[index]['id'];
+              String category = _questions[index]['category'];
+              return ListTile(
+                title: Text(_questions[index]['text']),
+                subtitle: Text(category),
+                tileColor: questionCorrectness[questionId] == 1
+                    ? Colors.green.withOpacity(0.2)
+                    : questionCorrectness[questionId] == -1
+                    ? Colors.red.withOpacity(0.2)
+                    : questionCorrectness[questionId] == 0
+                    ? Colors.grey.withOpacity(0.2)
+                    : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      onPressed: () {
+                        _markCorrect(questionId, category);
+                      },
                     ),
-                  );
-                },
+                    IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.red),
+                      onPressed: () {
+                        _markIncorrect(questionId, category);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+    ],
+        ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: (_selectedStudentId != null &&
+                            _questions.isNotEmpty &&
+                            _allQuestionsMarked() &&
+                            !_gradedStudentIds.contains(_selectedStudentId)) // Ensure grades don't already exist
+                            ? () {
+                          _saveGradingResults(); // Save results only if all questions are marked and grades don't exist
+                        }
+                            : null,
+                        child: const Text('Save Grade'),
+                      ),
+                      const SizedBox(width: 42), // Add some space between the buttons
+                      ElevatedButton(
+                        onPressed: () {
+                          _goToTeacherDashboard(widget.classId); // Navigate to TeacherDashboard
+                        },
+                        child: const Text('Go to Class'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-      Center(
-        child: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-      ElevatedButton(
-      onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
-      ? () {
-      _saveGradingResults(); // Navigate to TeacherDashboard after saving results
-      }
-          : null,
-      child: const Text('Save Grades'),
-      ),
-      const SizedBox(width: 42), // Add some space between the buttons
-      ElevatedButton(
-      onPressed: () {
-      _goToTeacherDashboard(widget.classId); // Navigate to TeacherDashboard after saving results
-      },
-      child: const Text('Go to Class'),
-      ),
-      ],
-      ),
-      )
-      )
-        ],
-      ),
+            ],
+        ),
     );
   }
 }

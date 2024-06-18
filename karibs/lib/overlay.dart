@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 class HelpOverlay extends StatefulWidget {
+  const HelpOverlay({super.key});
+
   @override
   _HelpOverlayState createState() => _HelpOverlayState();
 }
@@ -31,13 +33,13 @@ class _HelpOverlayState extends State<HelpOverlay> {
           // Add overlay items (arrows and descriptions)
           _buildOverlayItem(
             context,
-            Offset(100, 150),
+            const Offset(100, 150),
             'This button adds a new test',
             Icons.arrow_downward,
           ),
           _buildOverlayItem(
             context,
-            Offset(200, 250),
+            const Offset(200, 250),
             'This button generates a report',
             Icons.arrow_downward,
           ),
@@ -54,16 +56,16 @@ class _HelpOverlayState extends State<HelpOverlay> {
       child: Column(
         children: [
           Icon(arrowIcon, color: Colors.white, size: 36),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               description,
-              style: TextStyle(color: Colors.black, fontSize: 16),
+              style: const TextStyle(color: Colors.black, fontSize: 16),
             ),
           ),
         ],
@@ -74,7 +76,7 @@ class _HelpOverlayState extends State<HelpOverlay> {
   void _toggleOverlay() {
     if (_overlayEntry == null) {
       _overlayEntry = _createOverlayEntry(context);
-      Overlay.of(context)?.insert(_overlayEntry!);
+      Overlay.of(context).insert(_overlayEntry!);
     } else {
       _overlayEntry?.remove();
       _overlayEntry = null;
@@ -85,7 +87,7 @@ class _HelpOverlayState extends State<HelpOverlay> {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: _toggleOverlay,
-      child: Text('Show Help'),
+      child: const Text('Show Help'),
     );
   }
 }

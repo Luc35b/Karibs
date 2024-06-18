@@ -10,6 +10,7 @@ import 'report_detail_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
+  static const routeName = '/student_info';
 
   const StudentInfoScreen({super.key, required this.studentId});
 
