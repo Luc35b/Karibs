@@ -65,6 +65,7 @@ String changeStatus(double avgScore) {
 class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _students = [];
   List<Map<String, dynamic>> _filteredStudents = [];
+  List<Map<String, dynamic>> _originalStudents = [];
   bool _isLoading = true;
   TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
@@ -103,7 +104,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     data = await DatabaseHelper().queryAllStudents(widget.classId);
     setState(() {
       _students = data;
-      _filteredStudents = List.from(data);
+      _originalStudents = List<Map<String, dynamic>>.from(_students);
+      _filteredStudents = List<Map<String, dynamic>>.from(_students);
       _isLoading = false;
     });
   }
@@ -173,20 +175,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _filterStudents(String query) {
     setState(() {
-      List<Map<String, dynamic>> filteredList = _students;
+      _filteredStudents = List<Map<String, dynamic>>.from(_students); // Start with a copy of _students
+
       if (_selectedStatus != 'All') {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['status'] == _selectedStatus;
         }).toList();
       }
+
       if (query.isNotEmpty) {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['name'].toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
-      _filteredStudents = filteredList;
     });
   }
+
 
   void _filterByStatus(String status) {
     setState(() {
