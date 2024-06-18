@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb179107-f59b-4078-82fe-f0ba007ec993" name="Changes" comment="sorting by name and by low score">
+    <list default="true" id="fb179107-f59b-4078-82fe-f0ba007ec993" name="Changes" comment="no status always at the bottom">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/teacher_class_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/teacher_class_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,11 +65,29 @@
       <option name="project" value="LOCAL" />
       <updated>1718714346710</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="bug fixed with sorting after searching/filtering">
+      <option name="closed" value="true" />
+      <created>1718716298500</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1718716298500</updated>
+    </task>
+    <task id="LOCAL-00003" summary="no status always at the bottom">
+      <option name="closed" value="true" />
+      <created>1718716590237</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1718716590237</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="sorting by name and by low score" />
-    <option name="LAST_COMMIT_MESSAGE" value="sorting by name and by low score" />
+    <MESSAGE value="bug fixed with sorting after searching/filtering" />
+    <MESSAGE value="no status always at the bottom" />
+    <option name="LAST_COMMIT_MESSAGE" value="no status always at the bottom" />
   </component>
 </project>
