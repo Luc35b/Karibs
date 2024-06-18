@@ -6,12 +6,16 @@ import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
+import 'package:karibs/main.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
   final String testTitle;
+  final int subjectId;
 
-  const TestDetailScreen({super.key, required this.testId, required this.testTitle});
+  //const TestDetailScreen({super.key, required this.testId, required this.testTitle});
+
+  TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
 
   @override
   _TestDetailScreenState createState() => _TestDetailScreenState();
@@ -41,6 +45,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       MaterialPageRoute(
         builder: (context) => AddQuestionScreen(
           testId: widget.testId,
+          subjectId: widget.subjectId,
           onQuestionAdded: _fetchQuestions,
         ),
       ),
@@ -51,7 +56,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailScreen(questionId: questionId),
+          builder: (context) => QuestionDetailScreen(
+            questionId: questionId,
+            subjectId: widget.subjectId,
+          )
       ),
     );
   }
@@ -63,6 +71,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         builder: (context) => EditQuestionScreen(
           questionId: questionId,
           onQuestionUpdated: _fetchQuestions,
+          subjectId: widget.subjectId,
         ),
       ),
     );
@@ -73,21 +82,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete Question'),
-          content: const Text('Are you sure you want to delete this question?'),
+          title: Text('Delete Question'),
+          content: Text('Are you sure you want to delete this question?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteQuestion(questionId);
                 Navigator.of(context).pop();
               },
-              child: const Text('Delete', style: TextStyle(fontSize: 20)),
+              child: Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -132,6 +141,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             Navigator.of(context).pop();
             _navigateToGradeTestScreen(classId);
           },
+          subjectId: widget.subjectId,
         );
       },
     );
@@ -160,12 +170,27 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
+        actions: [
+          TextButton(
+            onPressed: _showChooseClassDialog,
+            child: Text(
+              'GRADE',
+              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            style: TextButton.styleFrom(
+              side: BorderSide(color: Colors.white, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Stack(
         children: [
           SingleChildScrollView(
@@ -175,15 +200,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
-                      side: const BorderSide(width: 2, color: Colors.deepPurple),
-                      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -198,7 +223,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               children: [
                 ReorderableListView(
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
                   onReorder: _updateQuestionOrder,
                   children: [
                     for (int index = 0; index < _questions.length; index++)
@@ -211,11 +236,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit),
+                              icon: Icon(Icons.edit),
                               onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete),
+                              icon: Icon(Icons.delete),
                               onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
                             ),
                           ],
@@ -232,18 +257,18 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               padding: const EdgeInsets.all(16.0),
               child: _questions.isNotEmpty
                   ? ElevatedButton(
-    style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: Colors.deepPurple,
-    side: const BorderSide(width: 2, color: Colors.deepPurple),
-    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(15),
-    ),
-    ),
-    onPressed: _navigateToAddQuestionScreen,
-    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-    )
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  side: BorderSide(width: 2, color: DeepPurple),
+                  padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                onPressed: _navigateToAddQuestionScreen,
+                child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+              )
                   : Container(),
             ),
           ),
@@ -255,13 +280,18 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                 onPressed: () {
                   showMenu(
                     context: context,
-                    position: const RelativeRect.fromLTRB(0.0, 0.0, 1.0, 1.0),
+                    position: RelativeRect.fromLTRB(
+                      MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
+                      MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
+                      16, // Padding from right
+                      16, // Padding from bottom
+                    ),
                     items: [
                       PopupMenuItem<int>(
                         value: 0,
                         child: TextButton(
                           onPressed: _generateAndPrintQuestionsPdf,
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(Icons.print),
                               SizedBox(width: 8),
@@ -270,12 +300,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           ),
                         ),
                       ),
-
                       PopupMenuItem<int>(
                         value: 1,
                         child: TextButton(
                           onPressed: _generateAndPrintAnswerKeyPdf,
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(Icons.print),
                               SizedBox(width: 8),
@@ -284,24 +313,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           ),
                         ),
                       ),
-                      PopupMenuItem<int>(
-                        value: 2,
-                        child: TextButton(
-                          onPressed: _showChooseClassDialog,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.grade),
-                              SizedBox(width: 8),
-                              Text('Grade'),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                     elevation: 8.0,
                   );
                 },
-                child: const Icon(Icons.menu),
+                child: Icon(Icons.print),
               ),
             ),
           ),
@@ -313,8 +329,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
+  final int subjectId;
 
-  const ChooseClassDialog({super.key, required this.onClassSelected});
+  ChooseClassDialog({required this.onClassSelected, required this.subjectId});
 
   @override
   _ChooseClassDialogState createState() => _ChooseClassDialogState();
@@ -327,11 +344,11 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   void initState() {
     super.initState();
-    _fetchClasses();
+    _fetchClassesBySubjectId();
   }
 
-  Future<void> _fetchClasses() async {
-    final data = await DatabaseHelper().queryAllClasses();
+  Future<void> _fetchClassesBySubjectId() async {
+    final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
     setState(() {
       _classes = data;
       _isLoading = false;
@@ -341,33 +358,32 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: const Text('Choose Class'),
-    content: _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : SizedBox(
-    width: double.minPositive, // Adjust the width to fit the content
-    child: ListView.builder(
-    shrinkWrap: true,
-    itemCount: _classes.length,
-    itemBuilder: (context, index) {
-    return ListTile(
-    title: Text(_classes[index]['name']),
-    onTap: () {
-    widget.onClassSelected(_classes[index]['id']);
-    },
-    );
-    },
-    ),
-    ),
-    actions: [
-    TextButton(
-    onPressed: () {
-    Navigator.of(context).pop();
-    },
-    child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-    ),
-    ],
+      title: Text('Choose Class'),
+      content: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+        width: double.minPositive, // Adjust the width to fit the content
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _classes.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_classes[index]['name']),
+              onTap: () {
+                widget.onClassSelected(_classes[index]['id']);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Cancel', style: TextStyle(fontSize: 20)),
+        ),
+      ],
     );
   }
 }
-

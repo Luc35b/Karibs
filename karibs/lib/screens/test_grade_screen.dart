@@ -9,12 +9,11 @@ class TestGradeScreen extends StatefulWidget {
   final String testTitle;
   final int testId;
 
-  const TestGradeScreen({
-    Key? key,
+  TestGradeScreen({
     required this.classId,
     required this.testTitle,
     required this.testId,
-  }) : super(key: key);
+  });
 
   @override
   _TestGradeScreenState createState() => _TestGradeScreenState();
@@ -24,10 +23,11 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   String? _className;
   List<Map<String, dynamic>> _students = [];
   List<Map<String, dynamic>> _questions = [];
+  List<Map<String, dynamic>> _categories = [];
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
-  Map<String, int> sub_scores = {};
+  Map<int, int> categoryScores = {};
   Map<int, int> questionCorrectness = {};
   Set<int> _gradedStudentIds = {};
 
@@ -48,7 +48,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   }
 
   Future<void> _fetchStudents() async {
-    List<Map<String, dynamic>> students = await DatabaseHelper().queryAllStudents(widget.classId);
+    List<Map<String, dynamic>> students = await DatabaseHelper()
+        .queryAllStudents(widget.classId);
     setState(() {
       _students = students;
       _isLoading = false;
@@ -56,32 +57,31 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   }
 
   Future<void> _fetchQuestions() async {
-    List<Map<String, dynamic>> questions = await DatabaseHelper().getQuestionsByTestId(widget.testId);
+    List<Map<String, dynamic>> questions = await DatabaseHelper()
+        .getQuestionsByTestId(widget.testId);
+    List<Map<String, dynamic>> categories = await DatabaseHelper()
+        .getCategoriesByTestId(widget.testId);
     setState(() {
       _questions = questions;
-      _initializeSubScores();
+      _categories = categories;
+      _initializeCategoryScores();
       _initializeQuestionCorrectness();
     });
   }
 
   Future<void> _fetchGradedStudents() async {
-    List<int> gradedStudentIds = await DatabaseHelper().getGradedStudents(widget.testId);
+    List<int> gradedStudentIds = await DatabaseHelper().getGradedStudents(
+        widget.testId);
     setState(() {
       _gradedStudentIds = gradedStudentIds.toSet();
     });
   }
 
-  void _initializeSubScores() {
-    sub_scores.clear();
-    for (var question in _questions) {
-      if (!sub_scores.containsKey(question['category'])) {
-        sub_scores[question['category']] = 0;
-      }
+  void _initializeCategoryScores() {
+    categoryScores.clear();
+    for (var category in _categories) {
+      categoryScores[category['id']] = 0;
     }
-  }
-
-  void _initializeQuestionMap() {
-    question_answer_map.clear();
   }
 
   void _initializeQuestionCorrectness() {
@@ -91,24 +91,24 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
-  void _markCorrect(int questionId, String category) {
+  void _markCorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == -1) {
         questionCorrectness[questionId] = 1;
-        sub_scores[category] = ((sub_scores[category])! + 1);
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + 1;
       } else if (questionCorrectness[questionId] == 0) {
         questionCorrectness[questionId] = 1;
-        sub_scores[category] = ((sub_scores[category])! + 1);
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + 1;
       }
       question_answer_map[questionId] = 1;
     });
   }
 
-  void _markIncorrect(int questionId, String category) {
+  void _markIncorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == 1) {
         questionCorrectness[questionId] = -1;
-        sub_scores[category] = ((sub_scores[category])! - 1);
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) - 1;
       }
       if (questionCorrectness[questionId] == 0) {
         questionCorrectness[questionId] = -1;
@@ -117,61 +117,31 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
-  bool _allQuestionsMarked() {
-    for (var correctness in questionCorrectness.values) {
-      if (correctness == 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  Future<void> _saveGradingResults() async {
-    if (!_allQuestionsMarked()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please mark all questions before saving.'),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-        ),
-      );
-      return;
-    }
-
-    // Calculate total score and sub-scores
+  void _saveGradingResults() async {
     int totalQuestions = _questions.length;
-    int vocabQuestions = 0;
-    int compQuestions = 0;
-    for (int i = 0; i < totalQuestions; i++) {
-      if (_questions[i]['category'] == 'Vocab') {
-        vocabQuestions++;
-      } else {
-        compQuestions++;
-      }
-    }
-    int totalCorrect = sub_scores.values.fold(0, (sum, score) => sum + score);
+    int totalCorrect = categoryScores.values.fold(
+        0, (sum, score) => sum + score);
 
     double totalScore = (totalCorrect / totalQuestions) * 100;
-    double vocabScore = (sub_scores['Vocab'] ?? 0) / vocabQuestions * 100;
-    double compScore = (sub_scores['Comprehension'] ?? 0) / compQuestions * 100;
 
-    print({
-      'student_id': _selectedStudentId!,
-      'test_id': widget.testId,
-      'total_score': totalScore,
-      'vocab_score': vocabScore,
-      'comp_score': compScore,
-    });
+    Map<int, double> categoryScoresPercentage = {};
+    for (var category in _categories) {
+      int categoryId = category['id'];
+      int categoryQuestions = _questions
+          .where((question) => question['category_id'] == categoryId)
+          .length;
+      double categoryScore = (categoryScores[categoryId] ?? 0) /
+          categoryQuestions * 100;
+      categoryScoresPercentage[categoryId] = categoryScore;
+    }
 
-    // Save scores to the database
     if (_selectedStudentId != null) {
-      await DatabaseHelper().insertStudentTest({
+      int studentTestId = await DatabaseHelper().insertStudentTest({
         'student_id': _selectedStudentId!,
         'test_id': widget.testId,
         'total_score': totalScore,
-        'vocab_score': vocabScore,
-        'comp_score': compScore,
       });
+
       await DatabaseHelper().insertReport({
         'student_id': _selectedStudentId!,
         'test_id': widget.testId,
@@ -179,43 +149,38 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         'title': widget.testTitle,
         'notes': 'Graded test for student ',
         'score': totalScore,
-        'vocab_score': vocabScore,
-        'comp_score': compScore,
       });
 
-      int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, widget.testId);
-
-      print(question_answer_map);
-
-      question_answer_map.forEach((key, value) async {
+      for (var entry in question_answer_map.entries) {
         await DatabaseHelper().insertStudentTestQuestion({
           'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value
+          'question_id': entry.key,
+          'got_correct': entry.value
         });
-        print({
-          'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value
-        });
-      });
+      }
 
-      // Immediately add the graded student to the set and refresh the state
+      for (var entry in categoryScoresPercentage.entries) {
+        await DatabaseHelper().insertStudentTestCategoryScore({
+          'student_test_id': studentTestId,
+          'category_id': entry.key,
+          'score': entry.value,
+        });
+      }
+
       setState(() {
         _gradedStudentIds.add(_selectedStudentId!);
         _selectedStudentId = null;
       });
 
-      // Show a confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Grades saved successfully'),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-          )
+        SnackBar(
+          content: Text('Grades saved successfully'),
+          duration: Duration(milliseconds: 1500),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
       );
 
-      // Notify the provider that a student has been graded
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
@@ -223,7 +188,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _goToTeacherDashboard(int classId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TeacherClassScreen(classId: classId, refresh: true)),
+      MaterialPageRoute(builder: (context) =>
+          TeacherClassScreen(classId: classId, refresh: true)),
     ).then((_) {
       _fetchClassName();
       _fetchStudents();
@@ -233,132 +199,134 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Grade Test for ${widget.testTitle}'),
-        ),
-        body: Stack(
-            children: [
-        _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-    children: [
-    if (_className != null)
-    Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Text(
-    'Grading details for class $_className and test ${widget.testTitle}',
-    style: const TextStyle(fontSize: 20),
-    ),
-    ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: DropdownButton<int>(
-          hint: const Text("Select Student"),
-          value: _selectedStudentId,
-          onChanged: (int? newValue) {
-            setState(() {
-              _selectedStudentId = newValue;
-              _initializeSubScores(); // Clear sub_scores when a new student is selected
-              _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
-              _initializeQuestionMap();
-            });
-          },
-          items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
-            return DropdownMenuItem<int>(
-              value: student['id'],
-              enabled: !_gradedStudentIds.contains(student['id']), // Disable graded students
-              child: Text(
-                student['name'],
-                style: TextStyle(
-                  color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black, // Change color based on grading status
-                ),
-              ),
-            );
-          }).toList(),
-        ),
+      appBar: AppBar(
+        title: Text('Grade Exam for ${widget.testTitle}'),
       ),
-
-      if (_selectedStudentId != null)
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-      if (_selectedStudentId != null)
-        Expanded(
-          child: ListView.builder(
-            itemCount: _questions.length,
-            itemBuilder: (context, index) {
-              int questionId = _questions[index]['id'];
-              String category = _questions[index]['category'];
-              return ListTile(
-                title: Text(_questions[index]['text']),
-                subtitle: Text(category),
-                tileColor: questionCorrectness[questionId] == 1
-                    ? Colors.green.withOpacity(0.2)
-                    : questionCorrectness[questionId] == -1
-                    ? Colors.red.withOpacity(0.2)
-                    : questionCorrectness[questionId] == 0
-                    ? Colors.grey.withOpacity(0.2)
-                    : null,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () {
-                        _markCorrect(questionId, category);
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.red),
-                      onPressed: () {
-                        _markIncorrect(questionId, category);
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-    ],
-        ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: (_selectedStudentId != null &&
-                            _questions.isNotEmpty &&
-                            _allQuestionsMarked() &&
-                            !_gradedStudentIds.contains(_selectedStudentId)) // Ensure grades don't already exist
-                            ? () {
-                          _saveGradingResults(); // Save results only if all questions are marked and grades don't exist
-                        }
-                            : null,
-                        child: const Text('Save Grade'),
-                      ),
-                      const SizedBox(width: 42), // Add some space between the buttons
-                      ElevatedButton(
-                        onPressed: () {
-                          _goToTeacherDashboard(widget.classId); // Navigate to TeacherDashboard
-                        },
-                        child: const Text('Go to Class'),
-                      ),
-                    ],
-                  ),
-                ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+        children: [
+          if (_className != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Grading details for class: $_className and exam: ${widget
+                    .testTitle}',
+                style: TextStyle(fontSize: 20),
               ),
-            ],
-        ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<int>(
+              hint: Text("Select Student"),
+              value: _selectedStudentId,
+              onChanged: (int? newValue) {
+                setState(() {
+                  _selectedStudentId = newValue;
+                  _initializeCategoryScores(); // Clear categoryScores when a new student is selected
+                  _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
+                  question_answer_map.clear();
+                });
+              },
+              items: _students.map<DropdownMenuItem<int>>((
+                  Map<String, dynamic> student) {
+                return DropdownMenuItem<int>(
+                  value: student['id'],
+                  enabled: !_gradedStudentIds.contains(student['id']),
+                  // Disable graded students
+                  child: Text(
+                    student['name'],
+                    style: TextStyle(
+                      color: _gradedStudentIds.contains(student['id']) ? Colors
+                          .grey : Colors
+                          .black, // Change color based on grading status
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          if (_selectedStudentId != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Selected Student: ${_students.firstWhere((
+                    student) => student['id'] == _selectedStudentId)['name']}',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          if (_selectedStudentId != null)
+            Expanded(
+              child: ListView.builder(
+                itemCount: _questions.length,
+                itemBuilder: (context, index) {
+                  int questionId = _questions[index]['id'];
+                  int categoryId = _questions[index]['category_id'];
+                  String categoryName = _categories.firstWhere((
+                      category) => category['id'] == categoryId)['name'];
+                  return ListTile(
+                    title: Text(_questions[index]['text']),
+                    subtitle: Text(categoryName),
+                    tileColor: questionCorrectness[questionId] == 1
+                        ? Colors.green.withOpacity(0.2)
+                        : questionCorrectness[questionId] == -1
+                        ? Colors.red.withOpacity(0.2)
+                        : questionCorrectness[questionId] == 0
+                        ? Colors.grey.withOpacity(0.2)
+                        : null,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.check, color: Colors.green),
+                          onPressed: () {
+                            _markCorrect(questionId, categoryId);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.clear, color: Colors.red),
+                          onPressed: () {
+                            _markIncorrect(questionId, categoryId);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: (_selectedStudentId != null &&
+                        _questions.isNotEmpty &&
+                        !_gradedStudentIds.contains(_selectedStudentId) &&
+                        !_questions.any((question) =>
+                        questionCorrectness[question['id']] == 0))
+                        ? () {
+                      _saveGradingResults();
+                    }
+                        : null,
+                    child: Text('Save Grade'),
+                  ),
+
+                  SizedBox(width: 42), // Add some space between the buttons
+                  ElevatedButton(
+                    onPressed: () {
+                      _goToTeacherDashboard(widget.classId);
+                    },
+                    child: Text('Go to Class'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

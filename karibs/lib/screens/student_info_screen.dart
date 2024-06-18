@@ -10,7 +10,7 @@ import 'report_detail_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
-  static const routeName = '/student_info';
+  //static const routeName = '/student_info';
 
   const StudentInfoScreen({super.key, required this.studentId});
 
@@ -20,11 +20,13 @@ class StudentInfoScreen extends StatefulWidget {
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Colors.green;
+    return Color(0xFFBBFABB);
   } else if (currScore >= 50) {
-    return const Color(0xFFe6cc00);
-  } else {
-    return Colors.red;
+    return Color(0xFFe6cc00);
+  } else if (currScore >=20) {
+    return Color(0xFFFFB68F);
+  }else {
+    return Color(0xFFFA6478);
   }
 }
 
@@ -361,10 +363,10 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
-                      side: const BorderSide(width: 1, color: Colors.deepPurple),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -418,9 +420,17 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           ),
                           margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
                           child: ListTile(
-                            title: Text(_reports[index]['title'], style: const TextStyle(fontSize: 24)),
-                            subtitle: Text(_reports[index]['notes']),
-                            trailing: Text(_reports[index]['score']?.toString() ?? '', style: const TextStyle(fontSize: 30),),
+                            title: Text(_reports[index]['title'],
+                              style: TextStyle(fontSize: 24),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+
+                            ),
+                            subtitle: Text(_reports[index]['notes'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
                           ),
                         ));
                   },

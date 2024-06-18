@@ -4,8 +4,11 @@ import 'package:karibs/database/database_helper.dart';
 class EditQuestionScreen extends StatefulWidget {
   final int questionId;
   final Function onQuestionUpdated;
+  final int subjectId;
 
-  const EditQuestionScreen({super.key, required this.questionId, required this.onQuestionUpdated});
+  //const EditQuestionScreen({super.key, required this.questionId, required this.onQuestionUpdated});
+
+  EditQuestionScreen({required this.questionId, required this.onQuestionUpdated, required this.subjectId});
 
   @override
   _EditQuestionScreenState createState() => _EditQuestionScreenState();
@@ -15,9 +18,9 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _correctAnswerController = TextEditingController(); // Controller for the correct answer
   String? _selectedType;
-  String? _selectedCategory;
-  final List<String> _questionTypes = ['multiple_choice', 'fill_in_the_blank'];
-  final List<String> _questionCategories = ['Vocab', 'Comprehension'];
+  int? _selectedCategoryId; // Changed to category ID
+  final List<String> _questionTypes = ['Multiple Choice', 'Fill in the Blank', 'Essay'];
+  List<Map<String, dynamic>> _questionCategories = []; // New list of categories
   List<TextEditingController> _choiceControllers = [];
   List<bool> _correctChoices = [];
   bool _isLoading = true;
@@ -26,6 +29,14 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   void initState() {
     super.initState();
     _loadQuestion();
+    _fetchCategories();
+  }
+
+  Future<void> _fetchCategories() async {
+    var cats = await DatabaseHelper().getCategoriesForSubject(widget.subjectId);
+    setState(() {
+      _questionCategories = cats;
+    });
   }
 
   void _loadQuestion() async {
@@ -35,7 +46,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     setState(() {
       _textController.text = question?['text'];
       _selectedType = question?['type'];
-      _selectedCategory = question?['category'];
+      _selectedCategoryId = question?['category_id']; // Changed to category ID
       if (_selectedType == 'multiple_choice') {
         _choiceControllers = choices.map((choice) {
           var controller = TextEditingController(text: choice['choice_text']);
@@ -50,11 +61,11 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   }
 
   void _updateQuestion() async {
-    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategory != null) {
+    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null) {
       await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,
-        'category': _selectedCategory,
+        'category_id': _selectedCategoryId,
       });
 
       await DatabaseHelper().deleteQuestionChoices(widget.questionId);
@@ -82,7 +93,8 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),),
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
       );
     }
   }
@@ -99,6 +111,45 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       _choiceControllers.removeAt(index);
       _correctChoices.removeAt(index);
     });
+  }
+
+  void _showAddCategoryDialog() {
+    final TextEditingController categoryNameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add New Category'),
+          content: TextField(
+            controller: categoryNameController,
+            decoration: InputDecoration(labelText: 'Category Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (categoryNameController.text.isNotEmpty) {
+                  _addCategory(categoryNameController.text);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Add', style: TextStyle(fontSize: 20)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addCategory(String categoryName) async {
+    await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
+    _fetchCategories();
   }
 
   @override
@@ -136,20 +187,30 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                     },
                     decoration: const InputDecoration(labelText: 'Question Type'),
                   ),
-                  DropdownButtonFormField<String>(
-                    value: _selectedCategory,
-                    items: _questionCategories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
-                    decoration: const InputDecoration(labelText: 'Question Category'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int>(
+                          value: _selectedCategoryId,
+                          items: _questionCategories.map((category) {
+                            return DropdownMenuItem<int>(
+                              value: category['id'],
+                              child: Text(category['name']),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCategoryId = value;
+                            });
+                          },
+                          decoration: InputDecoration(labelText: 'Question Category'),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: _showAddCategoryDialog,
+                      ),
+                    ],
                   ),
                   if (_selectedType == 'multiple_choice')
                     Column(

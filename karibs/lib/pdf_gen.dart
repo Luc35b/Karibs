@@ -25,10 +25,10 @@ class PdfGenerator {
                   children: [
                     pw.Text('Q: ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
                     pw.SizedBox(height: 10),
-                    if (question['type'] != 'fill_in_the_blank' && question['choices'] != null)
+                    if (question['type'] != 'Fill in the Blank' && question['choices'] != null)
                       ...question['choices'].map<pw.Widget>((choice) {
                         return pw.Text(
-                          'A: ${choice['choice_text']}',
+                          'A. ${choice['choice_text']}',
                           style: const pw.TextStyle(fontSize: 16),
                         );
                       }).toList(),

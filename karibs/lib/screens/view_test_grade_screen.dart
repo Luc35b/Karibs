@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/screens/regrade_test_screen.dart';
 import '../database/database_helper.dart';
+import 'package:karibs/main.dart';
+import 'package:karibs/screens/regrade_test_screen.dart';
 
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
 
-  const ViewTestGradeScreen({super.key, required this.reportId});
+  ViewTestGradeScreen({required this.reportId});
 
   @override
   _ViewTestGradeScreenState createState() => _ViewTestGradeScreenState();
@@ -55,11 +56,14 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test Grade Details'),
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
+        title: Text('Exam Grade Details'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -70,13 +74,13 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: EdgeInsets.all(10.0),
             color: Colors.grey[200],
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.check, color: Colors.green),
                 SizedBox(width: 8),
@@ -94,7 +98,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
               itemBuilder: (context, index) {
                 final question = _questions[index];
                 return Card(
-                  margin: const EdgeInsets.all(10.0),
+                  margin: EdgeInsets.all(10.0),
                   color: question['got_correct'] == 1 ? Colors.green[100] : Colors.red[100],
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -103,14 +107,14 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                       children: [
                         Text(
                           question['question_text'],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text('Category: ${question['question_category']}'),
-                        const Divider(),
-                        const Text(
+                        Divider(),
+                        Text(
                           'Choices:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -122,7 +126,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                               color: choice['is_correct'] == 1 ? Colors.green : Colors.red,
                             ),
                           );
-                        }),
+                        }).toList(),
                       ],
                     ),
                   ),

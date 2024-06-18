@@ -30,130 +30,155 @@ class DatabaseHelper {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE classes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )
-    ''');
+    CREATE TABLE classes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      subject_id INTEGER,
+      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        status TEXT,
-        average_score DOUBLE,
-        class_id INTEGER NOT NULL,
-        FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      status TEXT,
+      average_score DOUBLE,
+      class_id INTEGER NOT NULL,
+      FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE reports (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        title TEXT NOT NULL,
-        notes TEXT,
-        score DOUBLE,
-        vocab_score DOUBLE,
-        comp_score DOUBLE,
-        test_id INTEGER,
-        student_id INTEGER NOT NULL,
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
-        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE subjects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE tests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        "order" INTEGER
-      )
-    ''');
+    CREATE TABLE categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      subject_id INTEGER NOT NULL,
+      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE questions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        text TEXT NOT NULL,
-        type TEXT NOT NULL,
-        category TEXT NOT NULL,
-        test_id INTEGER NOT NULL,
-        "order" INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      title TEXT NOT NULL,
+      notes TEXT,
+      score DOUBLE,
+      test_id INTEGER,
+      student_id INTEGER NOT NULL,
+      FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+      FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE question_choices (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        question_id INTEGER NOT NULL,
-        choice_text TEXT NOT NULL,
-        is_correct BOOLEAN NOT NULL,
-        FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE tests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      "order" INTEGER,
+      subject_id INTEGER NOT NULL,
+      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+      
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE student_tests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id INTEGER NOT NULL,
-        test_id INTEGER NOT NULL,
-        total_score DOUBLE,
-        vocab_score DOUBLE,
-        comp_score DOUBLE,
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
-        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      type TEXT NOT NULL,
+      category_id INTEGER NOT NULL,
+      test_id INTEGER NOT NULL,
+      "order" INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+      FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+    )
+  ''');
     await db.execute('''
-      CREATE TABLE student_test_question (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_test_id INTEGER NOT NULL, 
-        question_id INTEGER NOT NULL,
-        got_correct INTEGER NOT NULL,
-        FOREIGN KEY (student_test_id) REFERENCES student_tests (id) ON DELETE CASCADE,
-        FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
-      )
-    ''');
+    CREATE TABLE question_choices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      question_id INTEGER NOT NULL,
+      choice_text TEXT NOT NULL,
+      is_correct BOOLEAN NOT NULL,
+      FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
+    )
+  ''');
+    await db.execute('''
+    CREATE TABLE student_tests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      test_id INTEGER NOT NULL,
+      total_score DOUBLE,
+      FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+      FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+    )
+  ''');
+    await db.execute('''
+    CREATE TABLE student_test_question (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_test_id INTEGER NOT NULL, 
+      question_id INTEGER NOT NULL,
+      got_correct INTEGER NOT NULL,
+      FOREIGN KEY (student_test_id) REFERENCES student_tests (id) ON DELETE CASCADE,
+      FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
+    )
+  ''');
+    await db.execute('''
+    CREATE TABLE student_test_category_scores (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_test_id INTEGER NOT NULL,
+      category_id INTEGER NOT NULL,
+      score DOUBLE,
+      FOREIGN KEY (student_test_id) REFERENCES student_tests (id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+    )
+  ''');
   }
+
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
       await db.execute('''
-        CREATE TABLE tests (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL
-          "order" INTEGER
-        )
-      ''');
+      CREATE TABLE subjects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+      )
+    ''');
       await db.execute('''
-        CREATE TABLE questions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT NOT NULL,
-          type TEXT NOT NULL,
-          category TEXT NOT NULL,
-          test_id INTEGER NOT NULL,
-          "order" INTEGER NOT NULL DEFAULT 0,
-          FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-        )
-      ''');
+      CREATE TABLE categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        subject_id INTEGER NOT NULL,
+        FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+      )
+    ''');
       await db.execute('''
-        CREATE TABLE question_choices (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          question_id INTEGER NOT NULL,
-          choice_text TEXT NOT NULL,
-          is_correct BOOLEAN NOT NULL,
-          FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
-        )
-      ''');
+      CREATE TABLE questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT NOT NULL,
+        type TEXT NOT NULL,
+        category_id INTEGER NOT NULL,
+        test_id INTEGER NOT NULL,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+      )
+    ''');
       await db.execute('''
-        CREATE TABLE student_tests (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          student_id INTEGER NOT NULL,
-          test_id INTEGER NOT NULL,
-          total_score DOUBLE,
-          vocab_score DOUBLE,
-          comp_score DOUBLE,
-          FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
-          FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-        )
-      ''');
+      CREATE TABLE student_test_category_scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_test_id INTEGER NOT NULL,
+        category_id INTEGER NOT NULL,
+        score DOUBLE,
+        FOREIGN KEY (student_test_id) REFERENCES student_tests (id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+      )
+    ''');
     }
   }
+
 
   Future<void> deleteDatabaseFile() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -210,6 +235,109 @@ class DatabaseHelper {
     Database db = await database;
     return await db.insert('student_test_question', row);
   }
+
+  Future<int> insertSubject(Map<String, dynamic> subject) async {
+    final db = await database;
+    return await db.insert('subjects', subject);
+  }
+
+  Future<int> insertCategory(Map<String, dynamic> category) async {
+    final db = await database;
+    return await db.insert('categories', category);
+  }
+
+  Future<int> insertStudentTestCategoryScore(Map<String, dynamic> score) async {
+    final db = await database;
+    return await db.insert('student_test_category_scores', score);
+  }
+
+
+  Future<List<Map<String, dynamic>>> queryAllClassesWithSubjects() async {
+    final db = await database;
+    return await db.rawQuery('''
+      SELECT classes.id, classes.name as name, subjects.name as subjectName
+      FROM classes
+      INNER JOIN subjects ON classes.subject_id = subjects.id
+    ''');
+  }
+  
+  // Function to get the category name from a question ID
+  Future<String?> getCategoryNameFromQuestion(int questionId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT c.name FROM categories c
+      INNER JOIN questions q ON c.id = q.category_id
+      WHERE q.id = ?
+    ''', [questionId]);
+
+    if (result.isNotEmpty) {
+      return result.first['name'] as String?;
+    }
+    return null;
+  }
+
+
+  Future<int?> getSubjectId(String subjectName) async {
+    final db = await database;
+
+    List<Map<String,dynamic>> result = await db.query(
+      'subjects',
+      columns:['id'],
+      where: 'name = ?',
+      whereArgs: [subjectName],
+    );
+    if (result.isNotEmpty) {
+      return result.first['id'] as int;
+    }
+    return null;
+
+  }
+
+  Future<int?> getCategoryId(String categoryName) async {
+    final db = await database;
+
+    List<Map<String,dynamic>> result = await db.query(
+      'categories',
+      columns:['id'],
+      where: 'name = ?',
+      whereArgs: [categoryName],
+    );
+    if (result.isNotEmpty) {
+      return result.first['id'] as int;
+    }
+    return null;
+
+  }
+
+
+
+  Future<List<Map<String, dynamic>>> getCategoriesForSubject(int subjectId) async {
+    final db = await database;
+    return await db.query(
+      'categories',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getQuestionsForTest(int testId) async {
+    final db = await database;
+    return await db.query(
+      'questions',
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getStudentTestCategoryScores(int studentTestId) async {
+    final db = await database;
+    return await db.query(
+      'student_test_category_scores',
+      where: 'student_test_id = ?',
+      whereArgs: [studentTestId],
+    );
+  }
+
 
   Future<List<Map<String, dynamic>>> getQuestionsForStudentTest(int studentId, int testId) async {
     final db = await database;
@@ -486,6 +614,11 @@ class DatabaseHelper {
     );
   }
 
+  Future<List<Map<String, dynamic>>> queryAllSubjects() async {
+    final db = await database;
+    return await db.query('subjects');
+  }
+
   Future<int> deleteQuestion(int questionId) async {
     Database db = await database;
     await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]); // Delete choices first
@@ -648,6 +781,48 @@ class DatabaseHelper {
       where: 'test_id = ?',
       whereArgs: [testId],
     );
+  }
+
+
+  Future<List<Map<String, dynamic>>> getCategoriesByTestId(int testId) async {
+    Database db = await database;
+
+    // First, get the subject ID from the test ID
+    List<Map<String, dynamic>> testResults = await db.query(
+      'tests',
+      columns: ['subject_id'],
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+
+    if (testResults.isEmpty) {
+      return []; // Return an empty list if the test ID is not found
+    }
+
+    int subjectId = testResults.first['subject_id'];
+
+    // Now, get the categories related to the subject ID
+    List<Map<String, dynamic>> categoryResults = await db.query(
+      'categories',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    return categoryResults;
+  }
+
+  // Function to get all classes with a specific subject ID
+  Future<List<Map<String, dynamic>>> getClassesBySubjectId(int subjectId) async {
+    Database db = await database;
+
+    // Query to get classes with the specific subject ID
+    List<Map<String, dynamic>> classResults = await db.query(
+      'classes',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    return classResults;
   }
 
 

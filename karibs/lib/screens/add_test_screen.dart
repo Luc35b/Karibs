@@ -31,7 +31,7 @@ class _AddTestScreenState extends State<AddTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Test'),
+        title: Text('Add New Exam'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,7 +44,7 @@ class _AddTestScreenState extends State<AddTestScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _addTest,
-              child: const Text('Add Test'),
+              child: Text('Add Exam'),
             ),
           ],
         ),

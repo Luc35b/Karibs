@@ -20,15 +20,25 @@ class _AddReportScreenState extends State<AddReportScreen> {
   void _addReport() async {
     String scoreText = scoreController.text;
     double? score = scoreText.isNotEmpty ? double.tryParse(scoreText) : null;
-    if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
+    if (titleController.text.isNotEmpty) {
       if( score != null && (score < 0 || score > 100)){
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Score must be a number between 0 and 100'),
+          SnackBar(
+            content: Text('Score must be a number between 0 and 100'),
+            duration: Duration(seconds: 2),
           ),
         );
         return;
       }
-
+      if(notesController.text.isEmpty && scoreController.text.isEmpty){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Report must have either notes or a exam score'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
 
       await DatabaseHelper().insertReport({
         'date': DateTime.now().toIso8601String(),
@@ -72,7 +82,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
               decoration: const InputDecoration(labelText: 'Score (optional)'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
               ],
             ),
             const SizedBox(height: 16),

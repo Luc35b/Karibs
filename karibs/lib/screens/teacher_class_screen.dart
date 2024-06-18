@@ -22,7 +22,9 @@ Color getStatusColor(String currStatus) {
     case 'Doing well':
       return Colors.green;
     case 'Doing okay':
-      return const Color(0xFFe6cc00);
+      return Color(0xFFe6cc00);
+    case 'Doing poorly':
+      return Colors.orange;
     case 'Needs help':
       return Colors.red;
     case 'No status':
@@ -37,7 +39,9 @@ Color getStatusColorFill(String currStatus) {
     case 'Doing well':
       return const Color(0xFFBBFABB);
     case 'Doing okay':
-      return const Color(0xFFFAECBB);
+      return Color(0xFFFAECBB);
+    case 'Doing poorly':
+      return Color(0xFFFFB68F);
     case 'Needs help':
       return const Color(0xFFFABBBB);
     case 'No status':
@@ -52,6 +56,8 @@ String changeStatus(double avgScore) {
     return 'Doing well';
   } else if (avgScore >= 50) {
     return 'Doing okay';
+  } else if(avgScore >= 20) {
+    return 'Doing poorly';
   } else {
     return 'Needs help';
   }
@@ -60,6 +66,7 @@ String changeStatus(double avgScore) {
 class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _students = [];
   List<Map<String, dynamic>> _filteredStudents = [];
+  List<Map<String, dynamic>> _originalStudents = [];
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
@@ -98,7 +105,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     data = await DatabaseHelper().queryAllStudents(widget.classId);
     setState(() {
       _students = data;
-      _filteredStudents = List.from(data);
+      _originalStudents = List<Map<String, dynamic>>.from(_students);
+      _filteredStudents = List<Map<String, dynamic>>.from(_students);
       _isLoading = false;
     });
   }
@@ -114,7 +122,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _showAddStudentDialog() {
     final TextEditingController studentNameController = TextEditingController();
-
+    final FocusNode focusNode = FocusNode();
     showDialog(
       context: context,
       builder: (context) {
@@ -122,7 +130,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           title: const Text('Add New Student'),
           content: TextField(
             controller: studentNameController,
-            decoration: const InputDecoration(labelText: 'Student Name'),
+            focusNode: focusNode,
+            autofocus: true,
+            decoration: InputDecoration(labelText: 'Student Name'),
           ),
           actions: [
             TextButton(
@@ -143,7 +153,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           ],
         );
       },
-    );
+    ).then((_) {
+      focusNode.dispose();
+    });
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
@@ -161,20 +176,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _filterStudents(String query) {
     setState(() {
-      List<Map<String, dynamic>> filteredList = _students;
+      _filteredStudents = List<Map<String, dynamic>>.from(_students); // Start with a copy of _students
+
       if (_selectedStatus != 'All') {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['status'] == _selectedStatus;
         }).toList();
       }
+
       if (query.isNotEmpty) {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['name'].toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
-      _filteredStudents = filteredList;
     });
   }
+
 
   void _filterByStatus(String status) {
     setState(() {
@@ -195,6 +212,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               'All',
               'Doing well',
               'Doing okay',
+              'Doing poorly',
               'Needs help',
               'No status'
             ].map((String value) {
@@ -237,6 +255,92 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
   }
 
+  void _sortStudents(String criteria) {
+    setState(() {
+      if (criteria == 'Name') {
+        _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
+      } else if (criteria == 'Low Score') {
+        _filteredStudents.sort((a, b) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return 1; // a is considered greater (null or 'No status' is considered greater)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return -1; // b is considered greater (null or 'No status' is considered greater)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
+      else if (criteria == 'High Score') {
+        _filteredStudents.sort((b, a) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return -1; // a is considered lesser (null or 'No status' is considered lesser)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return 1; // b is considered lesser (null or 'No status' is considered lesser)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
+    });
+  }
+
+  void _showSortOptionsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Sort by'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text('Name'),
+                value: 'Name',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Low Score'),
+                value: 'Low Score',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('High Score'),
+                value: 'High Score',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StudentGradingProvider>(
@@ -251,6 +355,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           title: const Text('Teacher Class Screen'),
           backgroundColor: DeepPurple,
           foregroundColor: White,
+          leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+          );
+        },
+      ),
     ),
     body: _isLoading
     ? const Center(child: CircularProgressIndicator())
@@ -304,7 +417,14 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     ),
     ),
-    const SizedBox(width: 8),
+    SizedBox(width: 8),
+      IconButton(
+        icon: Icon(
+          Icons.build_rounded,
+          color: White,
+        ),
+        onPressed: _showSortOptionsDialog,
+      ),
     ],
     ),
     ),
@@ -341,53 +461,55 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     SizedBox(
     width: 85,
     child: Column(
-    children: [
-    Row(
-    children: [
-    const SizedBox(width: 15),
-      Container(
-        width: 45,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-              color: getStatusColor(
-                  _filteredStudents[index]
-                  ['status']),
-              width: 2),
-          color:
-          getStatusColorFill(
-              _filteredStudents[index]
-              ['status']),
-        ),
-        child: Center(
-          child: Text(
-            '${_filteredStudents[index]['average_score']
-                ?.round() ?? ''}',
-            style: const TextStyle(
-              color: DeepPurple,
-              fontWeight: FontWeight.bold,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: getStatusColor(
+                    _filteredStudents[index]
+                    ['status']),
+                width: 2),
+            color:
+            getStatusColorFill(
+                _filteredStudents[index]
+                ['status']),
+          ),
+          child: Center(
+            child: Text(
+              '${_filteredStudents[index]['average_score']
+                  ?.round() ?? ''}',
+              style: TextStyle(
+                color: DeepPurple,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
-      ),
-    ],
-    ),
-      Text(
-          _filteredStudents[index]['status'] ??
-              'No status'
-      ),
-    ],
-    ),
-    ),
-      const SizedBox(width: 25),
-      Text(
-        '${_filteredStudents[index]['name']}',
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 30,
+        SizedBox(height: 5),
+        FittedBox(
+          child: Text(
+              _filteredStudents[index]['status'] ?? 'No status',
+              textAlign: TextAlign.center,
+          ),
         ),
-      ), //Name
+      ],
+    ),
+    ),
+      SizedBox(width: 40),
+      Expanded(
+        child: Text(
+          '${_filteredStudents[index]['name']}',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     ],
     ),
       onTap: () {
