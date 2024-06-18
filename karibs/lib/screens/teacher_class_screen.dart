@@ -22,6 +22,8 @@ Color getStatusColor(String currStatus) {
       return Colors.green;
     case 'Doing okay':
       return Color(0xFFe6cc00);
+    case 'Doing poorly':
+      return Colors.orange;
     case 'Needs help':
       return Colors.red;
     case 'No status':
@@ -37,6 +39,8 @@ Color getStatusColorFill(String currStatus) {
       return Color(0xFFBBFABB);
     case 'Doing okay':
       return Color(0xFFFAECBB);
+    case 'Doing poorly':
+      return Color(0xFFFFB68F);
     case 'Needs help':
       return Color(0xFFFABBBB);
     case 'No status':
@@ -51,6 +55,8 @@ String changeStatus(double avgScore) {
     return 'Doing well';
   } else if (avgScore >= 50) {
     return 'Doing okay';
+  } else if(avgScore >= 20) {
+    return 'Doing poorly';
   } else {
     return 'Needs help';
   }
@@ -113,7 +119,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _showAddStudentDialog() {
     final TextEditingController studentNameController = TextEditingController();
-
+    final FocusNode focusNode = FocusNode();
     showDialog(
       context: context,
       builder: (context) {
@@ -121,6 +127,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           title: Text('Add New Student'),
           content: TextField(
             controller: studentNameController,
+            focusNode: focusNode,
+            autofocus: true,
             decoration: InputDecoration(labelText: 'Student Name'),
           ),
           actions: [
@@ -142,7 +150,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           ],
         );
       },
-    );
+    ).then((_) {
+      focusNode.dispose();
+    });
+    Future.delayed(Duration(milliseconds: 100), () {
+      focusNode.requestFocus();
+    });
   }
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
@@ -194,6 +207,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               'All',
               'Doing well',
               'Doing okay',
+              'Doing poorly',
               'Needs help',
               'No status'
             ].map((String value) {
@@ -340,53 +354,55 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     SizedBox(
     width: 85,
     child: Column(
-    children: [
-    Row(
-    children: [
-    SizedBox(width: 15),
-      Container(
-        width: 45,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-              color: getStatusColor(
-                  _filteredStudents[index]
-                  ['status']),
-              width: 2),
-          color:
-          getStatusColorFill(
-              _filteredStudents[index]
-              ['status']),
-        ),
-        child: Center(
-          child: Text(
-            '${_filteredStudents[index]['average_score']
-                ?.round() ?? ''}',
-            style: TextStyle(
-              color: DeepPurple,
-              fontWeight: FontWeight.bold,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: getStatusColor(
+                    _filteredStudents[index]
+                    ['status']),
+                width: 2),
+            color:
+            getStatusColorFill(
+                _filteredStudents[index]
+                ['status']),
+          ),
+          child: Center(
+            child: Text(
+              '${_filteredStudents[index]['average_score']
+                  ?.round() ?? ''}',
+              style: TextStyle(
+                color: DeepPurple,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
-      ),
-    ],
-    ),
-      Text(
-          _filteredStudents[index]['status'] ??
-              'No status'
-      ),
-    ],
-    ),
-    ),
-      SizedBox(width: 25),
-      Text(
-        '${_filteredStudents[index]['name']}',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 30,
+        SizedBox(height: 5),
+        FittedBox(
+          child: Text(
+              _filteredStudents[index]['status'] ?? 'No status',
+              textAlign: TextAlign.center,
+          ),
         ),
-      ), //Name
+      ],
+    ),
+    ),
+      SizedBox(width: 40),
+      Expanded(
+        child: Text(
+          '${_filteredStudents[index]['name']}',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     ],
     ),
       onTap: () {

@@ -33,7 +33,7 @@ class DatabaseHelper {
     CREATE TABLE classes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      subject_id INTEGER NOT NULL,
+      subject_id INTEGER,
       FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
     )
   ''');
@@ -78,7 +78,10 @@ class DatabaseHelper {
     CREATE TABLE tests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
-      "order" INTEGER
+      "order" INTEGER,
+      subject_id INTEGER NOT NULL,
+      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+      
     )
   ''');
     await db.execute('''
@@ -248,6 +251,7 @@ class DatabaseHelper {
     return await db.insert('student_test_category_scores', score);
   }
 
+
   Future<List<Map<String, dynamic>>> queryAllClassesWithSubjects() async {
     final db = await database;
     return await db.rawQuery('''
@@ -256,6 +260,22 @@ class DatabaseHelper {
       INNER JOIN subjects ON classes.subject_id = subjects.id
     ''');
   }
+  
+  // Function to get the category name from a question ID
+  Future<String?> getCategoryNameFromQuestion(int questionId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT c.name FROM categories c
+      INNER JOIN questions q ON c.id = q.category_id
+      WHERE q.id = ?
+    ''', [questionId]);
+
+    if (result.isNotEmpty) {
+      return result.first['name'] as String?;
+    }
+    return null;
+  }
+   
 
   Future<List<Map<String, dynamic>>> getCategoriesForSubject(int subjectId) async {
     final db = await database;
