@@ -350,8 +350,16 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           ),
                           margin: EdgeInsets.only(bottom: 8), // Margin between boxes
                           child: ListTile(
-                            title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
-                            subtitle: Text(_reports[index]['notes']),
+                            title: Text(_reports[index]['title'],
+                              style: TextStyle(fontSize: 24),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+
+                            ),
+                            subtitle: Text(_reports[index]['notes'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
                           ),
                         ));

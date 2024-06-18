@@ -345,53 +345,55 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     SizedBox(
     width: 85,
     child: Column(
-    children: [
-    Row(
-    children: [
-    SizedBox(width: 15),
-      Container(
-        width: 45,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-              color: getStatusColor(
-                  _filteredStudents[index]
-                  ['status']),
-              width: 2),
-          color:
-          getStatusColorFill(
-              _filteredStudents[index]
-              ['status']),
-        ),
-        child: Center(
-          child: Text(
-            '${_filteredStudents[index]['average_score']
-                ?.round() ?? ''}',
-            style: TextStyle(
-              color: DeepPurple,
-              fontWeight: FontWeight.bold,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: getStatusColor(
+                    _filteredStudents[index]
+                    ['status']),
+                width: 2),
+            color:
+            getStatusColorFill(
+                _filteredStudents[index]
+                ['status']),
+          ),
+          child: Center(
+            child: Text(
+              '${_filteredStudents[index]['average_score']
+                  ?.round() ?? ''}',
+              style: TextStyle(
+                color: DeepPurple,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
-      ),
-    ],
-    ),
-      Text(
-          _filteredStudents[index]['status'] ??
-              'No status'
-      ),
-    ],
-    ),
-    ),
-      SizedBox(width: 25),
-      Text(
-        '${_filteredStudents[index]['name']}',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 30,
+        SizedBox(height: 5),
+        FittedBox(
+          child: Text(
+              _filteredStudents[index]['status'] ?? 'No status',
+              textAlign: TextAlign.center,
+          ),
         ),
-      ), //Name
+      ],
+    ),
+    ),
+      SizedBox(width: 40),
+      Expanded(
+        child: Text(
+          '${_filteredStudents[index]['name']}',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     ],
     ),
       onTap: () {
