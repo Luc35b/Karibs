@@ -537,6 +537,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     _classes[index]['name'],
                                     style: TextStyle(fontSize: 32),
                                   ),
+                                  subtitle: Text(
+                                    _classes[index]['subjectName'],
+                                    style: TextStyle(fontSize: 20),
+                                  ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [

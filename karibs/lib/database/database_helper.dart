@@ -293,6 +293,22 @@ class DatabaseHelper {
 
   }
 
+  Future<int?> getCategoryId(String categoryName) async {
+    final db = await database;
+
+    List<Map<String,dynamic>> result = await db.query(
+      'categories',
+      columns:['id'],
+      where: 'name = ?',
+      whereArgs: [categoryName],
+    );
+    if (result.isNotEmpty) {
+      return result.first['id'] as int;
+    }
+    return null;
+
+  }
+
 
 
   Future<List<Map<String, dynamic>>> getCategoriesForSubject(int subjectId) async {
@@ -686,6 +702,48 @@ class DatabaseHelper {
       where: 'test_id = ?',
       whereArgs: [testId],
     );
+  }
+
+
+  Future<List<Map<String, dynamic>>> getCategoriesByTestId(int testId) async {
+    Database db = await database;
+
+    // First, get the subject ID from the test ID
+    List<Map<String, dynamic>> testResults = await db.query(
+      'tests',
+      columns: ['subject_id'],
+      where: 'id = ?',
+      whereArgs: [testId],
+    );
+
+    if (testResults.isEmpty) {
+      return []; // Return an empty list if the test ID is not found
+    }
+
+    int subjectId = testResults.first['subject_id'];
+
+    // Now, get the categories related to the subject ID
+    List<Map<String, dynamic>> categoryResults = await db.query(
+      'categories',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    return categoryResults;
+  }
+
+  // Function to get all classes with a specific subject ID
+  Future<List<Map<String, dynamic>>> getClassesBySubjectId(int subjectId) async {
+    Database db = await database;
+
+    // Query to get classes with the specific subject ID
+    List<Map<String, dynamic>> classResults = await db.query(
+      'classes',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    return classResults;
   }
 
 

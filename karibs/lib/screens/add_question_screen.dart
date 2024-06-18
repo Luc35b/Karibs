@@ -129,9 +129,14 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (categoryNameController.text.isNotEmpty) {
                   _addCategory(categoryNameController.text);
+                  int? id = await DatabaseHelper().getCategoryId(categoryNameController.text);
+                  setState(() {
+                    _selectedCategoryId = id;
+                  });
+
                   Navigator.of(context).pop();
                 }
               },
