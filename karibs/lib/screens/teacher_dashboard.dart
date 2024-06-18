@@ -67,19 +67,58 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   void _showAddClassDialog() {
+    String? selectedCategory; // Nullable string
+
+    TextEditingController customCategoryController = TextEditingController();
+
+    List<String> categories = [
+      'Math',
+      'Science',
+      'History',
+      'Literature',
+      'Custom', // Placeholder for custom category
+    ];
     final TextEditingController classNameController = TextEditingController();
     final FocusNode focusNode = FocusNode();
+
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('Add New Class'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue;
+                  });
+                  if (newValue == 'Custom') {
+                    customCategoryController.clear(); // Clear text field if custom category selected
+                  }
+                },
+                items: categories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+              ),
+              if (selectedCategory == 'Custom')
+                TextFormField(
+                  controller: customCategoryController,
+                  decoration: InputDecoration(labelText: 'Enter custom category'),
+                ),
+            ],
           content: TextField(
             controller: classNameController,
             focusNode: focusNode,
             autofocus: true,
             decoration: InputDecoration(labelText: 'Class Name'),
+
           ),
           actions: [
             TextButton(
@@ -90,10 +129,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () {
-                if (classNameController.text.isNotEmpty) {
-                  _addClass(classNameController.text);
-                  Navigator.of(context).pop();
+                String categoryToAdd = selectedCategory ?? ''; // Use null-aware operator to handle null
+                if (selectedCategory == 'Custom') {
+                  categoryToAdd = customCategoryController.text.trim();
+                  if (categoryToAdd.isEmpty) {
+                    // Optional: Show error or handle empty custom category
+                    return;
+                  }
                 }
+                // Add logic to add the class with the selected category
+                _addClass(categoryToAdd);
+                Navigator.of(context).pop();
               },
               child: Text('Add'),
             ),
@@ -108,6 +154,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       focusNode.requestFocus();
     });
   }
+
+
 
   void _showEditClassDialog(int classId, String currentClassName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
@@ -342,7 +390,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               ),
             ),
             child: Text(
-              '  MANAGE TESTS  ',
+              '  MANAGE EXAMS  ',
               style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
             ),
           ),

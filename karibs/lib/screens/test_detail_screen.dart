@@ -11,8 +11,9 @@ import 'package:karibs/main.dart';
 class TestDetailScreen extends StatefulWidget {
   final int testId;
   final String testTitle;
+  final int subjectId;
 
-  TestDetailScreen({required this.testId, required this.testTitle});
+  TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
 
   @override
   _TestDetailScreenState createState() => _TestDetailScreenState();
@@ -42,6 +43,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       MaterialPageRoute(
         builder: (context) => AddQuestionScreen(
           testId: widget.testId,
+          subjectId: widget.subjectId,
           onQuestionAdded: _fetchQuestions,
         ),
       ),
@@ -52,7 +54,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailScreen(questionId: questionId),
+        builder: (context) => QuestionDetailScreen(
+            questionId: questionId,
+            subjectId: widget.subjectId,
+        )
       ),
     );
   }
@@ -64,6 +69,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         builder: (context) => EditQuestionScreen(
           questionId: questionId,
           onQuestionUpdated: _fetchQuestions,
+          subjectId: widget.subjectId,
         ),
       ),
     );
@@ -161,8 +167,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
       ),
       body: _isLoading
@@ -181,9 +187,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                   SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
-                      side: BorderSide(width: 2, color: Colors.deepPurple),
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      side: BorderSide(width: 2, color: DeepPurple),
                       padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -234,9 +240,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: _questions.isNotEmpty
                   ? ElevatedButton(
     style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: Colors.deepPurple,
-    side: BorderSide(width: 2, color: Colors.deepPurple),
+    backgroundColor: White,
+    foregroundColor: DeepPurple,
+    side: BorderSide(width: 2, color: DeepPurple),
     padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
     shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(15),

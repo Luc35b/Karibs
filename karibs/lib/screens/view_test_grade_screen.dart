@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
+import 'package:karibs/main.dart';
 
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
@@ -46,7 +47,9 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test Grade Details'),
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
+        title: Text('Exam Grade Details'),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

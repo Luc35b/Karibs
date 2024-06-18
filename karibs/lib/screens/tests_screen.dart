@@ -5,7 +5,6 @@ import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class TestsScreen extends StatefulWidget {
   @override
   _TestsScreenState createState() => _TestsScreenState();
@@ -14,12 +13,16 @@ class TestsScreen extends StatefulWidget {
 class _TestsScreenState extends State<TestsScreen> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   List<Map<String, dynamic>> _tests = [];
+  List<Map<String, dynamic>> _subjects = [];
   bool _isLoading = true;
+  String? _testName; // To retain the test name
+  int? _selectedSubjectId; // To retain the selected subject
 
   @override
   void initState() {
     super.initState();
     _fetchTests();
+    _fetchSubjects();
   }
 
   Future<void> _fetchTests() async {
@@ -31,11 +34,19 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
-  void _addTest(String testName) async {
+  Future<void> _fetchSubjects() async {
+    final dbHelper = DatabaseHelper();
+    final data = await dbHelper.queryAllSubjects();
+    setState(() {
+      _subjects = List<Map<String, dynamic>>.from(data);
+    });
+  }
+
+  void _addTest(String testName, int subjectId) async {
     if (_tests.any((test) => test['title'] == testName)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
-          content: Text('Test with this name already exists. Please choose a different name.'),
+          content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
         ),
@@ -43,28 +54,100 @@ class _TestsScreenState extends State<TestsScreen> {
       return;
     }
 
-    await DatabaseHelper().insertTest({'title': testName});
+    await DatabaseHelper().insertTest({'title': testName, 'subject_id': subjectId});
     _fetchTests();
   }
 
-  void _showAddTestDialog() {
-    final TextEditingController testNameController = TextEditingController();
+
+  void _showAddTestDialog({String? testName, int? subjectId}) {
+
+    final TextEditingController testNameController = TextEditingController(text: testName);
+    int? selectedSubjectId = subjectId;
     FocusNode focusNode = FocusNode();
 
     showDialog(
       context: context,
       builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Add New Exam'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: testNameController,
+                    decoration: InputDecoration(labelText: 'Exam Title'),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<int>(
+                          hint: Text('Select Subject'),
+                          value: selectedSubjectId,
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              selectedSubjectId = newValue;
+                            });
+                          }
+                          ,
+                          items: _subjects.map<DropdownMenuItem<int>>((subject) {
+                            return DropdownMenuItem<int>(
+                              value: subject['id'],
+                              child: Text(subject['name']),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {
+                          _testName = testNameController.text;
+                          _selectedSubjectId = selectedSubjectId;
+                          Navigator.pop(context);
+                          _showAddSubjectDialog();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (testNameController.text.isNotEmpty && selectedSubjectId != null) {
+                      _addTest(testNameController.text, selectedSubjectId!);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Add'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showAddSubjectDialog() {
+    final TextEditingController subjectNameController = TextEditingController();
+
+
+    showDialog(
+      context: context,
+      builder: (context) {
         return AlertDialog(
-          title: Text('Add New Test'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return TextField(
-                controller: testNameController,
-                focusNode: focusNode,
-                autofocus: true,
-                decoration: InputDecoration(labelText: 'Test Title'),
-              );
-            },
+          title: Text('Add New Subject'),
+          content: TextField(
+            controller: subjectNameController,
+            decoration: InputDecoration(labelText: 'Subject Name'),
           ),
           actions: [
             TextButton(
@@ -74,10 +157,12 @@ class _TestsScreenState extends State<TestsScreen> {
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                if (testNameController.text.isNotEmpty) {
-                  _addTest(testNameController.text);
+              onPressed: () async {
+                if (subjectNameController.text.isNotEmpty) {
+                  await DatabaseHelper().insertSubject({'name': subjectNameController.text});
+                  _fetchSubjects();
                   Navigator.of(context).pop();
+                  _showAddTestDialog(testName: _testName, subjectId: _selectedSubjectId); // Reopen the add test dialog after adding a new subject
                 }
               },
               child: Text('Add'),
@@ -94,39 +179,78 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
-  void _showEditTestDialog(int testId, String currentTitle) {
+  void _showEditTestDialog(int testId, String currentTitle, int currentSubjectId) {
     final TextEditingController testNameController = TextEditingController(text: currentTitle);
+
+    int? selectedSubjectId = currentSubjectId;
+
     final FocusNode focusNode = FocusNode();
+
 
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Test Name'),
-          content: TextField(
-            controller: testNameController,
-            focusNode: focusNode,
-            autofocus: true,
-            decoration: InputDecoration(labelText: 'Test Title'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (testNameController.text.isNotEmpty) {
-                  _editTestName(testId, testNameController.text);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('Save'),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Exam Name'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: testNameController,
+                    decoration: InputDecoration(labelText: 'Exam Title'),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<int>(
+                          hint: Text('Select Subject'),
+                          value: selectedSubjectId,
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              selectedSubjectId = newValue;
+                            });
+                          },
+                          items: _subjects.map<DropdownMenuItem<int>>((subject) {
+                            return DropdownMenuItem<int>(
+                              value: subject['id'],
+                              child: Text(subject['name']),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showAddSubjectDialog();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (testNameController.text.isNotEmpty && selectedSubjectId != null) {
+                      _editTestName(testId, testNameController.text, selectedSubjectId!);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Save'),
+                ),
+              ],
+            );
+          },
         );
       },
     ).then((_){
@@ -138,11 +262,11 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
-  void _editTestName(int testId, String newTitle) async {
+  void _editTestName(int testId, String newTitle, int subjectId) async {
     if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
-          content: Text('Test with this name already exists. Please choose a different name.'),
+          content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
         ),
@@ -150,7 +274,7 @@ class _TestsScreenState extends State<TestsScreen> {
       return;
     }
 
-    await DatabaseHelper().updateTest(testId, {'title': newTitle});
+    await DatabaseHelper().updateTest(testId, {'title': newTitle, 'subject_id': subjectId});
     _fetchTests();
   }
 
@@ -159,8 +283,8 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Test'),
-          content: Text('Are you sure you want to delete this test?'),
+          title: Text('Delete Exam'),
+          content: Text('Are you sure you want to delete this exam?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -186,25 +310,27 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchTests();
   }
 
-  void _navigateToTestDetailScreen(int testId, String testTitle) {
+  void _navigateToTestDetailScreen(int testId, String testTitle, int subjId) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TestDetailScreen(
           testId: testId,
           testTitle: testTitle,
+          subjectId: subjId,
         ),
       ),
     );
   }
 
-  void _navigateToAddQuestionScreen(int testId) {
+  void _navigateToAddQuestionScreen(int testId, int subjId) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddQuestionScreen(
           testId: testId,
           onQuestionAdded: _fetchTests,
+          subjectId: subjId,
         ),
       ),
     );
@@ -235,14 +361,15 @@ class _TestsScreenState extends State<TestsScreen> {
       key: _scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
-          foregroundColor: White,
-          backgroundColor: DeepPurple,
-          title: Text('Tests'),
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.deepPurple,
+          title: Text('Exams'),
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
         child:Column(
+
           children: [
             SizedBox(height: 70),
             Container(margin: EdgeInsets.symmetric(horizontal: 20),
@@ -288,7 +415,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('No tests available.', style: GoogleFonts.raleway(fontSize: 36)),
+                          Text('No exams available.', style: GoogleFonts.raleway(fontSize: 36)),
                           Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
                           SizedBox(height: 20),
 
@@ -317,21 +444,22 @@ class _TestsScreenState extends State<TestsScreen> {
                 ],
               ),
               child: ListTile(
-                title: Text(_tests[index]['title'], style: GoogleFonts.raleway(fontSize: 22)),
-                onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title']),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title']),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      color: Colors.red[900],
-                      onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
-                    ),
-                  ],
+                    key: ValueKey(_tests[index]['id']),
+                    title: Text(_tests[index]['title']),
+                    subtitle: Text(_subjects[_tests[index]['subject_id']-1]['name']),
+                    onTap: () => _navigateToTestDetailScreen(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
+                        ),
+                      ],
                 ),
               ),
             ),
@@ -341,7 +469,6 @@ class _TestsScreenState extends State<TestsScreen> {
                 ],
               ),
             ),
-
 
             //if (_tests.isNotEmpty)
               Align(
@@ -368,10 +495,20 @@ class _TestsScreenState extends State<TestsScreen> {
 
 
                       ],
+
                     ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
+                      SizedBox(width: 8),
+                      Icon(Icons.add),
+                    ],
                   ),
                 ),
               ),
+            ),
           ],
         ),
         ),
