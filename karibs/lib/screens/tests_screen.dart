@@ -171,7 +171,11 @@ class _TestsScreenState extends State<TestsScreen> {
                     return;
                   }
                   await DatabaseHelper().insertSubject({'name': subjectNameController.text});
+
                   _fetchSubjects();
+
+                  int? id = await DatabaseHelper().getSubjectId(subjectNameController.text);
+                  _selectedSubjectId = id;
                   Navigator.of(context).pop();
                   _showAddTestDialog(testName: _testName, subjectId: _selectedSubjectId); // Reopen the add test dialog after adding a new subject
                 }
