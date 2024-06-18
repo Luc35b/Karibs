@@ -176,7 +176,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
 
 
       // Show a confirmation message or navigate back
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Grades saved successfully'),
+      duration: Duration(milliseconds: 1500),));
 
       // Notify the provider that a student has been graded
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
