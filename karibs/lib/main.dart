@@ -26,6 +26,38 @@ void main() async {
   );
 }
 
+class TutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to KLAS'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'This is a tutorial to guide you through the app features.',
+            style: TextStyle(fontSize: 16.0),
+          ),
+          SizedBox(height: 16.0),
+          Text(
+            '1. Choose your user type by tapping on either "I\'m a Teacher" or "I\'m a Student".',
+            style: TextStyle(fontSize: 16.0),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -46,6 +78,28 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   bool _isAnimating = false;
+  bool _showTutorial = true; // Flag to control showing tutorial dialog
+
+  @override
+  void initState() {
+    super.initState();
+    // Show the tutorial dialog when the screen first loads
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      if (_showTutorial) {
+        _showTutorialDialog();
+        _showTutorial = false; // Set to false to prevent showing again on subsequent launches
+      }
+    });
+  }
+
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TutorialDialog();
+      },
+    );
+  }
 
   void _navigateToScreen(Widget screen) {
     setState(() {
@@ -70,6 +124,14 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: Text(''),
         backgroundColor: DeepPurple,
+        actions: [
+          IconButton(
+            onPressed: () {
+              _showTutorialDialog();
+            },
+            icon: Icon(Icons.info_outline), // Change the icon as needed
+          ),
+        ],
       ),
       body: Stack(
         children: [
