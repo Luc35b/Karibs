@@ -264,6 +264,21 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           }
         });
       }
+      else if (criteria == 'High Score') {
+        _filteredStudents.sort((b, a) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return -1; // a is considered lesser (null or 'No status' is considered lesser)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return 1; // b is considered lesser (null or 'No status' is considered lesser)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
     });
   }
 
@@ -290,6 +305,17 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('Low Score'),
                 value: 'Low Score',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('High Score'),
+                value: 'High Score',
                 groupValue: null,
                 onChanged: (String? value) {
                   if (value != null) {
