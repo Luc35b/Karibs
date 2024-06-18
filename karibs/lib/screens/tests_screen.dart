@@ -135,7 +135,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
-  void _showAddSubjectDialog() {
+  void _showAddSubjectDialog([int? testId, String? testName]) {
     final TextEditingController subjectNameController = TextEditingController();
 
 
@@ -177,7 +177,13 @@ class _TestsScreenState extends State<TestsScreen> {
                   int? id = await DatabaseHelper().getSubjectId(subjectNameController.text);
                   _selectedSubjectId = id;
                   Navigator.of(context).pop();
-                  _showAddTestDialog(testName: _testName, subjectId: _selectedSubjectId); // Reopen the add test dialog after adding a new subject
+                  if(testId != null) {
+                    _showEditTestDialog(testId, testName!, _selectedSubjectId!);
+                  }
+                  else {
+                    _showAddTestDialog(testName: _testName,
+                        subjectId: _selectedSubjectId); // Reopen the add test dialog after adding a new subject
+                  }
                 }
               },
               child: Text('Add'),
@@ -193,17 +199,13 @@ class _TestsScreenState extends State<TestsScreen> {
 
     int? selectedSubjectId = currentSubjectId;
 
-    final FocusNode focusNode = FocusNode();
-
-
-
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Edit Exam Name'),
+              title: Text('Edit Exam Name/Subject'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -234,7 +236,7 @@ class _TestsScreenState extends State<TestsScreen> {
                         icon: Icon(Icons.add),
                         onPressed: () {
                           Navigator.pop(context);
-                          _showAddSubjectDialog();
+                          _showAddSubjectDialog(testId, testNameController.text);
                         },
                       ),
                     ],
@@ -262,13 +264,7 @@ class _TestsScreenState extends State<TestsScreen> {
           },
         );
       },
-    ).then((_){
-      focusNode.dispose();
-    });
-
-    Future.delayed(Duration(milliseconds: 100), () {
-      focusNode.requestFocus();
-    });
+    );
   }
 
   void _editTestName(int testId, String newTitle, int subjectId) async {

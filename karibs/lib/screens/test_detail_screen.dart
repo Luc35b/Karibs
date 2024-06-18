@@ -139,6 +139,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             Navigator.of(context).pop();
             _navigateToGradeTestScreen(classId);
           },
+          subjectId: widget.subjectId,
         );
       },
     );
@@ -320,8 +321,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
+  final int subjectId;
 
-  ChooseClassDialog({required this.onClassSelected});
+  ChooseClassDialog({required this.onClassSelected, required this.subjectId});
 
   @override
   _ChooseClassDialogState createState() => _ChooseClassDialogState();
@@ -334,11 +336,11 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   void initState() {
     super.initState();
-    _fetchClasses();
+    _fetchClassesBySubjectId();
   }
 
-  Future<void> _fetchClasses() async {
-    final data = await DatabaseHelper().queryAllClasses();
+  Future<void> _fetchClassesBySubjectId() async {
+    final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
     setState(() {
       _classes = data;
       _isLoading = false;
