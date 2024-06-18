@@ -253,8 +253,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     ),
                                     IconButton(
                                       onPressed: () {_deleteClass(_classes[index]['id']);},
-                                      color: Colors.red[900],
-                                      icon: Icon(Icons.delete),
+                                      icon: Icon(Icons.delete,color: Colors.red[900]),
                                     ),
                                   ],
                                 ),

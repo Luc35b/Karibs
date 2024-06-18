@@ -241,6 +241,66 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
   }
 
+  void _sortStudents(String criteria) {
+    setState(() {
+      if (criteria == 'Name') {
+        _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
+      } else if (criteria == 'Low Score') {
+        _filteredStudents.sort((a, b) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return 1; // a is considered greater (null or 'No status' is considered greater)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return -1; // b is considered greater (null or 'No status' is considered greater)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
+    });
+  }
+
+  void _showSortOptionsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Sort by'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text('Name'),
+                value: 'Name',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Low Score'),
+                value: 'Low Score',
+                groupValue: null,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StudentGradingProvider>(
@@ -309,6 +369,13 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     ),
     SizedBox(width: 8),
+      IconButton(
+        icon: Icon(
+          Icons.build_rounded,
+          color: White,
+        ),
+        onPressed: _showSortOptionsDialog,
+      ),
     ],
     ),
     ),
