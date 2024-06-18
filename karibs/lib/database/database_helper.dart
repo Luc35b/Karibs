@@ -309,6 +309,22 @@ class DatabaseHelper {
 
   }
 
+  Future<String?> getCategoryName(int categoryId) async {
+    final db = await database;
+
+    List<Map<String,dynamic>> result = await db.query(
+      'categories',
+      columns:['name'],
+      where: 'id = ?',
+      whereArgs: [categoryId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['name'] as String;
+    }
+    return null;
+
+  }
+
 
 
   Future<List<Map<String, dynamic>>> getCategoriesForSubject(int subjectId) async {
@@ -361,7 +377,7 @@ class DatabaseHelper {
         questions.id AS question_id, 
         questions.text AS question_text, 
         questions.type AS question_type, 
-        questions.category AS question_category, 
+        questions.category_id AS question_category, 
         questions.test_id, 
         student_test_question.got_correct
       FROM reports
@@ -744,6 +760,54 @@ class DatabaseHelper {
     );
 
     return classResults;
+  }
+
+  Future<Map<String, double>> getCategoryScoresbyStudentTestId(int studentTestId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT categories.name AS category, student_test_category_scores.score AS score
+      FROM student_test_category_scores
+      JOIN categories ON student_test_category_scores.category_id = categories.id
+      WHERE student_test_category_scores.student_test_id = ?
+    ''', [studentTestId]);
+
+    Map<String, double> categoryScores = {};
+
+    for (var row in result) {
+      categoryScores[row['category']] = row['score'];
+    }
+
+    return categoryScores;
+  }
+
+
+  Future<int?> getStudentTestIdFromReport(int reportId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'reports',
+      columns: ['student_id', 'test_id'],
+      where: 'id = ?',
+      whereArgs: [reportId],
+    );
+
+    if (result.isNotEmpty) {
+      int studentId = result.first['student_id'];
+      int testId = result.first['test_id'];
+
+      final List<Map<String, dynamic>> studentTestResult = await db.query(
+        'student_tests',
+        columns: ['id'],
+        where: 'student_id = ? AND test_id = ?',
+        whereArgs: [studentId, testId],
+      );
+
+      if (studentTestResult.isNotEmpty) {
+        return studentTestResult.first['id'] as int;
+      }
+    }
+    return null;
   }
 
 
