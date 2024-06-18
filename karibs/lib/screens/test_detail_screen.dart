@@ -11,8 +11,9 @@ import 'package:karibs/main.dart';
 class TestDetailScreen extends StatefulWidget {
   final int testId;
   final String testTitle;
+  final int subjectId;
 
-  TestDetailScreen({required this.testId, required this.testTitle});
+  TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
 
   @override
   _TestDetailScreenState createState() => _TestDetailScreenState();
@@ -42,6 +43,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       MaterialPageRoute(
         builder: (context) => AddQuestionScreen(
           testId: widget.testId,
+          subjectId: widget.subjectId,
           onQuestionAdded: _fetchQuestions,
         ),
       ),
@@ -52,7 +54,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailScreen(questionId: questionId),
+        builder: (context) => QuestionDetailScreen(
+            questionId: questionId,
+            subjectId: widget.subjectId,
+        )
       ),
     );
   }
@@ -64,6 +69,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         builder: (context) => EditQuestionScreen(
           questionId: questionId,
           onQuestionUpdated: _fetchQuestions,
+          subjectId: widget.subjectId,
         ),
       ),
     );

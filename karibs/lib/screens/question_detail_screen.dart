@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
+import 'edit_question_screen.dart';
 
 class QuestionDetailScreen extends StatefulWidget {
   final int questionId;
+  final int subjectId; // Added subjectId to pass to EditQuestionScreen
 
-  QuestionDetailScreen({required this.questionId});
+  QuestionDetailScreen({required this.questionId, required this.subjectId});
 
   @override
   _QuestionDetailScreenState createState() => _QuestionDetailScreenState();
@@ -15,11 +17,20 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   Map<String, dynamic>? _question;
   List<Map<String, dynamic>> _choices = [];
   bool _isLoading = true;
+  String? category;
 
   @override
   void initState() {
     super.initState();
     _fetchQuestionDetails();
+    _fetchCategory();
+  }
+
+  Future<void> _fetchCategory() async {
+    String? cat = await DatabaseHelper().getCategoryNameFromQuestion(widget.questionId);
+    setState(() {
+      category = cat;
+    });
   }
 
   Future<void> _fetchQuestionDetails() async {
@@ -32,6 +43,22 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     });
   }
 
+  void _navigateToEditQuestionScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditQuestionScreen(
+          questionId: widget.questionId,
+          onQuestionUpdated: _fetchQuestionDetails,
+          subjectId: widget.subjectId, // Pass subjectId to EditQuestionScreen
+        ),
+      ),
+    ).then((_){
+      _fetchQuestionDetails();
+      _fetchCategory();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,6 +66,12 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
         foregroundColor: White,
         backgroundColor: DeepPurple,
         title: Text('Question Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: _navigateToEditQuestionScreen,
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -58,7 +91,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${_question!['category']}',
+                  '${category}',
                   style: TextStyle(fontSize: 16),
                 ),
               ],
