@@ -248,9 +248,13 @@ class DatabaseHelper {
     return await db.insert('student_test_category_scores', score);
   }
 
-  Future<List<Map<String, dynamic>>> getAllSubjects() async {
+  Future<List<Map<String, dynamic>>> queryAllClassesWithSubjects() async {
     final db = await database;
-    return await db.query('subjects');
+    return await db.rawQuery('''
+      SELECT classes.id, classes.name as name, subjects.name as subjectName
+      FROM classes
+      INNER JOIN subjects ON classes.subject_id = subjects.id
+    ''');
   }
 
   Future<List<Map<String, dynamic>>> getCategoriesForSubject(int subjectId) async {

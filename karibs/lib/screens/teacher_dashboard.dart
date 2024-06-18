@@ -19,6 +19,27 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _tests = [];
+  List<Map<String, dynamic>> _subjects = [];
+
+  List<String> classesList = [
+    'Basic 1',
+    'Basic 2',
+    'Basic 3',
+    'Basic 4',
+    'Basic 5',
+    'Basic 6',
+    'Basic 7',
+    'Basic 8',
+    'Basic 9',
+  ];
+
+  List<String> subjectsList = [
+    'Math',
+    'Science',
+    'History',
+    'English',
+  ];
+
   bool _isLoading = true;
 
   @override
@@ -28,13 +49,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
   Future<void> _fetchClasses() async {
-    final cData = await DatabaseHelper().queryAllClasses();
+    final cData = await DatabaseHelper().queryAllClassesWithSubjects();
     final tData = await DatabaseHelper().queryAllTests();
     setState(() {
       _classes = cData;
       _tests = tData;
       _isLoading = false;
     });
+    print(_classes);
   }
   void _deleteClass(int classId) async{
     bool confirmDelete = await showDialog(
@@ -61,23 +83,51 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
   }
 
-  void _addClass(String className) async {
-    await DatabaseHelper().insertClass({'name': className});
-    _fetchClasses();
+  void _addClass(String className, String subjectName) async {
+    // First, check if the subject already exists in the subjects table
+    int subjectId = await _getOrCreateSubjectId(subjectName);
+
+    // Now insert the class into the classes table
+    await DatabaseHelper().insertClass({
+      'name': className,
+      'subject_id': subjectId,
+    });
+
+    _fetchClasses();// Refresh the UI or list of classes
   }
 
+  Future<int> _getOrCreateSubjectId(String subjectName) async {
+    final db = await DatabaseHelper().database;
+
+    // Check if the subject already exists
+    List<Map<String, dynamic>> results = await db.query(
+      'subjects',
+      columns: ['id'],
+      where: 'name = ?',
+      whereArgs: [subjectName],
+    );
+
+    if (results.isNotEmpty) {
+      // Subject exists, return its ID
+      return results.first['id'];
+    } else {
+      // Subject does not exist, insert and return its ID
+      int subjectId = await db.insert('subjects', {'name': subjectName});
+      return subjectId;
+    }
+  }
+
+  void addToClassesList(String classToAdd){
+
+  }
+
+
   void _showAddClassDialog() {
-    String? selectedCategory; // Nullable string
+    String? selectedClass;
+    String? selectedSubject;
 
-    TextEditingController customCategoryController = TextEditingController();
-
-    List<String> categories = [
-      'Math',
-      'Science',
-      'History',
-      'Literature',
-      'Custom', // Placeholder for custom category
-    ];
+    TextEditingController customClassController = TextEditingController();
+    TextEditingController customSubjectController = TextEditingController();
 
     showDialog(
       context: context,
@@ -87,27 +137,109 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedCategory = newValue;
-                  });
-                  if (newValue == 'Custom') {
-                    customCategoryController.clear(); // Clear text field if custom category selected
-                  }
-                },
-                items: categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: selectedClass,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedClass = newValue;
+                        });
+                        if (newValue == 'Add New Class') {
+                          customClassController.clear();
+                        }
+                      },
+                      items: classesList.map((String classItem) {
+                        return DropdownMenuItem<String>(
+                          value: classItem,
+                          child: Text(classItem),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _showCustomClassDialog().then((customClassName) {
+                        if (customClassName != null) {
+                          setState(() {
+                            classesList.add(customClassName); // Insert before 'Add New Class'
+                            //print("newly added class: " + classesList[classesList.length-1]);
+                            selectedClass = customClassName; // Set the newly added class as selected
+                          });
+                        }
+                      });
+                    },
+                    icon: Icon(Icons.add),
+                  ),
+                ],
               ),
-              if (selectedCategory == 'Custom')
-                TextFormField(
-                  controller: customCategoryController,
-                  decoration: InputDecoration(labelText: 'Enter custom category'),
+              if (selectedClass == 'Add New Class')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: customClassController,
+                      decoration: InputDecoration(labelText: 'Enter custom class'),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Enter additional details for custom class...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: selectedSubject,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedSubject = newValue;
+                        });
+                        if (newValue == 'Add New Subject') {
+                          customSubjectController.clear();
+                        }
+                      },
+                      items: subjectsList.map((String subject) {
+                        return DropdownMenuItem<String>(
+                          value: subject,
+                          child: Text(subject),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _showCustomSubjectDialog().then((customSubjectName) {
+                        if (customSubjectName != null) {
+                          setState(() {
+                            subjectsList.add(customSubjectName); // Insert before 'Add New Subject'
+                            selectedSubject = customSubjectName; // Set the newly added subject as selected
+                          });
+                        }
+                      });
+                    },
+                    icon: Icon(Icons.add),
+                  ),
+                ],
+              ),
+              if (selectedSubject == 'Add New Subject')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: customSubjectController,
+                      decoration: InputDecoration(labelText: 'Enter custom subject'),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Enter additional details for custom subject...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
                 ),
             ],
           ),
@@ -120,17 +252,109 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () {
-                String categoryToAdd = selectedCategory ?? ''; // Use null-aware operator to handle null
-                if (selectedCategory == 'Custom') {
-                  categoryToAdd = customCategoryController.text.trim();
-                  if (categoryToAdd.isEmpty) {
-                    // Optional: Show error or handle empty custom category
-                    return;
-                  }
+                String classToAdd = selectedClass ?? '';
+                String subjectToAdd = selectedSubject ?? '';
+
+                //print("newly added class: " + classesList[classesList.length-1]);
+                // Assuming you have a method to add class with both class name and subject
+                if(classToAdd.isNotEmpty && subjectToAdd.isNotEmpty){
+                  _addClass(classToAdd, subjectToAdd);
                 }
-                // Add logic to add the class with the selected category
-                _addClass(categoryToAdd);
+
                 Navigator.of(context).pop();
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showValidationDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Validation Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Future<String?> _showCustomClassDialog() async {
+    TextEditingController customClassController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Custom Class'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: customClassController,
+                decoration: InputDecoration(labelText: 'Enter custom class'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog without adding
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String customClassName = customClassController.text.trim();
+                Navigator.of(context).pop(customClassName); // Return custom class name
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String?> _showCustomSubjectDialog() async {
+    TextEditingController customSubjectController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Custom Subject'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: customSubjectController,
+                decoration: InputDecoration(labelText: 'Enter custom subject'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog without adding
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                String customSubjectName = customSubjectController.text.trim();
+                Navigator.of(context).pop(customSubjectName); // Return custom subject name
               },
               child: Text('Add'),
             ),
@@ -181,7 +405,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _fetchClasses();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,6 +412,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         title: Text('My Dashboard'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -268,6 +492,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 title: Text(
                                   _classes[index]['name'],
                                   style: TextStyle(fontSize: 32),
+                                ),
+                                subtitle: Text(
+                                  _classes[index]['subjectName'],
+                                  style: TextStyle(fontSize: 22, color: Colors.grey),
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
