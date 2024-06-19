@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/teacher_class_screen.dart';
+import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:karibs/screens/tests_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -11,8 +12,6 @@ const Color NotWhite = Color(0xFFEFEBF1);
 const Color White = Colors.white;
 
 class TeacherDashboard extends StatefulWidget {
-  const TeacherDashboard({super.key});
-
   @override
   _TeacherDashboardState createState() => _TeacherDashboardState();
 }
@@ -54,12 +53,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _getOrCreateSubjectId('English');
   }
 
-  Future<void> _fetchSubjects() async{
+  Future<void> _fetchSubjects() async {
     final sData = await DatabaseHelper().queryAllSubjects();
+
+    // Extract subject names from sData
+    List<String> fetchedSubjects = [];
+    for (var subject in sData) {
+      fetchedSubjects.add(subject['name'].toString());
+    }
+
     setState(() {
-      _subjects = sData;
+      subjectsList.clear(); // Clear existing subjectsList
+      subjectsList.addAll(fetchedSubjects); // Add fetched subject names to subjectsList
     });
   }
+
 
   Future<void> _fetchClasses() async {
     final cData = await DatabaseHelper().queryAllClassesWithSubjects();
@@ -75,16 +83,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Class'),
-        content: const Text('Are you sure you want to delete this class?'),
+        title: Text('Delete Class'),
+        content: Text('Are you sure you want to delete this class?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: const Text('Delete', style: TextStyle(fontSize: 20)),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -135,6 +143,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _showAddClassDialog() {
+    _fetchSubjects();
+
     String? selectedClass;
     String? selectedSubject;
 
@@ -172,10 +182,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 child: Text(classItem),
                               );
                             }),
-                            DropdownMenuItem<String>(
-                              value: 'Add New Class',
-                              child: Text('Select Class'),
-                            ),
                           ],
                         ),
                       ),
@@ -232,10 +238,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 child: Text(subject),
                               );
                             }),
-                            DropdownMenuItem<String>(
-                              value: 'Add New Subject',
-                              child: Text('Select Subject'),
-                            ),
                           ],
                         ),
                       ),
@@ -255,21 +257,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                     ],
                   ),
-                  if (selectedSubject == 'Add New Subject')
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextFormField(
-                          controller: customSubjectController,
-                          decoration: InputDecoration(labelText: 'Enter custom subject'),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Enter additional details for custom subject...',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
                 ],
               ),
               actions: [
@@ -277,7 +264,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
+                  child: Text('Cancel'),
                 ),
                 TextButton(
                   onPressed: () {
@@ -290,32 +277,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
                     Navigator.of(context).pop();
                   },
-                  child: Text('Add', style: TextStyle(fontSize: 20)),
+                  child: Text('Add'),
                 ),
               ],
             );
           },
         );
       },
-    );
-  }
-
-
-  void _showValidationDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Validation Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('OK'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -342,25 +310,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Text(
-                  'Cancel', style: TextStyle(fontSize: 20),
-                ),
-              ),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 String customClassName = customClassController.text.trim();
                 Navigator.of(context).pop(customClassName); // Return custom class name
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Text(
-                  'Add',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
+              child: Text('Add'),
             ),
           ],
         );
@@ -370,7 +327,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<String?> _showCustomSubjectDialog() async {
     TextEditingController customSubjectController = TextEditingController();
-
     return showDialog<String>(
       context: context,
       builder: (context) {
@@ -390,74 +346,164 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 String customSubjectName = customSubjectController.text.trim();
                 Navigator.of(context).pop(customSubjectName); // Return custom subject name
               },
-              child: Text('Add', style: TextStyle(fontSize: 20)),
+              child: Text('Add'),
             ),
           ],
         );
       },
     );
-    /*then((_){
-      focusNode.dispose();
-    });
-
-    Future.delayed(Duration(milliseconds: 100), (){
-      focusNode.requestFocus();
-    });
-    */
-
+    // ).then((_){
+    //   focusNode.dispose();
+    // });
+    //
+    // Future.delayed(Duration(milliseconds: 100), (){
+    //   focusNode.requestFocus();
+    // });
   }
 
-  void _showEditClassDialog(int classId, String currentClassName) {
+  void _showEditClassDialog(int classId, String currentClassName, String currentSubjectName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
-    final FocusNode focusNode = FocusNode();
+    String selectedClass = currentClassName; // Track selected class
+    String selectedSubject = currentSubjectName; // Track selected subject
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Class Name'),
-          content: TextField(
-            controller: classNameController,
-            focusNode: focusNode,
-            autofocus: true,
-            decoration: InputDecoration(labelText: 'Class Name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-            ),
-            TextButton(
-              onPressed: () {
-                if (classNameController.text.isNotEmpty) {
-                  _editClassName(classId, classNameController.text);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Save', style: TextStyle(fontSize: 20)),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Class Details'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Class'),
+                          value: selectedClass,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedClass = newValue!;
+                            });
+                          },
+                          items: [
+                            ...classesList.map((classItem) {
+                              return DropdownMenuItem<String>(
+                                value: classItem,
+                                child: Text(classItem),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customClassName = await _showCustomClassDialog();
+                          if (customClassName != null && customClassName.isNotEmpty) {
+                            setState(() {
+                              if (!classesList.contains(customClassName)) {
+                                classesList.add(customClassName);
+                                _fetchClasses();
+                              }
+                              selectedClass = customClassName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Subject'),
+                          value: selectedSubject,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedSubject = newValue!;
+                            });
+                          },
+                          items: [
+                            ...subjectsList.map((subject) {
+                              return DropdownMenuItem<String>(
+                                value: subject,
+                                child: Text(subject),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customSubjectName = await _showCustomSubjectDialog();
+                          if (customSubjectName != null && customSubjectName.isNotEmpty) {
+                            setState(() {
+                              if (!subjectsList.contains(customSubjectName)) {
+                                subjectsList.add(customSubjectName);
+                                _getOrCreateSubjectId(customSubjectName);
+                                _fetchSubjects();
+                              }
+                              selectedSubject = customSubjectName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String newClassName = selectedClass;
+                    String newSubjectName = selectedSubject;
+
+                    if (newClassName.isNotEmpty && newSubjectName.isNotEmpty) {
+                      _editClassDetails(classId, newClassName, newSubjectName);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Save'),
+                ),
+              ],
+            );
+          },
         );
       },
-    ).then((_) {
-      focusNode.dispose();
-    });
-    Future.delayed(Duration(milliseconds: 100), () {
-      focusNode.requestFocus();
-    });
+    );
   }
 
-  void _editClassName(int classId, String newClassName) async {
-    await DatabaseHelper().updateClass(classId, {'name': newClassName});
+
+
+  void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
+    print('Updating class with ID: $classId');
+    print('New class name: $newClassName');
+    print('New subject name: $newSubjectName');
+    int? newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+    print('new subject id: ' + newSubjectId.toString());
+    _editClassName(classId, newClassName, newSubjectId!);
+
+  }
+
+  void _editClassName(int classId, String newClassName, int newSubjectId) async {
+    await DatabaseHelper().updateClass(classId, {'name': newClassName, 'subject_id': newSubjectId});
     _fetchClasses();
     _fetchSubjects();
   }
@@ -557,7 +603,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name']);},
+                                        onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name'], _classes[index]['subjectName']);},
                                         icon: Icon(Icons.edit),
                                       ),
                                       IconButton(
@@ -640,7 +686,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => TestsScreen()),
-                );
+                ).then((_){
+                  _fetchSubjects();
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: White,

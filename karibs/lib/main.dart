@@ -197,7 +197,7 @@ class MainScreenState extends State<MainScreen> {
                             Column(
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => _navigateToScreen(const TeacherDashboard()),
+                                  onPressed: () => _navigateToScreen(TeacherDashboard()),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: White,
                                     foregroundColor: Colors.white,
