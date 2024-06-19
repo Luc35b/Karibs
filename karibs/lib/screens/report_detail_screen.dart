@@ -220,7 +220,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       MaterialPageRoute(
         builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
       ),
-    );
+    ).then((_){
+      queryReportInformation();
+    });
   }
 
   Color getStatusColorFill(double currStatus) {

@@ -48,7 +48,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RegradeScreen(
+        builder: (context) => RegradeTestScreen(
           reportId: widget.reportId,
         ),
       ),
