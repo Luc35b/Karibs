@@ -20,13 +20,13 @@ class StudentInfoScreen extends StatefulWidget {
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Color(0xFFBBFABB);
+    return const Color(0xFFBBFABB);
   } else if (currScore >= 50) {
-    return Color(0xFFe6cc00);
+    return const Color(0xFFe6cc00);
   } else if (currScore >=20) {
-    return Color(0xFFFFB68F);
+    return const Color(0xFFFFB68F);
   }else {
-    return Color(0xFFFA6478);
+    return const Color(0xFFFA6478);
   }
 }
 
@@ -78,7 +78,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
-    print(mutableReports);
     setState(() {
       _student = student;
       _reports = mutableReports;
@@ -87,16 +86,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
-  void _addReport(String title, String notes, int? score) async {
-    await DatabaseHelper().insertReport({
-      'date': DateTime.now().toIso8601String(),
-      'title': title,
-      'notes': notes,
-      'score': score,
-      'student_id': widget.studentId,
-    });
-    _fetchStudentData();
-  }
 
   void _generatePdfAllReports() async {
     if (_student != null && _reports.isNotEmpty) {
@@ -172,11 +161,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
     int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
-  }
-
-  String _formatDate(double value) {
-    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    return '${date.day}/${date.month}';
   }
 
   @override
@@ -421,7 +405,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
                           child: ListTile(
                             title: Text(_reports[index]['title'],
-                              style: TextStyle(fontSize: 24),
+                              style: const TextStyle(fontSize: 24),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
 
@@ -430,7 +414,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30),),
+                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: const TextStyle(fontSize: 30),),
                           ),
                         ));
                   },

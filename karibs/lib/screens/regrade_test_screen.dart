@@ -67,11 +67,11 @@ class _RegradeScreenState extends State<RegradeScreen> {
 
   void _initializeCategoryScores(Map<String, dynamic> savedResults) {
     categoryScores.clear();
-    _questions.forEach((question) {
+    for (var question in _questions) {
       int categoryId = question['category_id'];
       int correctness = savedResults['question_correctness'][question['id']] ?? 0;
       categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + correctness;
-    });
+    }
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {

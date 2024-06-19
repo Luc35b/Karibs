@@ -165,7 +165,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Grades saved successfully'),
           duration: Duration(milliseconds: 1500),
           behavior: SnackBarBehavior.floating,
@@ -194,7 +194,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
           title: Text('Grade Exam for ${widget.testTitle}'),
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Column(
             children: [
             if (_className != null)
@@ -202,13 +202,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         padding: const EdgeInsets.all(8.0),
     child: Text(
     'Grading details for class: $_className and exam: ${widget.testTitle}',
-    style: TextStyle(fontSize: 20),
+    style: const TextStyle(fontSize: 20),
     ),
     ),
     Padding(
     padding: const EdgeInsets.all(8.0),
     child: DropdownButton<int>(
-    hint: Text("Select Student"),
+    hint: const Text("Select Student"),
     value: _selectedStudentId,
     onChanged: (int? newValue) {
     setState(() {
@@ -237,7 +237,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     padding: const EdgeInsets.all(8.0),
     child: Text(
     'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-    style: TextStyle(fontSize: 18),
+    style: const TextStyle(fontSize: 18),
     ),
     ),
     if (_selectedStudentId != null)
@@ -262,13 +262,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(Icons.check, color: Colors.green),
+            icon: const Icon(Icons.check, color: Colors.green),
             onPressed: () {
               _markCorrect(questionId, categoryId);
             },
           ),
           IconButton(
-            icon: Icon(Icons.clear, color: Colors.red),
+            icon: const Icon(Icons.clear, color: Colors.red),
             onPressed: () {
               _markIncorrect(questionId, categoryId);
             },
@@ -280,9 +280,9 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     ),
     ),
               if (_gradedStudentIds.length == _students.length)
-                Center(
+                const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       "View student report to edit their score.",
                       style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -306,13 +306,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   _saveGradingResults();
                 }
                     : null,
-                child: Text('Save Grade'),
+                child: const Text('Save Grade'),
               ),
               ElevatedButton(
                 onPressed: () {
                   _goToTeacherDashboard(widget.classId);
                 },
-                child: Text('Go to Class'),
+                child: const Text('Go to Class'),
               ),
             ],
           ),
