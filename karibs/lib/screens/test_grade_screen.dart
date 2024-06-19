@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:printing/printing.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
+import 'package:karibs/pdf_gen.dart';
+
 
 class TestGradeScreen extends StatefulWidget {
   final int classId;
@@ -187,6 +190,12 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  void _generateAndPrintPdf() {
+    // Call your PdfGenerator class to generate and print the PDF
+    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,6 +322,10 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   _goToTeacherDashboard(widget.classId);
                 },
                 child: Text('Go to Class'),
+              ),
+              ElevatedButton(
+                onPressed: _generateAndPrintPdf,
+                child: Text('Generate PDF'), // Add this button for generating and printing PDF
               ),
             ],
           ),

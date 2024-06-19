@@ -384,6 +384,46 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<double?> getStudentTestTotalScore(int studentId, int testId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT total_score FROM student_tests WHERE student_id = ? AND test_id = ?',
+      [studentId, testId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['total_score'] as double?;
+    } else {
+      return null;
+    }
+  }
+
+  Future<double?> getReportScore(int reportId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT score FROM reports WHERE id = ?',
+      [reportId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['score'] as double?;
+    } else {
+      return null;
+    }
+  }
+
+  Future<int?> getStudentTestQuestionResult(int studentTestId, int questionId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+    SELECT got_correct
+    FROM student_test_question
+    WHERE student_test_id = ? AND question_id = ?
+  ''', [studentTestId, questionId]);
+    if (result.isNotEmpty) {
+      return result.first['got_correct'];
+    }
+    return null;
+  }
+
+
   Future<Map<String, dynamic>> getQuestionsAndAnswersForReport(int reportId) async {
     final db = await database;
 

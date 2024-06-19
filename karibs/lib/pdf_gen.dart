@@ -215,4 +215,39 @@ class PdfGenerator {
     // Print the PDF
     Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - ${report['title']} Report.pdf');
   }
+
+  Future<void> generateTestScoresPdf(int testId, String testTitle, List<Map<String, dynamic>> students) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Test Scores - $testTitle', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              for (var student in students)
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Student: ${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Score: ${student['score']}', style: pw.TextStyle(fontSize: 16)),
+                    pw.SizedBox(height: 10),
+                  ],
+                ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/$testTitle - Scores.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    // Print the PDF
+    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Scores.pdf');
+  }
+
 }

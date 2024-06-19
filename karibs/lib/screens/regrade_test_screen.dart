@@ -108,12 +108,19 @@ class _RegradeScreenState extends State<RegradeScreen> {
   }
 
   void _saveRegradingResults() async {
+    // Retrieve existing total score and score from the database
+    double? existingTotalScore = await DatabaseHelper().getStudentTestTotalScore(_selectedStudentId!, _testId!);
+    double? existingScore = await DatabaseHelper().getReportScore(widget.reportId);
+
     // Calculate total score and category scores
     int totalQuestions = _questions.length;
     double totalScore = (categoryScores.values.fold(0, (sum, score) => sum + score) / totalQuestions) * 100;
 
-    // Ensure total score is not negative
+    // Ensure total score is not negative and keep the existing value if none or some questions are not regraded
     totalScore = totalScore.clamp(0, 100);
+    if (existingTotalScore != null && existingTotalScore > totalScore) {
+      totalScore = existingTotalScore;
+    }
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -126,20 +133,25 @@ class _RegradeScreenState extends State<RegradeScreen> {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
         'notes': 'Regraded test for student',
-        'score': totalScore,
+        'score': existingScore ?? totalScore, // Keep the existing score if available
       });
 
       int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, _testId!);
 
+      // Update database with current values in question_answer_map if they exist,
+      // otherwise keep the existing values from the database
       question_answer_map.forEach((key, value) async {
-        await DatabaseHelper().updateStudentTestQuestion({
-          'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value,
-        });
+        int? existingValue = await DatabaseHelper().getStudentTestQuestionResult(studentTestId!, key);
+        if (existingValue != null) {
+          await DatabaseHelper().updateStudentTestQuestion({
+            'student_test_id': studentTestId,
+            'question_id': key,
+            'got_correct': value,
+          });
+        }
       });
 
-    // Show a confirmation message or navigate back to the previous screen.
+      // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Grades updated successfully'),
@@ -151,6 +163,8 @@ class _RegradeScreenState extends State<RegradeScreen> {
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
+
+
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
