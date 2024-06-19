@@ -425,8 +425,8 @@ class _TestsScreenState extends State<TestsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('No exams available.', style: GoogleFonts.raleway(fontSize: 36)),
-                        Text('Please add!', style: GoogleFonts.raleway(fontSize: 36)),
+                        Text('No exams available.', style: GoogleFonts.raleway(fontSize: 32)),
+                        Text('Please add!', style: GoogleFonts.raleway(fontSize: 32)),
                         SizedBox(height: 20),
 
                       ],
