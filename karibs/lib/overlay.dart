@@ -40,7 +40,8 @@ class TeacherDashboardTutorialDialog extends StatefulWidget {
       _TeacherDashboardTutorialDialogState();
 }
 
-class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutorialDialog> {
+class _TeacherDashboardTutorialDialogState
+    extends State<TeacherDashboardTutorialDialog> {
   int _currentIndex = 0;
 
   final List<Widget> _instructions = [
@@ -71,25 +72,7 @@ class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutoria
                 style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
               TextSpan(text: ' by clicking on the '),
-              WidgetSpan(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.deepPurple,
-                    side: BorderSide(width: 2, color: Colors.deepPurple),
-                    padding: EdgeInsets.symmetric(horizontal: 35, vertical: 7),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: Text(
-                    'ADD CLASS +',
-                    style: GoogleFonts.raleway(fontSize: 18),
-                  ),
-                ),
-              ),
-              TextSpan(text: ' \n button at the bottom of the screen.\n'),
+              TextSpan(text: ' MANAGE EXAMS button at the bottom of the screen.\n'),
               TextSpan(text: '  \n a. Select a desired class and subject from the dropdown, or create your own name by clicking on the '),
               WidgetSpan(
                 child: Icon(Icons.add, size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
@@ -174,7 +157,7 @@ class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutoria
               ),
               child: Text(
                 'MANAGE EXAMS',
-                style: GoogleFonts.raleway(fontSize: 18),
+                style: TextStyle(fontSize: 18),
               ),
             ),
           ),
@@ -189,8 +172,14 @@ class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutoria
       setState(() {
         _currentIndex++;
       });
-    } else {
-      Navigator.of(context).pop();
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
     }
   }
 
@@ -211,10 +200,29 @@ class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutoria
         ),
       ),
       actions: <Widget>[
-        if (_currentIndex < _instructions.length - 1)
-          TextButton(
-            onPressed: _nextInstruction,
-            child: Text('Next'),
+        if (_currentIndex > 0)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            ],
+          ),
+        if (_currentIndex == 0)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            ],
           ),
         if (_currentIndex == _instructions.length - 1)
           TextButton(

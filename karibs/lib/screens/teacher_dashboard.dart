@@ -721,7 +721,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ),
               ),
               child: Text(
-                '  MANAGE TESTS  ',
+                '  MANAGE EXAMS  ',
                 style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
               ),
             ),
