@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/main.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'teacher_dashboard.dart';
 
 class TestsScreen extends StatefulWidget {
   @override
@@ -369,6 +369,15 @@ class _TestsScreenState extends State<TestsScreen> {
           foregroundColor: Colors.white,
           backgroundColor: Colors.deepPurple,
           title: Text('Exams'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back), // Use the back arrow icon
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TeacherDashboard()),
+              );
+            },
+          ),
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())

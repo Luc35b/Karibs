@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/screens/tests_screen.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
@@ -171,6 +172,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         foregroundColor: White,
         backgroundColor: DeepPurple,
         title: Text(widget.testTitle),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TestsScreen()),
+            );
+          },
+        ),
         actions: [
           TextButton(
             onPressed: _showChooseClassDialog,
