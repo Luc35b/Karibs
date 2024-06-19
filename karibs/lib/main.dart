@@ -97,7 +97,7 @@ class MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text(''),
+            const Text('Choose User Type'),
             SizedBox(width: 8), // Adjust spacing between title and icon
             IconButton(
               icon: Icon(Icons.help_outline),

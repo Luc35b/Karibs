@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MainTutorialDialog extends StatelessWidget {
   @override
@@ -11,7 +12,7 @@ class MainTutorialDialog extends StatelessWidget {
         children: <Widget>[
           Text(
             'This is a tutorial to guide you through the app features. \n\n You can view these '
-                'instructions again at any time by clicking the question mark icon at the top right corner of every page.',
+                'instructions again at any time by clicking the question mark icon at the top of every page.',
             style: TextStyle(fontSize: 16.0),
           ),
           SizedBox(height: 16.0),
@@ -33,75 +34,196 @@ class MainTutorialDialog extends StatelessWidget {
   }
 }
 
-class TeacherDashboardTutorialDialog extends StatelessWidget {
+class TeacherDashboardTutorialDialog extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Welcome to the Teacher Dashboard'),
-      content: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9, // 80% of screen width
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'This screen allows you to view all of your classes, add new ones, and manage your exams.',
-                style: TextStyle(fontSize: 16.0),
+  _TeacherDashboardTutorialDialogState createState() =>
+      _TeacherDashboardTutorialDialogState();
+}
+
+class _TeacherDashboardTutorialDialogState extends State<TeacherDashboardTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Teacher Dashboard',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text(
+          'This screen allows you to view all of your classes, add new ones, and manage your exams.',
+          style: TextStyle(fontSize: 16.0),
+        ),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. '),
+              TextSpan(
+                text: 'Add a class',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '1. Add a class by clicking on the Add Class button at the bottom of the screen.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\n a. Select a desired class and subject from the dropdown, or create your own name by clicking on the + icon on the right.',
-                      style: TextStyle(fontSize: 16.0),
+              TextSpan(text: ' by clicking on the '),
+              WidgetSpan(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.deepPurple,
+                    side: BorderSide(width: 2, color: Colors.deepPurple),
+                    padding: EdgeInsets.symmetric(horizontal: 35, vertical: 7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    Text(
-                      '\n b. Click the Add button to add your class to the dashboard.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
+                  ),
+                  child: Text(
+                    'ADD CLASS +',
+                    style: GoogleFonts.raleway(fontSize: 18),
+                  ),
                 ),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '2. To view your classes, click inside the rectangle with your class name.',
-                style: TextStyle(fontSize: 16.0),
+              TextSpan(text: ' \n button at the bottom of the screen.\n'),
+              TextSpan(text: '  \n a. Select a desired class and subject from the dropdown, or create your own name by clicking on the '),
+              WidgetSpan(
+                child: Icon(Icons.add, size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '3. To edit your class name, click on the pencil icon next to the class name.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '4. To delete a class, click on the trash bin icon next to the class name. '
-                    'You will see a confirmation message asking if you want to delete the class.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '5. To view or create your exams, click on the Manage Exams button at the bottom of the screen.',
-                style: TextStyle(fontSize: 16.0),
-              ),
+              TextSpan(text: ' icon on the right.'),
             ],
           ),
         ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. To '),
+          TextSpan(
+            text: 'view your classes',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', click inside the rectangle with your class name.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'edit your class name',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+          ),
+          TextSpan(text: ', click on the '),
+          WidgetSpan(
+            child: Icon(Icons.edit, size: 24.0, color: Colors.black, semanticLabel: 'Edit Icon'),
+          ),
+          TextSpan(text: ' icon next to the class name.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '4. To '),
+          TextSpan(
+            text: 'delete a class',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+          ),
+          TextSpan(text: ', click on the '),
+          WidgetSpan(
+            child: Icon(Icons.delete, size: 24.0, color: Colors.black, semanticLabel: 'Delete Icon'),
+          ),
+          TextSpan(
+            text: ' icon next to the class name. '
+                'You will see a confirmation message asking if you want to delete the class.',
+          ),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '5. To '),
+          TextSpan(
+            text: 'view or create your exams, ',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: 'click on'),
+          WidgetSpan(
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.deepPurple,
+                side: BorderSide(width: 2, color: Colors.deepPurple),
+                padding: EdgeInsets.symmetric(horizontal: 35, vertical: 7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: Text(
+                'MANAGE EXAMS',
+                style: GoogleFonts.raleway(fontSize: 18),
+              ),
+            ),
+          ),
+          TextSpan(text: ' \n button at the bottom of the screen.\n'),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
       ),
       actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Got it'),
-        ),
+        if (_currentIndex < _instructions.length - 1)
+          TextButton(
+            onPressed: _nextInstruction,
+            child: Text('Next'),
+          ),
+        if (_currentIndex == _instructions.length - 1)
+          TextButton(
+            onPressed: () {
+              _goToNextScreen(); // Navigate to the next screen
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('Got it'),
+          ),
       ],
     );
   }
