@@ -60,7 +60,7 @@ class _RegradeScreenState extends State<RegradeScreen> {
     if (savedResults != null) {
       // Initialize questionCorrectness based on saved results
       _initializeQuestionCorrectness(savedResults);
-      // Initialize sub_scores based on saved results
+      // Initialize sub_scores based on saved esults
       _initializeSubScores(savedResults);
     }
   }
