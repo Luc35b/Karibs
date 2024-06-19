@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
+import 'package:karibs/main.dart';
 
 class TestGradeScreen extends StatefulWidget {
   final int classId;
@@ -191,106 +193,145 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-
+          foregroundColor: White,
+          backgroundColor: DeepPurple,
           title: Text('Grade Exam for ${widget.testTitle}'),
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Column(
+            : Center(
+
+        child:Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
             if (_className != null)
-        Padding(
-        padding: const EdgeInsets.all(8.0),
-    child: Text(
-    'Grading details for class: $_className and exam: ${widget.testTitle}',
-    style: const TextStyle(fontSize: 20),
-    ),
-    ),
-    Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: DropdownButton<int>(
-    hint: const Text("Select Student"),
-    value: _selectedStudentId,
-    onChanged: (int? newValue) {
-    setState(() {
-    _selectedStudentId = newValue;
-    _initializeCategoryScores(); // Clear categoryScores when a new student is selected
-    _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
-    question_answer_map.clear();
-    });
-    },
-    items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
-    return DropdownMenuItem<int>(
-    value: student['id'],
-    enabled: !_gradedStudentIds.contains(student['id']), // Disable graded students
-    child: Text(
-    student['name'],
-    style: TextStyle(
-    color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black, // Change color based on grading status
-    ),
-    ),
-    );
-    }).toList(),
-    ),
-    ),
-    if (_selectedStudentId != null)
-    Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Text(
-    'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-    style: const TextStyle(fontSize: 18),
-    ),
-    ),
-    if (_selectedStudentId != null)
-    Expanded(
-    child: ListView.builder(
-    itemCount: _questions.length,
-    itemBuilder: (context, index) {
-    int questionId = _questions[index]['id'];
-    int categoryId = _questions[index]['category_id'];
-    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
-    return ListTile(
-    title: Text(_questions[index]['text']),
-    subtitle: Text(categoryName),
-    tileColor: questionCorrectness[questionId] == 1
-    ? Colors.green.withOpacity(0.2)
-        : questionCorrectness[questionId] == -1
-    ? Colors.red.withOpacity(0.2)
-        : questionCorrectness[questionId] == 0
-    ? Colors.grey.withOpacity(0.2)
-        : null,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.check, color: Colors.green),
-            onPressed: () {
-              _markCorrect(questionId, categoryId);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.clear, color: Colors.red),
-            onPressed: () {
-              _markIncorrect(questionId, categoryId);
-            },
-          ),
-        ],
-      ),
-    );
-    },
-    ),
-    ),
-              if (_gradedStudentIds.length == _students.length)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
+              Padding(
+                  padding: const EdgeInsets.only(left:8.0, right: 8, top: 28),
+              child: Text(
+              'Grading details for class: $_className',
+              style: const TextStyle(fontSize: 20),
+              ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Exam: ${widget.testTitle}',
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 28),
+                  child: DropdownButton<int>(
+                  hint: const Text("Select Student", selectionColor: MidPurple,),
+                  value: _selectedStudentId,
+                  onChanged: (int? newValue) {
+                  setState(() {
+                    _selectedStudentId = newValue;
+                    _initializeCategoryScores(); // Clear categoryScores when a new student is selected
+                    _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
+                    question_answer_map.clear();
+                    });
+                  },
+                  items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
+                  return DropdownMenuItem<int>(
+                    value: student['id'],
+                    enabled: !_gradedStudentIds.contains(student['id']), // Disable graded students
                     child: Text(
-                      "View student report to edit their score.",
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      student['name'],
+                      style: TextStyle(
+                        color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black, // Change color based on grading status
+                      ),
                     ),
+                  );
+                  }).toList(),
+                ),
+                ),
+              if (_selectedStudentId != null)
+              Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+              'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
+              style: const TextStyle(fontSize: 18),
+              ),
+              ),
+              if (_selectedStudentId != null)
+              Expanded(
+              child: ListView.builder(
+              itemCount: _questions.length,
+              itemBuilder: (context, index) {
+              int questionId = _questions[index]['id'];
+              int categoryId = _questions[index]['category_id'];
+              String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+              return ListTile(
+              title: Text(_questions[index]['text']),
+              subtitle: Text(categoryName),
+              tileColor: questionCorrectness[questionId] == 1
+              ? Colors.green.withOpacity(0.2)
+                  : questionCorrectness[questionId] == -1
+              ? Colors.red.withOpacity(0.2)
+                  : questionCorrectness[questionId] == 0
+              ? Colors.grey.withOpacity(0.2)
+                  : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.check, color: Colors.green),
+                      onPressed: () {
+                        _markCorrect(questionId, categoryId);
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.red),
+                      onPressed: () {
+                        _markIncorrect(questionId, categoryId);
+                      },
+                    ),
+                  ],
+                ),
+              );
+              },
+              ),
+              ),
+              if(_students.length == 0)
+                const Center(
+                  child: Column(
+                    children:[
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'No students in class.',
+                          style: TextStyle(fontSize: 18, color: MidPurple),
+                        ),
+                      ),
+                      Text(
+                          'Please click Go to Class to add students.',
+                          style: TextStyle(fontSize: 18, color: MidPurple),
+                        ),
+                    ],
+                  ),
+                )
+              else if (_gradedStudentIds.length == _students.length)
+                const Center(
+                  child: Column(
+                    children:[
+                      Text(
+                          "All students in the class graded.",
+                          style: TextStyle(fontSize: 18, color: MidPurple),
+                        ),
+                      Text(
+                        "Go to class to view student reports",
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                      Text(
+                        "or edit their scores.",
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                    ],
                   ),
                 ),
             ],
+        ),
         ),
       bottomNavigationBar: BottomAppBar(
         child: Padding(
@@ -299,6 +340,16 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 35, vertical: 12),
+                  side: const BorderSide(width: 1, color: DeepPurple),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(35),
+                  ),
+                ),
                 onPressed: (_selectedStudentId != null &&
                     _questions.isNotEmpty &&
                     !_gradedStudentIds.contains(_selectedStudentId) &&
@@ -310,6 +361,16 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                 child: const Text('Save Grade'),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: White,
+                  foregroundColor: DeepPurple,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 35, vertical: 12),
+                  side: const BorderSide(width: 1, color: DeepPurple),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(35),
+                  ),
+                ),
                 onPressed: () {
                   _goToTeacherDashboard(widget.classId);
                 },
