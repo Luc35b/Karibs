@@ -5,7 +5,12 @@ import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'teacher_dashboard.dart';
 
+import '../overlay.dart';
+
+
 class TestsScreen extends StatefulWidget {
+  const TestsScreen({super.key});
+
   @override
   _TestsScreenState createState() => _TestsScreenState();
 }
@@ -116,7 +121,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -125,7 +130,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Add'),
+                  child: Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -153,7 +158,7 @@ class _TestsScreenState extends State<TestsScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () async {
@@ -186,7 +191,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   }
                 }
               },
-              child: Text('Add'),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -248,7 +253,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -295,14 +300,14 @@ class _TestsScreenState extends State<TestsScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteTest(testId);
                 Navigator.of(context).pop();
               },
-              child: Text('Delete'),
+              child: const Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -366,8 +371,8 @@ class _TestsScreenState extends State<TestsScreen> {
       key: _scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
           title: Text('Exams'),
           leading: IconButton(
             icon: Icon(Icons.arrow_back), // Use the back arrow icon
@@ -484,37 +489,37 @@ class _TestsScreenState extends State<TestsScreen> {
             ),
           ),
 
-          //if (_tests.isNotEmpty)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: _showAddTestDialog,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: White,
-                  foregroundColor: DeepPurple,
-                  side: BorderSide(width: 2, color: DeepPurple),
-                  padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                //if (_tests.isNotEmpty)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed: _showAddTestDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: White,
+                        foregroundColor: DeepPurple,
+                        side: BorderSide(width: 2, color: DeepPurple),
+                        padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
+                          SizedBox(width: 8),
+                          Icon(Icons.add),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
-                  SizedBox(width: 8),
-                  Icon(Icons.add),
-                ],
-              ),
-            ),
+              ],
           ),
         ),
-        ],
       ),
-    ),
-    ),
     );
   }
 }

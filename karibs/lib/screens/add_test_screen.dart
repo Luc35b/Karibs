@@ -4,7 +4,7 @@ import 'package:karibs/database/database_helper.dart';
 class AddTestScreen extends StatefulWidget {
   final Function onTestAdded;
 
-  AddTestScreen({required this.onTestAdded});
+  const AddTestScreen({super.key, required this.onTestAdded});
 
   @override
   _AddTestScreenState createState() => _AddTestScreenState();
@@ -22,7 +22,7 @@ class _AddTestScreenState extends State<AddTestScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill out all fields')),
+        const SnackBar(content: Text('Please fill out all fields')),
       );
     }
   }
@@ -39,9 +39,9 @@ class _AddTestScreenState extends State<AddTestScreen> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _addTest,
               child: Text('Add Exam'),

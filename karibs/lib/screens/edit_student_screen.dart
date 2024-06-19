@@ -20,7 +20,7 @@ Color getReportColor(double currScore) {
 class EditStudentScreen extends StatefulWidget {
   final int studentId;
 
-  EditStudentScreen({required this.studentId});
+  const EditStudentScreen({super.key, required this.studentId});
 
   @override
   _EditStudentScreenState createState() => _EditStudentScreenState();
@@ -31,7 +31,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   List<Map<String, dynamic>> _reports = [];
   bool _isLoading = true;
   double? _averageScore = 0.0;
-  TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
   @override
   void initState() {
@@ -100,21 +100,21 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Report'),
+          title: const Text('Add New Report'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: const InputDecoration(labelText: 'Title'),
               ),
               TextField(
                 controller: notesController,
-                decoration: InputDecoration(labelText: 'Notes'),
+                decoration: const InputDecoration(labelText: 'Notes'),
               ),
               TextField(
                 controller: scoreController,
-                decoration: InputDecoration(labelText: 'Score (optional)'),
+                decoration: const InputDecoration(labelText: 'Score (optional)'),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -126,7 +126,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 Navigator.of(context).pop(true);
 
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
@@ -142,7 +142,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 _fetchStudentData();
               },
 
-              child: Text('Add'),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
 
 
             ),
@@ -190,22 +190,48 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
 
   }
+  void _showDeleteConfirmationDialog(int reportId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Report'),
+          content: Text('Are you sure you want to delete this report?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteReport(reportId);
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _deleteStudent() async {
     // Show a confirmation dialog
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Student'),
-        content: Text('Are you sure you want to delete this student?'),
+        title: const Text('Delete Student'),
+        content: const Text('Are you sure you want to delete this student?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: Text('Delete'),
+            child: const Text('Delete', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),
@@ -224,48 +250,79 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child:Scaffold(
       appBar: AppBar(
           backgroundColor: DeepPurple,
           foregroundColor: White,
-          title: Text('Edit Student'),
+          title: const Text('Edit Student'),
           leading: IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () {
                 Navigator.of(context).pop(true);
               }
           ),
           actions: [
+
             IconButton(onPressed: _deleteStudent, icon: Icon(Icons.delete)),
-            IconButton(
-              onPressed: () {
-                // Save the updated name when the user clicks the save button.
-                _updateStudentName(_nameController.text);
-                //navigate back
-                Navigator.of(context).pop(true);
-              },
-              icon: Icon(Icons.save),
-            ),
+
+
           ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           SizedBox(height: 15),
-          if(_student !=null)
+          if(_student != null)
             Padding(
               padding: const EdgeInsets.all(8),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Student Name',
-                  border: OutlineInputBorder(),
-                ),
-                onEditingComplete: () {
-                  // Save the updated name when editing is complete
-                  _updateStudentName(_nameController.text);
-                },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Student Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      onEditingComplete: () {
+                        // Save the updated name when editing is complete
+                        //_updateStudentName(_nameController.text);
+                        // Dismiss the keyboard
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () {
+                      // Save the updated name when the user clicks the save button.
+                      _updateStudentName(_nameController.text);
+                      // Dismiss the keyboard
+                      FocusScope.of(context).unfocus();
+                      // Optionally navigate back or show a confirmation message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Student name saved')),
+                      );
+                    },
+                      child: Text(
+                        'SAVE',
+                        style: TextStyle(color: DeepPurple, fontWeight: FontWeight.bold),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: White,
+                        side: BorderSide(color: DeepPurple, width: 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                  ),
+                ],
+
               ),
             ),
           if (_averageScore != null)
@@ -273,7 +330,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Average Score: ${_averageScore!.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
           SizedBox(
@@ -286,11 +343,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                      padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
                       decoration: BoxDecoration(
                         color: DeepPurple,
                         border: Border.all(width: 2, color: DeepPurple),
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(5),
                           bottomLeft: Radius.circular(5),
@@ -298,7 +355,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         ),
 
                         //borderRadius: BorderRadius.circular(30), // Rounded corners for all
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
@@ -306,9 +363,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                           ),
                         ],
                       ),
-                      child:Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
+                      child:const Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                   ],
                 ),
               )
@@ -339,7 +396,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     LineChartBarData(
                       spots: _prepareDataForChart(),
                       isCurved: false,
-                      colors: [Color(0xFF245209)],
+                      colors: [const Color(0xFF245209)],
                       barWidth: 2,
                     ),
                   ],
@@ -351,7 +408,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                   ),
                   ElevatedButton(
@@ -359,13 +416,13 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: White,
                       foregroundColor: DeepPurple,
-                      side: BorderSide(width: 1, color: DeepPurple),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    child: Text('Add Report', style: TextStyle(fontSize: 20)),
+                    child: const Text('Add Report', style: TextStyle(fontSize: 20)),
                   ),
                 ]
 
@@ -385,46 +442,34 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                       color: Colors.grey.withOpacity(0.5), // Shadow color
                       spreadRadius: 5,
                       blurRadius: 7,
-                      offset: Offset(0, 3), // Shadow position
+                      offset: const Offset(0, 3), // Shadow position
                     ),
                   ],
               ),
               child: ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: UniqueKey(),
-                    onDismissed: (direction){
-                      _deleteReport(_reports[index]['id']);
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right:16),
-                        child: Icon(Icons.delete, color: Colors.white),
-                      ),
-                    ),
-                  child: Container(
+                  return Container(
                     decoration: BoxDecoration(
                       color: getReportColor(_reports[index]['score']).withOpacity(0.5), // Background color of the box
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                     ),
-                    margin: EdgeInsets.only(bottom: 8), // Margin between boxes
+                    margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
                     child: ListTile(
-                      title: Text(_reports[index]['title'], style: TextStyle(fontSize: 24)),
+                      title: Text(_reports[index]['title'], style: const TextStyle(fontSize: 24)),
                       subtitle: Text(_reports[index]['notes']),
                       trailing: SizedBox(
                         width: 130,
                         child: Row(
                           children: [
                             Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
-                            IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
+                            IconButton(onPressed: () {_showDeleteConfirmationDialog(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
+
                           ]
                         ),
                       ),
                     ),
-                  ),
+
                   );
                 },
               ),
@@ -432,6 +477,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

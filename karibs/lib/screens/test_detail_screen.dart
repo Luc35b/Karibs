@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/tests_screen.dart';
+import 'package:karibs/screens/teacher_dashboard.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
-import 'package:karibs/main.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
   final String testTitle;
   final int subjectId;
+
+  //const TestDetailScreen({super.key, required this.testId, required this.testTitle});
 
   TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
 
@@ -88,14 +90,14 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteQuestion(questionId);
                 Navigator.of(context).pop();
               },
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -256,30 +258,24 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       ),
                   ],
                 ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: White,
+                    foregroundColor: DeepPurple,
+                    side: BorderSide(width: 2, color: DeepPurple),
+                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  onPressed: _navigateToAddQuestionScreen,
+                  child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+                )
               ],
             ),
           ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _questions.isNotEmpty
-                  ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: White,
-                  foregroundColor: DeepPurple,
-                  side: BorderSide(width: 2, color: DeepPurple),
-                  padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                onPressed: _navigateToAddQuestionScreen,
-                child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-              )
-                  : Container(),
-            ),
-          ),
+
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
@@ -335,6 +331,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   }
 }
 
+
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
   final int subjectId;
@@ -348,6 +345,7 @@ class ChooseClassDialog extends StatefulWidget {
 class _ChooseClassDialogState extends State<ChooseClassDialog> {
   List<Map<String, dynamic>> _classes = [];
   bool _isLoading = true;
+  String subjName = "";
 
   @override
   void initState() {
@@ -357,10 +355,21 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
 
   Future<void> _fetchClassesBySubjectId() async {
     final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
+    String? name = await DatabaseHelper().getSubjectName(widget.subjectId);
     setState(() {
       _classes = data;
       _isLoading = false;
+      subjName = name!;
     });
+  }
+
+  void _navigateToTeacherDashboard() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TeacherDashboard(),
+      ),
+    );
   }
 
   @override
@@ -369,6 +378,21 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
       title: Text('Choose Class'),
       content: _isLoading
           ? Center(child: CircularProgressIndicator())
+          : _classes.isEmpty
+          ? Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('No Classes Available For This Subject'),
+          SizedBox(height:10),
+          Text(subjName,
+              style: TextStyle(fontSize: 24, color: Colors.blue)),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _navigateToTeacherDashboard,
+            child: Text('Go to Teacher Dashboard'),
+          ),
+        ],
+      )
           : Container(
         width: double.minPositive, // Adjust the width to fit the content
         child: ListView.builder(
@@ -389,7 +413,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: Text('Cancel', style: TextStyle(fontSize: 20)),
         ),
       ],
     );
