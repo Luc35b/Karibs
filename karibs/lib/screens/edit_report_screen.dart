@@ -6,7 +6,7 @@ import 'package:karibs/main.dart';
 class EditReportScreen extends StatefulWidget {
   final int reportId;
 
-  const EditReportScreen({super.key, required this.reportId});
+  EditReportScreen({super.key, required this.reportId});
 
   @override
   _EditReportScreenState createState() => _EditReportScreenState();

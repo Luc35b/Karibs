@@ -6,7 +6,7 @@ class EditQuestionScreen extends StatefulWidget {
   final Function onQuestionUpdated;
   final int subjectId;
 
-  EditQuestionScreen({required this.questionId, required this.onQuestionUpdated, required this.subjectId});
+  const EditQuestionScreen({required this.questionId, required this.onQuestionUpdated, required this.subjectId});
 
   @override
   _EditQuestionScreenState createState() => _EditQuestionScreenState();
@@ -129,17 +129,17 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Category'),
+          title: const Text('Add New Category'),
           content: TextField(
             controller: categoryNameController,
-            decoration: InputDecoration(labelText: 'Category Name'),
+            decoration: const InputDecoration(labelText: 'Category Name'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
@@ -148,7 +148,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Add', style: TextStyle(fontSize: 20)),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -212,11 +212,11 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                               _selectedCategoryId = value;
                             });
                           },
-                          decoration: InputDecoration(labelText: 'Question Category'),
+                          decoration: const InputDecoration(labelText: 'Question Category'),
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: _showAddCategoryDialog,
                       ),
                     ],

@@ -82,21 +82,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Question'),
-          content: Text('Are you sure you want to delete this question?'),
+          title: const Text('Delete Question'),
+          content: const Text('Are you sure you want to delete this question?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteQuestion(questionId);
                 Navigator.of(context).pop();
               },
-              child: Text('Delete', style: TextStyle(fontSize: 20)),
+              child: const Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -176,21 +176,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         actions: [
           TextButton(
             onPressed: _showChooseClassDialog,
-            child: Text(
-              'GRADE',
-              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
             style: TextButton.styleFrom(
-              side: BorderSide(color: Colors.white, width: 1),
+              side: const BorderSide(color: Colors.white, width: 1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
               ),
+            ),
+            child: Text(
+              'GRADE',
+              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Stack(
         children: [
           SingleChildScrollView(
@@ -200,15 +200,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: White,
                       foregroundColor: DeepPurple,
-                      side: BorderSide(width: 2, color: DeepPurple),
-                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      side: const BorderSide(width: 2, color: DeepPurple),
+                      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -223,7 +223,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               children: [
                 ReorderableListView(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+                  physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
                   onReorder: _updateQuestionOrder,
                   children: [
                     for (int index = 0; index < _questions.length; index++)
@@ -236,11 +236,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit),
+                              icon: const Icon(Icons.edit),
                               onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete),
+                              icon: const Icon(Icons.delete),
                               onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
                             ),
                           ],
@@ -248,13 +248,13 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: White,
                     foregroundColor: DeepPurple,
-                    side: BorderSide(width: 2, color: DeepPurple),
-                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                    side: const BorderSide(width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -285,7 +285,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                         value: 0,
                         child: TextButton(
                           onPressed: _generateAndPrintQuestionsPdf,
-                          child: Row(
+                          child: const Row(
                             children: [
                               Icon(Icons.print),
                               SizedBox(width: 8),
@@ -298,7 +298,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                         value: 1,
                         child: TextButton(
                           onPressed: _generateAndPrintAnswerKeyPdf,
-                          child: Row(
+                          child: const Row(
                             children: [
                               Icon(Icons.print),
                               SizedBox(width: 8),
@@ -311,7 +311,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     elevation: 8.0,
                   );
                 },
-                child: Icon(Icons.print),
+                child: const Icon(Icons.print),
               ),
             ),
           ),
@@ -365,25 +365,25 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Choose Class'),
+      title: const Text('Choose Class'),
       content: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _classes.isEmpty
           ? Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('No Classes Available For This Subject'),
-          SizedBox(height:10),
+          const Text('No Classes Available For This Subject'),
+          const SizedBox(height:10),
           Text(subjName,
-              style: TextStyle(fontSize: 24, color: Colors.blue)),
-          SizedBox(height: 16),
+              style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _navigateToTeacherDashboard,
-            child: Text('Go to Teacher Dashboard'),
+            child: const Text('Go to Teacher Dashboard'),
           ),
         ],
       )
-          : Container(
+          : SizedBox(
         width: double.minPositive, // Adjust the width to fit the content
         child: ListView.builder(
           shrinkWrap: true,
@@ -403,7 +403,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel', style: TextStyle(fontSize: 20)),
+          child: const Text('Cancel', style: TextStyle(fontSize: 20)),
         ),
       ],
     );

@@ -29,8 +29,8 @@ class TutorialDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Welcome to KLAS'),
-      content: Column(
+      title: const Text('Welcome to KLAS'),
+      content: const Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -50,7 +50,7 @@ class TutorialDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Got it'),
+          child: const Text('Got it'),
         ),
       ],
     );
@@ -132,7 +132,7 @@ class MainScreenState extends State<MainScreen> {
             onPressed: () {
               _showTutorialDialog();
             },
-            icon: Icon(Icons.info_outline), // Change the icon as needed
+            icon: const Icon(Icons.info_outline), // Change the icon as needed
           ),
         ],
       ),

@@ -39,7 +39,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
     if (_questionCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('No categories available. Please create a new category using +.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 60.0, left: 16.0, right: 16.0),
@@ -60,7 +60,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null && _questionOrder != null) {
       if (_selectedType == 'Multiple Choice' && !_correctChoices.contains(true)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Please select at least one correct choice for multiple-choice questions.'),
             behavior: SnackBarBehavior.floating,
             margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -97,7 +97,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -127,17 +127,17 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Category'),
+          title: const Text('Add New Category'),
           content: TextField(
             controller: categoryNameController,
-            decoration: InputDecoration(labelText: 'Category Name'),
+            decoration: const InputDecoration(labelText: 'Category Name'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () async {
@@ -151,7 +151,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Add', style: TextStyle(fontSize: 20)),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -213,11 +213,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                             _selectedCategoryId = value;
                           });
                         },
-                        decoration: InputDecoration(labelText: 'Question Category'),
+                        decoration: const InputDecoration(labelText: 'Question Category'),
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: const Icon(Icons.add),
                       onPressed: _showAddCategoryDialog,
                     ),
                   ],

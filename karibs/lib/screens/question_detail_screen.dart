@@ -66,10 +66,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
       appBar: AppBar(
         foregroundColor: White,
         backgroundColor: DeepPurple,
-        title: Text('Question Details'),
+        title: const Text('Question Details'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: _navigateToEditQuestionScreen,
           ),
         ],
@@ -92,8 +92,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${category}',
-                  style: TextStyle(fontSize: 16),
+                  '$category',
+                  style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),

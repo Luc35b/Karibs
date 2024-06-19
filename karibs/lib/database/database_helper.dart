@@ -187,9 +187,7 @@ class DatabaseHelper {
 
     if (await databaseFile.exists()) {
       await databaseFile.delete();
-      print('Database deleted');
     } else {
-      print('Database file not found');
     }
 
     _database = null;
