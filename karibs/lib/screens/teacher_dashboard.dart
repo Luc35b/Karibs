@@ -53,12 +53,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _getOrCreateSubjectId('English');
   }
 
-  Future<void> _fetchSubjects() async{
+  Future<void> _fetchSubjects() async {
     final sData = await DatabaseHelper().queryAllSubjects();
+
+    // Extract subject names from sData
+    List<String> fetchedSubjects = [];
+    for (var subject in sData) {
+      fetchedSubjects.add(subject['name'].toString());
+    }
+
     setState(() {
-      _subjects = sData;
+      subjectsList.clear(); // Clear existing subjectsList
+      subjectsList.addAll(fetchedSubjects); // Add fetched subject names to subjectsList
     });
   }
+
 
   Future<void> _fetchClasses() async {
     final cData = await DatabaseHelper().queryAllClassesWithSubjects();
@@ -134,6 +143,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _showAddClassDialog() {
+    _fetchSubjects();
+
     String? selectedClass;
     String? selectedSubject;
 
@@ -171,10 +182,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 child: Text(classItem),
                               );
                             }),
-                            DropdownMenuItem<String>(
-                              value: 'Add New Class',
-                              child: Text('Select Class'),
-                            ),
                           ],
                         ),
                       ),
@@ -231,10 +238,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                 child: Text(subject),
                               );
                             }),
-                            DropdownMenuItem<String>(
-                              value: 'Add New Subject',
-                              child: Text('Select Subject'),
-                            ),
                           ],
                         ),
                       ),
@@ -254,21 +257,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       ),
                     ],
                   ),
-                  if (selectedSubject == 'Add New Subject')
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextFormField(
-                          controller: customSubjectController,
-                          decoration: InputDecoration(labelText: 'Enter custom subject'),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Enter additional details for custom subject...',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
                 ],
               ),
               actions: [
@@ -358,7 +346,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<String?> _showCustomSubjectDialog() async {
     TextEditingController customSubjectController = TextEditingController();
-
     return showDialog<String>(
       context: context,
       builder: (context) {
@@ -390,29 +377,54 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    ).then((_){
-      focusNode.dispose();
-    });
-
-    Future.delayed(Duration(milliseconds: 100), (){
-      focusNode.requestFocus();
-    });
+    );
+    // ).then((_){
+    //   focusNode.dispose();
+    // });
+    //
+    // Future.delayed(Duration(milliseconds: 100), (){
+    //   focusNode.requestFocus();
+    // });
   }
 
-  void _showEditClassDialog(int classId, String currentClassName) {
+  void _showEditClassDialog(int classId, String currentClassName, String currentSubjectName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
-    final FocusNode focusNode = FocusNode();
+    String selectedSubject = currentSubjectName; // Track selected subject
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit Class Name'),
-          content: TextField(
-            controller: classNameController,
-            focusNode: focusNode,
-            autofocus: true,
-            decoration: InputDecoration(labelText: 'Class Name'),
+          title: Text('Edit Class Details'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: classNameController,
+                    decoration: InputDecoration(labelText: 'Class Name'),
+                  ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: selectedSubject,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedSubject = newValue!;
+                      });
+                    },
+                    items: subjectsList.map((String subject) {
+                      return DropdownMenuItem<String>(
+                        value: subject,
+                        child: Text(subject),
+                      );
+                    }).toList(),
+                    decoration: InputDecoration(labelText: 'Subject Name'),
+                  ),
+                ],
+              );
+            },
           ),
           actions: [
             TextButton(
@@ -423,8 +435,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () {
-                if (classNameController.text.isNotEmpty) {
-                  _editClassName(classId, classNameController.text);
+                String newClassName = classNameController.text.trim();
+                String newSubjectName = selectedSubject;
+
+                if (newClassName.isNotEmpty && newSubjectName.isNotEmpty) {
+                  _editClassDetails(classId, newClassName, newSubjectName);
+                  _fetchSubjects(); // Assuming this fetches subjectsList from database
+                  _fetchClasses(); // Assuming this fetches classesList from database
                   Navigator.of(context).pop();
                 }
               },
@@ -433,16 +450,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         );
       },
-    ).then((_) {
-      focusNode.dispose();
-    });
-    Future.delayed(Duration(milliseconds: 100), () {
-      focusNode.requestFocus();
-    });
+    );
   }
 
-  void _editClassName(int classId, String newClassName) async {
-    await DatabaseHelper().updateClass(classId, {'name': newClassName});
+
+  void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
+    //print('Updating class with ID: $classId');
+    //print('New class name: $newClassName');
+    //print('New subject name: $newSubjectName');
+    int newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+   _editClassName(classId, newClassName, newSubjectId);
+
+  }
+
+
+  void _editClassName(int classId, String newClassName, int newSubjectId) async {
+    await DatabaseHelper().updateClass(classId, {'name': newClassName, 'subjectId': newSubjectId});
     _fetchClasses();
     _fetchSubjects();
   }
@@ -534,11 +557,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                     _classes[index]['name'],
                                     style: TextStyle(fontSize: 32),
                                   ),
+                                  subtitle: Text(
+                                    _classes[index]['subjectName'],
+                                    style: TextStyle(fontSize: 20),
+                                  ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name']);},
+                                        onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name'], _classes[index]['subjectName']);},
                                         icon: Icon(Icons.edit),
                                       ),
                                       IconButton(
@@ -621,7 +648,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => TestsScreen()),
-                );
+                ).then((_){
+                  _fetchSubjects();
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: White,
