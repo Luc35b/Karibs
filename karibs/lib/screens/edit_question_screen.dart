@@ -6,8 +6,6 @@ class EditQuestionScreen extends StatefulWidget {
   final Function onQuestionUpdated;
   final int subjectId;
 
-  //const EditQuestionScreen({super.key, required this.questionId, required this.onQuestionUpdated});
-
   EditQuestionScreen({required this.questionId, required this.onQuestionUpdated, required this.subjectId});
 
   @override
@@ -62,6 +60,17 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
 
   void _updateQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null) {
+      if (_selectedType == 'multiple_choice' && !_correctChoices.contains(true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please mark at least one choice as correct'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+          ),
+        );
+        return;
+      }
+
       await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,

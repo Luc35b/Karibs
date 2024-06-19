@@ -7,11 +7,7 @@ class AddQuestionScreen extends StatefulWidget {
   final Function onQuestionAdded;
   final int subjectId;
 
-
-  //const AddQuestionScreen({super.key, required this.testId, required this.onQuestionAdded});
-
   AddQuestionScreen({required this.testId, required this.onQuestionAdded, required this.subjectId});
-
 
   @override
   _AddQuestionScreenState createState() => _AddQuestionScreenState();
@@ -21,13 +17,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _correctAnswerController = TextEditingController(); // Controller for the correct answer
   String? _selectedType;
-
   int? _selectedCategoryId; // New field for category
   final List<String> _questionTypes = ['Multiple Choice', 'Fill in the Blank', 'Essay'];
   List<Map<String, dynamic>> _questionCategories = []; // New list of categories
   List<TextEditingController> _choiceControllers = [];
   List<bool> _correctChoices = [];
-
   int? _questionOrder;
 
   @override
@@ -63,13 +57,22 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   }
 
   void _addQuestion() async {
-
-    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null && _questionOrder != null) { // Check for selected category
+    if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null && _questionOrder != null) {
+      if (_selectedType == 'Multiple Choice' && !_correctChoices.contains(true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select at least one correct choice for multiple-choice questions.'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+          ),
+        );
+        return;
+      }
 
       int questionId = await DatabaseHelper().insertQuestion({
         'text': _textController.text,
         'type': _selectedType,
-        'category_id': _selectedCategoryId, // Include category in insertion
+        'category_id': _selectedCategoryId,
         'test_id': widget.testId,
         'order': _questionOrder,
       });
@@ -102,7 +105,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       );
     }
   }
-  
+
   void _addChoiceField() {
     setState(() {
       _choiceControllers.add(TextEditingController());

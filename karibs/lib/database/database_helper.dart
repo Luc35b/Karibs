@@ -358,7 +358,7 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getQuestionsForStudentTest(int studentId, int testId) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.rawQuery('''
-      SELECT questions.id as question_id, questions.text as question_text, questions.type as question_type, questions.category as question_category, questions.test_id, student_test_question.got_correct
+      SELECT questions.id as question_id, questions.text as question_text, questions.type as question_type, questions.category_id as question_category, questions.test_id, student_test_question.got_correct
       FROM questions
       INNER JOIN student_test_question ON questions.id = student_test_question.question_id
       INNER JOIN student_tests ON student_tests.id = student_test_question.student_test_id
@@ -377,7 +377,7 @@ class DatabaseHelper {
         questions.id AS question_id, 
         questions.text AS question_text, 
         questions.type AS question_type, 
-        questions.category AS question_category, 
+        questions.category_id AS question_category, 
         questions.test_id, 
         student_test_question.got_correct
       FROM reports

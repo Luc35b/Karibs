@@ -22,7 +22,7 @@ class _RegradeScreenState extends State<RegradeScreen> {
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
-  Map<String, int> sub_scores = {};
+  Map<int, int> categoryScores = {}; // Updated to store category scores
   Map<int, int> questionCorrectness = {};
   String? _testTitle;
   int? _testId;
@@ -45,7 +45,7 @@ class _RegradeScreenState extends State<RegradeScreen> {
       _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
       _className = await DatabaseHelper().getClassName(_student!['class_id']);
 
-      // Initialize sub_scores and questionCorrectness based on saved data
+      // Initialize categoryScores and questionCorrectness based on saved data
       await _initializeSavedResults();
     }
 
@@ -60,26 +60,18 @@ class _RegradeScreenState extends State<RegradeScreen> {
     if (savedResults != null) {
       // Initialize questionCorrectness based on saved results
       _initializeQuestionCorrectness(savedResults);
-      // Initialize sub_scores based on saved esults
-      _initializeSubScores(savedResults);
+      // Initialize categoryScores based on saved results
+      _initializeCategoryScores(savedResults);
     }
   }
 
-  void _initializeSubScores(Map<String, dynamic> savedResults) {
-    sub_scores.clear();
-    for (var question in _questions) {
-      String category = question['category'];
-      int questionId = question['id'];
-      int correctness = savedResults['question_correctness'][questionId] ?? 0;
-      if (!sub_scores.containsKey(category)) {
-        sub_scores[category] = 0;
-      }
-      if (correctness == 1) {
-        sub_scores[category] = sub_scores[category]! + 1;
-      } else if (correctness == -1) {
-        sub_scores[category] = sub_scores[category]! - 1;
-      }
-    }
+  void _initializeCategoryScores(Map<String, dynamic> savedResults) {
+    categoryScores.clear();
+    _questions.forEach((question) {
+      int categoryId = question['category_id'];
+      int correctness = savedResults['question_correctness'][question['id']] ?? 0;
+      categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + correctness;
+    });
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -89,26 +81,24 @@ class _RegradeScreenState extends State<RegradeScreen> {
     });
   }
 
-  void _markCorrect(int questionId, String category) {
+  void _markCorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == -1) {
         questionCorrectness[questionId] = 1;
-        sub_scores[category] = ((sub_scores[category])! + 1);
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + 1;
       } else if (questionCorrectness[questionId] == 0) {
         questionCorrectness[questionId] = 1;
-        sub_scores[category] = ((sub_scores[category])! + 1);
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + 1;
       }
       question_answer_map[questionId] = 1;
     });
   }
 
-  void _markIncorrect(int questionId, String category) {
+  void _markIncorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == 1) {
         questionCorrectness[questionId] = -1;
-        if ((sub_scores[category] ?? 0) > 0) {
-          sub_scores[category] = (sub_scores[category] ?? 0) - 1;
-        }
+        categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) - 1;
       }
       if (questionCorrectness[questionId] == 0) {
         questionCorrectness[questionId] = -1;
@@ -118,35 +108,12 @@ class _RegradeScreenState extends State<RegradeScreen> {
   }
 
   void _saveRegradingResults() async {
-    // Calculate total score and sub-scores
+    // Calculate total score and category scores
     int totalQuestions = _questions.length;
-    int vocabQuestions = 0;
-    int compQuestions = 0;
-    for (int i = 0; i < totalQuestions; i++) {
-      if (_questions[i]['category'] == 'Vocab') {
-        vocabQuestions++;
-      } else {
-        compQuestions++;
-      }
-    }
-    int totalCorrect = sub_scores.values.fold(0, (sum, score) => sum + score);
+    double totalScore = (categoryScores.values.fold(0, (sum, score) => sum + score) / totalQuestions) * 100;
 
-    double totalScore = (totalCorrect / totalQuestions) * 100;
-    double vocabScore = (sub_scores['Vocab'] ?? 0) / vocabQuestions * 100;
-    double compScore = (sub_scores['Comprehension'] ?? 0) / compQuestions * 100;
-
-    // Ensure scores are not negative
+    // Ensure total score is not negative
     totalScore = totalScore.clamp(0, 100);
-    vocabScore = vocabScore.clamp(0, 100);
-    compScore = compScore.clamp(0, 100);
-
-    print({
-      'student_id': _selectedStudentId!,
-      'test_id': _testId!,
-      'total_score': totalScore,
-      'vocab_score': vocabScore,
-      'comp_score': compScore,
-    });
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -154,21 +121,15 @@ class _RegradeScreenState extends State<RegradeScreen> {
         'student_id': _selectedStudentId!,
         'test_id': _testId!,
         'total_score': totalScore,
-        'vocab_score': vocabScore,
-        'comp_score': compScore,
       });
       await DatabaseHelper().updateReport(widget.reportId, {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
         'notes': 'Regraded test for student',
         'score': totalScore,
-        'vocab_score': vocabScore,
-        'comp_score': compScore,
       });
 
       int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, _testId!);
-
-      print(question_answer_map);
 
       question_answer_map.forEach((key, value) async {
         await DatabaseHelper().updateStudentTestQuestion({
@@ -176,22 +137,16 @@ class _RegradeScreenState extends State<RegradeScreen> {
           'question_id': key,
           'got_correct': value,
         });
-        print({
-          'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value,
-        });
       });
 
-      // Show a confirmation message or navigate back
+    // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Grades updated successfully'),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-          )
+        const SnackBar(
+          content: Text('Grades updated successfully'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
       );
-
       // Notify the provider that a student has been regraded
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
@@ -240,10 +195,10 @@ class _RegradeScreenState extends State<RegradeScreen> {
                   itemCount: _questions.length,
                   itemBuilder: (context, index) {
                     int questionId = _questions[index]['id'];
-                    String category = _questions[index]['category'];
+                    int categoryId = _questions[index]['category_id'];
                     return ListTile(
                       title: Text(_questions[index]['text']),
-                      subtitle: Text(category),
+                      subtitle: Text('Category: $categoryId'), // Display category instead of subject
                       tileColor: questionCorrectness[questionId] == 1
                           ? Colors.green.withOpacity(0.2)
                           : questionCorrectness[questionId] == -1
@@ -257,13 +212,13 @@ class _RegradeScreenState extends State<RegradeScreen> {
                           IconButton(
                             icon: const Icon(Icons.check, color: Colors.green),
                             onPressed: () {
-                              _markCorrect(questionId, category);
+                              _markCorrect(questionId, categoryId);
                             },
                           ),
                           IconButton(
                             icon: const Icon(Icons.clear, color: Colors.red),
                             onPressed: () {
-                              _markIncorrect(questionId, category);
+                              _markIncorrect(questionId, categoryId);
                             },
                           ),
                         ],
