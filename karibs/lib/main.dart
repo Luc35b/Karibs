@@ -95,17 +95,21 @@ class MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: Row(
+          children: [
+            const Text(''),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showMainTutorialDialog();
+              },
+            ),
+          ],
+        ),
         backgroundColor: DeepPurple,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Show tutorial overlay
-              _showMainTutorialDialog();
-            },
-            icon: Icon(Icons.help_outline),
-          ),
-        ],
+        foregroundColor: White,
       ),
       body: Stack(
         children: [
