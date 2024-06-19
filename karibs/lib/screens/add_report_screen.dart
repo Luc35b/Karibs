@@ -6,7 +6,7 @@ import 'package:karibs/main.dart';
 class AddReportScreen extends StatefulWidget {
   final int studentId;
 
-  AddReportScreen({required this.studentId});
+  const AddReportScreen({super.key, required this.studentId});
 
   @override
   _AddReportScreenState createState() => _AddReportScreenState();
@@ -56,7 +56,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add New Report'),
+        title: const Text('Add New Report'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
       ),
@@ -67,37 +67,37 @@ class _AddReportScreenState extends State<AddReportScreen> {
           children: [
             TextField(
               controller: titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextField(
               controller: notesController,
-              decoration: InputDecoration(labelText: 'Notes'),
+              decoration: const InputDecoration(labelText: 'Notes'),
               keyboardType: TextInputType.multiline,
               maxLines: 5,
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             TextField(
               controller: scoreController,
-              decoration: InputDecoration(labelText: 'Score (optional)'),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(labelText: 'Score (optional)'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop(false); // Cancel action
                   },
-                  child: Text('Cancel'),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: _addReport,
-                  child: Text('Add'),
+                  child: const Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             ),

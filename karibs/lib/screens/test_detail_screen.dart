@@ -13,6 +13,8 @@ class TestDetailScreen extends StatefulWidget {
   final String testTitle;
   final int subjectId;
 
+  //const TestDetailScreen({super.key, required this.testId, required this.testTitle});
+
   TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
 
   @override
@@ -87,14 +89,14 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteQuestion(questionId);
                 Navigator.of(context).pop();
               },
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -379,7 +381,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Cancel'),
+          child: Text('Cancel', style: TextStyle(fontSize: 20)),
         ),
       ],
     );

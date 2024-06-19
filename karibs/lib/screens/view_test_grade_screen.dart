@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/screens/regrade_test_screen.dart';
 
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
@@ -43,6 +44,19 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     });
   }
 
+  void _navigateToRegradeScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RegradeScreen(
+          reportId: widget.reportId,
+        ),
+      ),
+    ).then((_){_fetchQuestionsAndAnswers();});
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +64,14 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
         foregroundColor: White,
         backgroundColor: DeepPurple,
         title: Text('Exam Grade Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              _navigateToRegradeScreen(context); // Navigate to RegradeScreen
+            },
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/student_screens/student_screen.dart';
 import 'score_screen.dart';
 
 class P1T1 extends StatefulWidget {
+  const P1T1({super.key});
+
   @override
   _P1T1State createState() => _P1T1State();
 }
@@ -158,7 +159,7 @@ class _P1T1State extends State<P1T1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Primary 1: Exam 3'),
+        title: const Text('Primary 1: Exam 3'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -168,17 +169,17 @@ class _P1T1State extends State<P1T1> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Text(
                     questions[currentIndex]['section'],
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildQuestion(questions[currentIndex]),
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 if (submitted) {
@@ -213,9 +214,9 @@ class _P1T1State extends State<P1T1> {
       children: [
         Text(
           question['question'],
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         if (isMultipleChoice)
           Column(
             children: List.generate(
@@ -226,7 +227,7 @@ class _P1T1State extends State<P1T1> {
                 bool isCorrect = submitted && option == correctAnswer;
 
                 return Container(
-                  margin: EdgeInsets.symmetric(vertical: 4.0),
+                  margin: const EdgeInsets.symmetric(vertical: 4.0),
                   decoration: BoxDecoration(
                     color: submitColor(isChosen, isCorrect, submitted),
                     border: Border.all(
@@ -260,7 +261,7 @@ class _P1T1State extends State<P1T1> {
                 question['userAnswer'] = value;
               });
             },
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter your answer',
               border: OutlineInputBorder(),
             ),
@@ -269,12 +270,12 @@ class _P1T1State extends State<P1T1> {
           if(chosenAnswer==correctAnswer)
             Text(
               'Good job! Correct answer is: $correctAnswer',
-              style: TextStyle(color: Colors.green),
+              style: const TextStyle(color: Colors.green),
             ),
         if(chosenAnswer != correctAnswer && submitted && isMultipleChoice)
           Text(
             'Correct Answer: $correctAnswer',
-            style: TextStyle(color: Colors.red),
+            style: const TextStyle(color: Colors.red),
           ),
       ],
     );
@@ -283,10 +284,10 @@ class _P1T1State extends State<P1T1> {
   Color submitColor(bool chosen, bool correct, bool submit){
     if(submit){
       if(correct){
-        return Color(0xFFAED581);
+        return const Color(0xFFAED581);
       }
       else if(chosen){
-        return Color(0xFFFF8A65);
+        return const Color(0xFFFF8A65);
       }
     }
     return Colors.white;
@@ -303,16 +304,16 @@ class _P1T1State extends State<P1T1> {
     bool confirmSubmit = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Submit'),
-        content: Text('Are you sure you want to submit this exam?'),
+        title: const Text('Submit'),
+        content: const Text('Are you sure you want to submit this exam?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: Text('Submit'),
+            child: const Text('Submit', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),

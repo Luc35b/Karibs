@@ -1,15 +1,15 @@
 import 'dart:io';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:printing/printing.dart';
+//import 'package:screenshot/screenshot.dart';
 
 class PdfGenerator {
 
   Future<void> generateTestQuestionsPdf(int testId, String testTitle) async {
     final pdf = pw.Document();
-    final questions = await DatabaseHelper().queryAllQuestions(testId);
+    final questions = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
 
     pdf.addPage(
       pw.Page(
@@ -23,11 +23,19 @@ class PdfGenerator {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('Q: ${question['text']}', style: pw.TextStyle(fontSize: 18)),
+                    pw.Text('Q: ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
                     pw.SizedBox(height: 10),
+                    if (question['type'] != 'Fill in the Blank' && question['choices'] != null)
+                      ...question['choices'].map<pw.Widget>((choice) {
+                        return pw.Text(
+                          'A. ${choice['choice_text']}',
+                          style: const pw.TextStyle(fontSize: 16),
+                        );
+                      }).toList(),
+                    pw.SizedBox(height: 20),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           );
         },
@@ -58,24 +66,24 @@ class PdfGenerator {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('Q: ${question['text']}', style: pw.TextStyle(fontSize: 18)),
+                    pw.Text('Q: ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
                     pw.SizedBox(height: 10),
                     if (question['choices'] != null)
                       ...question['choices'].map<pw.Widget>((choice) {
                         return pw.Text(
                           'A: ${choice['choice_text']} - ${choice['is_correct'] == 1 ? 'Correct' : 'Incorrect'}',
-                          style: pw.TextStyle(fontSize: 16),
+                          style: const pw.TextStyle(fontSize: 16),
                         );
                       }).toList()
                     else
                       pw.Text(
                         'A: ${question['answer'] ?? 'No answer provided'}',
-                        style: pw.TextStyle(fontSize: 16),
+                        style: const pw.TextStyle(fontSize: 16),
                       ),
                     pw.SizedBox(height: 20),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           );
         },
@@ -115,11 +123,11 @@ class PdfGenerator {
                       ],
                     ),
                     pw.SizedBox(height: 5),
-                    pw.Text('Notes: ${report['notes']}', style: pw.TextStyle(fontSize: 16)),
+                    pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
                     pw.SizedBox(height: 10),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           );
         },
@@ -135,8 +143,7 @@ class PdfGenerator {
     Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
   }
 
-  Future<void> generateClassReportPdf(
-      String className, double averageGrade, List<Map<String, dynamic>> students) async {
+  Future<void> generateClassReportPdf(String className, double averageGrade, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -145,19 +152,21 @@ class PdfGenerator {
           children: [
             pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 18)),
+            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
             pw.SizedBox(height: 10),
             pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             ...students.map((student) {
+              final averageScore = student['average_score'];
+              final scoreText = averageScore != null ? averageScore.toStringAsFixed(2) : '—';
               return pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text(student['name'], style: pw.TextStyle(fontSize: 16)),
-                  pw.Text(student['average_score']?.toStringAsFixed(2) ?? 'N/A', style: pw.TextStyle(fontSize: 16)),
+                  pw.Text(student['name'], style: const pw.TextStyle(fontSize: 16)),
+                  pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
                 ],
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -171,4 +180,39 @@ class PdfGenerator {
     await Printing.sharePdf(bytes: await pdf.save(), filename: '$className - Report.pdf');
   }
 
+  Future<void> generateIndividualReportPdf(Map<String, dynamic> student, Map<String, dynamic> report) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 20),
+              pw.Text('Report Details:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 5),
+              pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/${student['name']} - ${report['title']} Report.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    // Print the PDF
+    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - ${report['title']} Report.pdf');
+  }
 }

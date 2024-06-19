@@ -60,6 +60,17 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
 
   void _updateQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null) {
+      if (_selectedType == 'multiple_choice' && !_correctChoices.contains(true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please mark at least one choice as correct'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+          ),
+        );
+        return;
+      }
+
       await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,
@@ -88,7 +99,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -128,7 +139,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
@@ -137,7 +148,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Add'),
+              child: Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -154,10 +165,10 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Question'),
+        title: const Text('Edit Question'),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Stack(
         children: [
           SingleChildScrollView(
@@ -168,7 +179,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                 children: [
                   TextField(
                     controller: _textController,
-                    decoration: InputDecoration(labelText: 'Question Text'),
+                    decoration: const InputDecoration(labelText: 'Question Text'),
                   ),
                   DropdownButtonFormField<String>(
                     value: _selectedType,
@@ -183,7 +194,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                         _selectedType = value;
                       });
                     },
-                    decoration: InputDecoration(labelText: 'Question Type'),
+                    decoration: const InputDecoration(labelText: 'Question Type'),
                   ),
                   Row(
                     children: [
@@ -231,23 +242,23 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete),
+                                icon: const Icon(Icons.delete),
                                 onPressed: () => _removeChoiceField(i),
                               ),
                             ],
                           ),
                         ElevatedButton(
                           onPressed: _addChoiceField,
-                          child: Text('Add Choice'),
+                          child: const Text('Add Choice'),
                         ),
                       ],
                     ),
                   if (_selectedType == 'fill_in_the_blank')
                     TextField(
                       controller: _correctAnswerController,
-                      decoration: InputDecoration(labelText: 'Correct Answer'),
+                      decoration: const InputDecoration(labelText: 'Correct Answer'),
                     ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -258,7 +269,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
                 onPressed: _updateQuestion,
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ),
           ),

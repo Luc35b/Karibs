@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:karibs/database/database_students.dart';
 import 'p1t1.dart';
 import 'p1t2.dart';
 import 'p1t3.dart';
 
 class StudentScreen extends StatefulWidget {
+  const StudentScreen({super.key});
+
   @override
   _StudentScreenState createState() => _StudentScreenState();
 }
@@ -17,7 +18,7 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2), // total duration of all animations
+      duration: const Duration(seconds: 2), // total duration of all animations
     );
     _controller.forward(); // start the animation
   }
@@ -37,7 +38,7 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
         if (end > 1.0) end = 1.0;
 
         final animation = Tween<Offset>(
-          begin: Offset(-1, 0),
+          begin: const Offset(-1, 0),
           end: Offset.zero,
         ).animate(
           CurvedAnimation(
@@ -62,7 +63,7 @@ class _StudentScreenState extends State<StudentScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Screen'),
+        title: const Text('Student Screen'),
       ),
       body: ListView(
         children: [
@@ -83,7 +84,7 @@ class GradeLevelCard extends StatelessWidget {
   final String grade;
   final List<String> exams;
 
-  GradeLevelCard({required this.grade, required this.exams});
+  const GradeLevelCard({super.key, required this.grade, required this.exams});
 
   @override
   Widget build(BuildContext context) {
@@ -92,21 +93,21 @@ class GradeLevelCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => P1T1(),
+            builder: (context) => const P1T1(),
           ),
         );
       } else if (grade == 'Primary 1' && index == 1) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => P1T2(),
+            builder: (context) => const P1T2(),
           ),
         );
       } else if (grade == 'Primary 1' && index == 2) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => P1T3(),
+            builder: (context) => const P1T3(),
           ),
         );
       }
@@ -120,13 +121,13 @@ class GradeLevelCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Text(
               grade,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          Container(
+          SizedBox(
             height: 100,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -139,7 +140,7 @@ class GradeLevelCard extends StatelessWidget {
                   },
                   child: Container(
                     width: 100,
-                    margin: EdgeInsets.all(8.0),
+                    margin: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                       color: Colors.deepPurple,
                       borderRadius: BorderRadius.circular(15), // Adjust the radius as needed
@@ -147,7 +148,7 @@ class GradeLevelCard extends StatelessWidget {
                     child: Center(
                       child: Text(
                         exams[index],
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),

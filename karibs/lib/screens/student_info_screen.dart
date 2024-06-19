@@ -10,8 +10,9 @@ import 'report_detail_screen.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
+  //static const routeName = '/student_info';
 
-  StudentInfoScreen({required this.studentId});
+  const StudentInfoScreen({super.key, required this.studentId});
 
   @override
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
@@ -97,11 +98,51 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
-  Future<void> _generatePdf() async {
-    if (_student != null) {
+  void _generatePdfAllReports() async {
+    if (_student != null && _reports.isNotEmpty) {
       await PdfGenerator().generateStudentReportPdf(_student!, _reports);
+    } else {
+      // Show a snackbar or dialog indicating no reports available
     }
   }
+
+  void _selectIndividualReport() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Report'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _reports.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(_reports[index]['title']),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _generatePdfIndividualReport(_reports[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _generatePdfIndividualReport(Map<String, dynamic> report) async {
+    if (_student != null && report.isNotEmpty) {
+      await PdfGenerator().generateIndividualReportPdf(_student!, report);
+    } else {
+      // Show a snackbar or dialog indicating report not available
+    }
+  }
+
+
+
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
@@ -142,31 +183,31 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Info'),
+        title: const Text('Student Info'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop(true);
           },
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           :Column(
         children: [
           //SizedBox(height: 10,),
           Row(
             children: [
-              SizedBox(width: 20,),
+              const SizedBox(width: 20,),
               if(_student !=null)
                 Expanded(child:
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     _student!['name'],
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 36, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -176,15 +217,15 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: White,
                   foregroundColor: DeepPurple,
-                  side: BorderSide(width: 1, color: DeepPurple),
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                  side: const BorderSide(width: 1, color: DeepPurple),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('Edit', style: TextStyle(fontSize: 16),),
+                child: const Text('Edit', style: TextStyle(fontSize: 16),),
               ),
-              SizedBox(width: 20,),
+              const SizedBox(width: 20,),
             ],
           ),
           if (_averageScore != null)
@@ -192,7 +233,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Average Score: ${_averageScore!.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
           SizedBox(
@@ -205,11 +246,11 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                      padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
                       decoration: BoxDecoration(
                         color: DeepPurple,
                         border: Border.all(width: 2, color: DeepPurple),
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(30),
                           topRight: Radius.circular(5),
                           bottomLeft: Radius.circular(5),
@@ -217,7 +258,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                         ),
 
                         //borderRadius: BorderRadius.circular(30), // Rounded corners for all
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10,
@@ -225,10 +266,10 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           ),
                         ],
                       ),
-                      child:Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
+                      child:const Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                   ],
                 ),
@@ -260,7 +301,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     LineChartBarData(
                       spots: _prepareDataForChart(),
                       isCurved: false,
-                      colors: [Color(0xFF245209)],
+                      colors: [const Color(0xFF245209)],
                       barWidth: 2,
                     ),
                   ],
@@ -273,7 +314,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                   ),
                   ElevatedButton(
@@ -281,27 +322,56 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: White,
                       foregroundColor: DeepPurple,
-                      side: BorderSide(width: 1, color: DeepPurple),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    child: Text('Add Report', style: TextStyle(fontSize: 20)),
+                    child: const Text('Add Report', style: TextStyle(fontSize: 20)),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: _generatePdf,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Generate PDF'),
+                            content: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    title: const Text('All Reports'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _generatePdfAllReports();
+                                    },
+                                  ),
+                                  ListTile(
+                                    title: const Text('Individual Report'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _selectIndividualReport();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: White,
                       foregroundColor: DeepPurple,
-                      side: BorderSide(width: 1, color: DeepPurple),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    child: Text('PDF', style: TextStyle(fontSize: 20)),
+                    child: const Text('PDF', style: TextStyle(fontSize: 20)),
                   ),
                 ]
 
@@ -319,7 +389,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       color: Colors.grey.withOpacity(0.5), // Shadow color
                       spreadRadius: 5,
                       blurRadius: 7,
-                      offset: Offset(0, 3), // Shadow position
+                      offset: const Offset(0, 3), // Shadow position
                     ),
                   ],
                 ),
@@ -348,7 +418,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                                 : NotWhite,
                             borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                           ),
-                          margin: EdgeInsets.only(bottom: 8), // Margin between boxes
+                          margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
                           child: ListTile(
                             title: Text(_reports[index]['title'],
                               style: TextStyle(fontSize: 24),
