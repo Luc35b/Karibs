@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
 import 'student_info_screen.dart';
 import 'teacher_dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
@@ -70,10 +71,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _className = '';
+  String _selectedSortOption = 'Low Score';
 
   @override
   void initState() {
     super.initState();
+    _loadSortOption();
     _fetchStudents();
   }
 
@@ -83,6 +86,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _fetchStudents();
     }
     super.didChangeDependencies();
+  }
+
+  Future<void> _loadSortOption() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedSortOption = prefs.getString('sortOption') ?? 'Low Score';
+    });
+  }
+
+  Future<void> _saveSortOption(String option) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('sortOption', option);
   }
 
   Future<void> _fetchStudents() async {
@@ -108,6 +123,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _filteredStudents = List<Map<String, dynamic>>.from(_students);
       _isLoading = false;
     });
+
+    //apply saved sort option
+    _sortStudents(_selectedSortOption);
   }
 
   void _addStudent(String studentName) async {
@@ -247,6 +265,10 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _sortStudents(String criteria) {
     setState(() {
+
+      _selectedSortOption = criteria;
+      _saveSortOption(criteria);
+
       if (criteria == 'Name') {
         _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
       } else if (criteria == 'Low Score') {
@@ -294,7 +316,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('Name'),
                 value: 'Name',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
@@ -305,7 +327,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('Low Score'),
                 value: 'Low Score',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
@@ -316,7 +338,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('High Score'),
                 value: 'High Score',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
