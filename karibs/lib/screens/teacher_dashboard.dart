@@ -270,7 +270,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     String classToAdd = selectedClass ?? '';
                     String subjectToAdd = selectedSubject ?? '';
-
+                    if(subjectToAdd.isEmpty){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select a subject'),
+                          duration: Duration(milliseconds: 1500),
+                          behavior: SnackBarBehavior.floating,
+                          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+                        ),
+                      );
+                    }
                     if (classToAdd.isNotEmpty && subjectToAdd.isNotEmpty) {
                       _addClass(classToAdd, subjectToAdd);
                     }
