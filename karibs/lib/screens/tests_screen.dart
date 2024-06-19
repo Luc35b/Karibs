@@ -35,7 +35,7 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllTests();
     setState(() {
       _tests = List<Map<String, dynamic>>.from(data);
-      _isLoading = false;
+
     });
   }
 
@@ -44,6 +44,7 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllSubjects();
     setState(() {
       _subjects = List<Map<String, dynamic>>.from(data);
+      _isLoading = false;
     });
   }
 
