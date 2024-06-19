@@ -418,7 +418,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         width: 130,
                         child: Row(
                           children: [
-                            Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30)),
+                            Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30)),
                             IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
                           ]
                         ),

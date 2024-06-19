@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/screens/teacher_dashboard.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
-import 'package:karibs/main.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -327,6 +327,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   }
 }
 
+
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
   final int subjectId;
@@ -340,6 +341,7 @@ class ChooseClassDialog extends StatefulWidget {
 class _ChooseClassDialogState extends State<ChooseClassDialog> {
   List<Map<String, dynamic>> _classes = [];
   bool _isLoading = true;
+  String subjName = "";
 
   @override
   void initState() {
@@ -349,10 +351,21 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
 
   Future<void> _fetchClassesBySubjectId() async {
     final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
+    String? name = await DatabaseHelper().getSubjectName(widget.subjectId);
     setState(() {
       _classes = data;
       _isLoading = false;
+      subjName = name!;
     });
+  }
+
+  void _navigateToTeacherDashboard() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TeacherDashboard(),
+      ),
+    );
   }
 
   @override
@@ -361,6 +374,21 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
       title: Text('Choose Class'),
       content: _isLoading
           ? Center(child: CircularProgressIndicator())
+          : _classes.isEmpty
+          ? Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('No Classes Available For This Subject'),
+          SizedBox(height:10),
+          Text(subjName,
+              style: TextStyle(fontSize: 24, color: Colors.blue)),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _navigateToTeacherDashboard,
+            child: Text('Go to Teacher Dashboard'),
+          ),
+        ],
+      )
           : Container(
         width: double.minPositive, // Adjust the width to fit the content
         child: ListView.builder(

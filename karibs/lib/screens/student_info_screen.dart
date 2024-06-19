@@ -78,7 +78,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
-
+    print(mutableReports);
     setState(() {
       _student = student;
       _reports = mutableReports;
@@ -430,7 +430,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: Text(_reports[index]['score']?.toString() ?? '', style: TextStyle(fontSize: 30),),
+                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30),),
                           ),
                         ));
                   },
