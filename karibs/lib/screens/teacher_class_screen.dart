@@ -287,9 +287,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
           } else if (a['average_score'] == null || a['average_score'] == 'No status') {
-            return 1; // a is considered greater (null or 'No status' is considered greater)
+            return -1; // a is considered greater (null or 'No status' is considered greater)
           } else if (b['average_score'] == null || b['average_score'] == 'No status') {
-            return -1; // b is considered greater (null or 'No status' is considered greater)
+            return 1; // b is considered greater (null or 'No status' is considered greater)
           } else {
             // Sort by average_score ascending
             return a['average_score'].compareTo(b['average_score']);
@@ -302,9 +302,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
           } else if (a['average_score'] == null || a['average_score'] == 'No status') {
-            return -1; // a is considered lesser (null or 'No status' is considered lesser)
+            return 1; // a is considered lesser (null or 'No status' is considered lesser)
           } else if (b['average_score'] == null || b['average_score'] == 'No status') {
-            return 1; // b is considered lesser (null or 'No status' is considered lesser)
+            return -1; // b is considered lesser (null or 'No status' is considered lesser)
           } else {
             // Sort by average_score ascending
             return a['average_score'].compareTo(b['average_score']);
