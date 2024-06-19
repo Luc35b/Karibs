@@ -179,7 +179,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     var report = await DatabaseHelper().queryReport(widget.reportId);
     int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
     print(studentTestId);
-    Map<String,double> categories = await DatabaseHelper().getCategoryScoresbyStudentTestId(studentTestId!);
+    Map<String,double?> categories = await DatabaseHelper().getCategoryScoresbyStudentTestId(studentTestId!);
+    Map<String,double> cats_no_null = {};
+    categories.forEach((key,val) {
+      if(val != null) {
+        cats_no_null[key] = val;
+      }
+    });
 
     print(categories);
     setState(() {
@@ -187,7 +193,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       reportTitle = report?['title'] ?? '';
       reportNotes = report?['notes'] ?? '';
       reportScore = report?['score']?.toDouble() ?? 0.0;
-      categoryScores = categories;
+      categoryScores = cats_no_null;
     });
 
 
