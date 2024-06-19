@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_class_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:karibs/screens/tests_screen.dart';
@@ -41,6 +42,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   ];
 
   bool _isLoading = true;
+
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TeacherDashboardTutorialDialog();
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -516,6 +526,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         backgroundColor: DeepPurple,
         foregroundColor: White,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Show tutorial overlay
+              _showTutorialDialog();
+            },
+            icon: Icon(Icons.help_outline),
+          ),
+        ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

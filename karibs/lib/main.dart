@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_dashboard.dart';
 import 'student_screens/student_screen.dart';
@@ -23,38 +24,6 @@ void main() async {
       child: const MyApp(),
     ),
   );
-}
-
-class TutorialDialog extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Welcome to KLAS'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'This is a tutorial to guide you through the app features.',
-            style: TextStyle(fontSize: 16.0),
-          ),
-          SizedBox(height: 16.0),
-          Text(
-            '1. Choose your user type by tapping on either "I\'m a Teacher" or "I\'m a Student".',
-            style: TextStyle(fontSize: 16.0),
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Got it'),
-        ),
-      ],
-    );
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -89,17 +58,17 @@ class MainScreenState extends State<MainScreen> {
     // Show the tutorial dialog when the screen first loads
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (_showTutorial) {
-        _showTutorialDialog();
+        _showMainTutorialDialog();
         _showTutorial = false; // Set to false to prevent showing again on subsequent launches
       }
     });
   }
 
-  void _showTutorialDialog() {
+  void _showMainTutorialDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return TutorialDialog();
+        return MainTutorialDialog();
       },
     );
   }
@@ -121,6 +90,7 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,9 +100,10 @@ class MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              _showTutorialDialog();
+              // Show tutorial overlay
+              _showMainTutorialDialog();
             },
-            icon: Icon(Icons.info_outline), // Change the icon as needed
+            icon: Icon(Icons.help_outline),
           ),
         ],
       ),
