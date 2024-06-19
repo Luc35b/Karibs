@@ -248,30 +248,24 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       ),
                   ],
                 ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: White,
+                    foregroundColor: DeepPurple,
+                    side: BorderSide(width: 2, color: DeepPurple),
+                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  onPressed: _navigateToAddQuestionScreen,
+                  child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+                )
               ],
             ),
           ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _questions.isNotEmpty
-                  ? ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: White,
-                  foregroundColor: DeepPurple,
-                  side: BorderSide(width: 2, color: DeepPurple),
-                  padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                onPressed: _navigateToAddQuestionScreen,
-                child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-              )
-                  : Container(),
-            ),
-          ),
+
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
