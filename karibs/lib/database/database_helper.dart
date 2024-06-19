@@ -661,7 +661,7 @@ class DatabaseHelper {
     return null;
   }
 
-  Future<int> getSubjectId(String subjectName) async {
+  Future<int?> getSubjectId(String subjectName) async {
     final db = await database;
     List<Map<String, dynamic>> maps = await db.query(
       'subjects',
@@ -669,7 +669,10 @@ class DatabaseHelper {
       where: 'name = ?',
       whereArgs: [subjectName],
     );
-    return maps.first['id'] as int;
+    if (maps.isNotEmpty){
+      return maps.first['id'] as int;
+    }
+    return null;
   }
 
   Future<List<Map<String, dynamic>>> getQuestionsByTestId(int testId) async {

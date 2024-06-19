@@ -288,25 +288,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   }
 
 
-  void _showValidationDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Validation Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-
   Future<String?> _showCustomClassDialog() async {
     TextEditingController customClassController = TextEditingController();
 
@@ -389,83 +370,140 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   void _showEditClassDialog(int classId, String currentClassName, String currentSubjectName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
+    String selectedClass = currentClassName; // Track selected class
     String selectedSubject = currentSubjectName; // Track selected subject
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Class Details'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Column(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Class Details'),
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: classNameController,
-                    decoration: InputDecoration(labelText: 'Class Name'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Class'),
+                          value: selectedClass,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedClass = newValue!;
+                            });
+                          },
+                          items: [
+                            ...classesList.map((classItem) {
+                              return DropdownMenuItem<String>(
+                                value: classItem,
+                                child: Text(classItem),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customClassName = await _showCustomClassDialog();
+                          if (customClassName != null && customClassName.isNotEmpty) {
+                            setState(() {
+                              if (!classesList.contains(customClassName)) {
+                                classesList.add(customClassName);
+                                _fetchClasses();
+                              }
+                              selectedClass = customClassName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    value: selectedSubject,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedSubject = newValue!;
-                      });
-                    },
-                    items: subjectsList.map((String subject) {
-                      return DropdownMenuItem<String>(
-                        value: subject,
-                        child: Text(subject),
-                      );
-                    }).toList(),
-                    decoration: InputDecoration(labelText: 'Subject Name'),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          hint: Text('Select Subject'),
+                          value: selectedSubject,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedSubject = newValue!;
+                            });
+                          },
+                          items: [
+                            ...subjectsList.map((subject) {
+                              return DropdownMenuItem<String>(
+                                value: subject,
+                                child: Text(subject),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          String? customSubjectName = await _showCustomSubjectDialog();
+                          if (customSubjectName != null && customSubjectName.isNotEmpty) {
+                            setState(() {
+                              if (!subjectsList.contains(customSubjectName)) {
+                                subjectsList.add(customSubjectName);
+                                _getOrCreateSubjectId(customSubjectName);
+                                _fetchSubjects();
+                              }
+                              selectedSubject = customSubjectName;
+                            });
+                          }
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
                   ),
                 ],
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                String newClassName = classNameController.text.trim();
-                String newSubjectName = selectedSubject;
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    String newClassName = selectedClass;
+                    String newSubjectName = selectedSubject;
 
-                if (newClassName.isNotEmpty && newSubjectName.isNotEmpty) {
-                  _editClassDetails(classId, newClassName, newSubjectName);
-                  _fetchSubjects(); // Assuming this fetches subjectsList from database
-                  _fetchClasses(); // Assuming this fetches classesList from database
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('Save'),
-            ),
-          ],
+                    if (newClassName.isNotEmpty && newSubjectName.isNotEmpty) {
+                      _editClassDetails(classId, newClassName, newSubjectName);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text('Save'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
 
+
   void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
-    //print('Updating class with ID: $classId');
-    //print('New class name: $newClassName');
-    //print('New subject name: $newSubjectName');
-    int newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
-   _editClassName(classId, newClassName, newSubjectId);
+    print('Updating class with ID: $classId');
+    print('New class name: $newClassName');
+    print('New subject name: $newSubjectName');
+    int? newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+    print('new subject id: ' + newSubjectId.toString());
+    _editClassName(classId, newClassName, newSubjectId!);
 
   }
 
-
   void _editClassName(int classId, String newClassName, int newSubjectId) async {
-    await DatabaseHelper().updateClass(classId, {'name': newClassName, 'subjectId': newSubjectId});
+    await DatabaseHelper().updateClass(classId, {'name': newClassName, 'subject_id': newSubjectId});
     _fetchClasses();
     _fetchSubjects();
   }
