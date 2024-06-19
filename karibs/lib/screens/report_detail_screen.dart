@@ -10,7 +10,6 @@ import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
 
 
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -179,15 +178,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     var report = await DatabaseHelper().queryReport(widget.reportId);
     int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
     print(studentTestId);
-    Map<String,double?> categories = await DatabaseHelper().getCategoryScoresbyStudentTestId(studentTestId!);
-    Map<String,double> cats_no_null = {};
-    categories.forEach((key,val) {
-      if(val != null) {
-        cats_no_null[key] = val;
-      }
-    });
-
-    print(categories);
+    Map<String, double> cats_no_null = {};
+    if(studentTestId != null) {
+      Map<String, double?> categories = await DatabaseHelper()
+          .getCategoryScoresbyStudentTestId(studentTestId);
+      print(categories);
+      categories.forEach((key, val) {
+        if (val != null) {
+          cats_no_null[key] = val;
+        }
+      });
+    }
+    print(cats_no_null);
     setState(() {
       reportInfo = report ?? {};
       reportTitle = report?['title'] ?? '';
@@ -281,7 +283,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   ),
                   padding: EdgeInsets.all(20),
                   child: Text(
-                    '${reportScore.toStringAsFixed(1)}',
+                    '${reportScore.toStringAsFixed(2)}',
                     style: TextStyle(fontSize: 24, color: Colors.black),
                   ),
                 ),

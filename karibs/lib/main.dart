@@ -3,7 +3,6 @@ import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_dashboard.dart';
 import 'student_screens/student_screen.dart';
 import 'database/database_helper.dart';
-import 'database/database_students.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -21,7 +20,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => StudentGradingProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -59,6 +58,8 @@ class TutorialDialog extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -66,17 +67,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainScreen(),
+      home: const MainScreen(),
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  MainScreenState createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   bool _isAnimating = false;
   bool _showTutorial = true; // Flag to control showing tutorial dialog
 
@@ -106,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
       _isAnimating = true;
     });
 
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => screen),
@@ -122,7 +125,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(''),
+        title: const Text(''),
         backgroundColor: DeepPurple,
         actions: [
           IconButton(
@@ -136,19 +139,19 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           AnimatedContainer(
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
             transform: Matrix4.translationValues(0, _isAnimating ? 600 : 0, 0),
             child: AnimatedOpacity(
               opacity: _isAnimating ? 0.0 : 1.0,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               child: Container(
-                decoration: BoxDecoration(color: White),
+                decoration: const BoxDecoration(color: White),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: 25),
+                      const SizedBox(height: 25),
                       Image.asset('images/logo.jpg'),
                       Text(
                         'WELCOME TO',
@@ -161,17 +164,17 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                        padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
                         decoration: BoxDecoration(
                           color: DeepPurple,
                           border: Border.all(width: 2, color: DeepPurple),
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(30),
                             topRight: Radius.circular(5),
                             bottomLeft: Radius.circular(5),
                             bottomRight: Radius.circular(30),
                           ),
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                               color: Colors.black12,
                               blurRadius: 10,
@@ -190,7 +193,7 @@ class _MainScreenState extends State<MainScreen> {
                                 color: White,
                               ),
                             ),
-                            SizedBox(height: 24),
+                            const SizedBox(height: 24),
                             Column(
                               children: [
                                 ElevatedButton(
@@ -198,8 +201,8 @@ class _MainScreenState extends State<MainScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: White,
                                     foregroundColor: Colors.white,
-                                    side: BorderSide(width: 2, color: MidPurple),
-                                    padding: EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
+                                    side: const BorderSide(width: 2, color: MidPurple),
+                                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -209,14 +212,14 @@ class _MainScreenState extends State<MainScreen> {
                                     style: GoogleFonts.raleway(fontSize: 28, color: DeepPurple),
                                   ),
                                 ),
-                                SizedBox(height: 25),
+                                const SizedBox(height: 25),
                                 ElevatedButton(
-                                  onPressed: () => _navigateToScreen(StudentScreen()),
+                                  onPressed: () => _navigateToScreen(const StudentScreen()),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: White,
                                     foregroundColor: Colors.white,
-                                    side: BorderSide(width: 2, color: MidPurple),
-                                    padding: EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
+                                    side: const BorderSide(width: 2, color: MidPurple),
+                                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -231,7 +234,7 @@ class _MainScreenState extends State<MainScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),

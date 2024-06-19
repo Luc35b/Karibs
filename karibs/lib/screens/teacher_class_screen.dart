@@ -5,12 +5,14 @@ import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
 import 'student_info_screen.dart';
 import 'teacher_dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
   final bool refresh;
 
-  TeacherClassScreen({required this.classId, required this.refresh});
+  const TeacherClassScreen({super.key, required this.classId, required this.refresh});
 
   @override
   _TeacherClassScreenState createState() => _TeacherClassScreenState();
@@ -36,15 +38,15 @@ Color getStatusColor(String currStatus) {
 Color getStatusColorFill(String currStatus) {
   switch (currStatus) {
     case 'Doing well':
-      return Color(0xFFBBFABB);
+      return const Color(0xFFBBFABB);
     case 'Doing okay':
       return Color(0xFFFAECBB);
     case 'Doing poorly':
       return Color(0xFFFFB68F);
     case 'Needs help':
-      return Color(0xFFFABBBB);
+      return const Color(0xFFFABBBB);
     case 'No status':
-      return Color(0xFFD8D0DB);
+      return const Color(0xFFD8D0DB);
     default:
       return Colors.white;
   }
@@ -67,13 +69,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _filteredStudents = [];
   List<Map<String, dynamic>> _originalStudents = [];
   bool _isLoading = true;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _className = '';
+  String _selectedSortOption = 'Low Score';
 
   @override
   void initState() {
     super.initState();
+    _loadSortOption();
     _fetchStudents();
   }
 
@@ -83,6 +87,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _fetchStudents();
     }
     super.didChangeDependencies();
+  }
+
+  Future<void> _loadSortOption() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedSortOption = prefs.getString('sortOption') ?? 'Low Score';
+    });
+  }
+
+  Future<void> _saveSortOption(String option) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('sortOption', option);
   }
 
   Future<void> _fetchStudents() async {
@@ -108,6 +124,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _filteredStudents = List<Map<String, dynamic>>.from(_students);
       _isLoading = false;
     });
+
+    //apply saved sort option
+    _sortStudents(_selectedSortOption);
   }
 
   void _addStudent(String studentName) async {
@@ -126,7 +145,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Student'),
+          title: const Text('Add New Student'),
           content: TextField(
             controller: studentNameController,
             focusNode: focusNode,
@@ -138,7 +157,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
@@ -147,7 +166,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Add'),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -204,7 +223,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Filter by Status'),
+          title: const Text('Filter by Status'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <String>[
@@ -234,6 +253,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
   }
 
   Future<void> _generateAndPrintPdf() async {
+    if (_students.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No students available to generate PDF.'),
+        ),
+      );
+      return;
+    }
+
     final pdfGenerator = PdfGenerator();
     double averageGrade = 0;
     if (_students.isNotEmpty) {
@@ -247,6 +275,10 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _sortStudents(String criteria) {
     setState(() {
+
+      _selectedSortOption = criteria;
+      _saveSortOption(criteria);
+
       if (criteria == 'Name') {
         _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
       } else if (criteria == 'Low Score') {
@@ -294,7 +326,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('Name'),
                 value: 'Name',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
@@ -305,7 +337,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('Low Score'),
                 value: 'Low Score',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
@@ -316,7 +348,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
               RadioListTile<String>(
                 title: Text('High Score'),
                 value: 'High Score',
-                groupValue: null,
+                groupValue: _selectedSortOption,
                 onChanged: (String? value) {
                   if (value != null) {
                     _sortStudents(value);
@@ -342,7 +374,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
       return Scaffold(
           appBar: AppBar(
-          title: Text('Teacher Class Screen'),
+          title: const Text('Teacher Class Screen'),
           backgroundColor: DeepPurple,
           foregroundColor: White,
           leading: IconButton(
@@ -356,16 +388,16 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       ),
     ),
     body: _isLoading
-    ? Center(child: CircularProgressIndicator())
+    ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
     child: Stack(
     children: [
     Column(
     children: [
-    SizedBox(height: 10),
+    const SizedBox(height: 10),
     Container(
-    margin: EdgeInsets.all(10),
-    decoration: BoxDecoration(
+    margin: const EdgeInsets.all(10),
+    decoration: const BoxDecoration(
     color: MidPurple,
     borderRadius: BorderRadius.only(
     topLeft: Radius.circular(30),
@@ -381,24 +413,24 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     child: Column(
     children: [
-    SizedBox(height: 10),
+    const SizedBox(height: 10),
     Padding(
     padding: const EdgeInsets.all(8.0),
     child: Row(
     children: [
     IconButton(
-    icon: Icon(
+    icon: const Icon(
     Icons.filter_list,
     color: White,
     ),
     onPressed: _showStatusFilterDialog,
     ),
-    SizedBox(width: 8),
+    const SizedBox(width: 8),
     Expanded(
     child: TextField(
     controller: _searchController,
     onChanged: _filterStudents,
-    decoration: InputDecoration(
+    decoration: const InputDecoration(
     filled: true,
     fillColor: NotWhite,
     labelText: 'Search by student name',
@@ -420,11 +452,11 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     Container(
     height: 450,
-    margin: EdgeInsets.all(15),
+    margin: const EdgeInsets.all(15),
     decoration: BoxDecoration(
     color: NotWhite,
     borderRadius: BorderRadius.circular(10),
-    boxShadow: [
+    boxShadow: const [
     BoxShadow(
     color: Colors.black12,
     blurRadius: 10,
@@ -444,7 +476,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     borderRadius:
     BorderRadius.circular(8),
     ),
-    margin: EdgeInsets.all(10),
+    margin: const EdgeInsets.all(10),
     child: ListTile(
     title: Row(
     children: [
@@ -510,18 +542,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
     },
     )
-        : Center(
+        : const Center(
       child: Text(
         'No students available. \nPlease add!',
         style: TextStyle(fontSize: 30),
       ),
     ),
     ),
-      SizedBox(height: 10),
+      const SizedBox(height: 10),
     ],
     ),
     ),
-      SizedBox(height: 10),
+      const SizedBox(height: 10),
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -530,34 +562,34 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: White,
               foregroundColor: DeepPurple,
-              padding: EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
-              side: BorderSide(width: 1, color: DeepPurple),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+              side: const BorderSide(width: 1, color: DeepPurple),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: Text(
+            child: const Text(
               'Add Student +',
-              style: TextStyle(fontSize: 28),
+              style: TextStyle(fontSize: 22),
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           ElevatedButton(
             onPressed: _generateAndPrintPdf,
             style: ElevatedButton.styleFrom(
               backgroundColor: White,
               foregroundColor: DeepPurple,
-              padding: EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
-              side: BorderSide(width: 1, color: DeepPurple),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+              side: const BorderSide(width: 1, color: DeepPurple),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: Text(
-              'PDF',
-              style: TextStyle(fontSize: 28),
+            child: const Text(
+              'Class Report',
+              style: TextStyle(fontSize: 22),
             ),
           ),
         ],

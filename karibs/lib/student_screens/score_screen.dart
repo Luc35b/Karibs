@@ -4,7 +4,7 @@ import 'package:karibs/student_screens/student_screen.dart';
 class ScoreScreen extends StatelessWidget {
   final double grade;
 
-  ScoreScreen({required this.grade});
+  const ScoreScreen({super.key, required this.grade});
 
   @override
   Widget build(BuildContext context) {
@@ -15,19 +15,19 @@ class ScoreScreen extends StatelessWidget {
           children: [
             Text(
               'Your Score: ${(grade * 100).toStringAsFixed(2)}%',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => StudentScreen(),
+                    builder: (context) => const StudentScreen(),
                   ),
                 ); // Navigate back to the previous screen (home page)
               },
-              child: Text('Back to Dashboard'),
+              child: const Text('Back to Dashboard'),
             ),
           ],
         ),
