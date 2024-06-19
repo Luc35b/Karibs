@@ -466,7 +466,7 @@ class _TestsScreenState extends State<TestsScreen> {
                                   onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete),
+                                  icon: Icon(Icons.delete, color: Colors.red[900]),
                                   onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
                                 ),
                               ],
