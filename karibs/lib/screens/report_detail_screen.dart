@@ -11,24 +11,23 @@ import 'package:karibs/main.dart';
 
 
 
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 
 class BarGraph extends StatelessWidget {
   final double score;
-  final double? vocabScore;
-  final double? comprehensionScore;
+  final Map<String, dynamic> categoryScores;
 
-  BarGraph({required this.score, this.vocabScore, this.comprehensionScore});
+  BarGraph({required this.score, required this.categoryScores});
 
   Color getScoreColor(double currScore) {
     if (currScore >= 70) {
       return Color(0xFFBBFABB);
     } else if (currScore >= 50) {
       return Color(0xFFe6cc00);
-    } else if (currScore >=20) {
+    } else if (currScore >= 20) {
       return Color(0xFFFFB68F);
-    }else {
+    } else {
       return Color(0xFFFA6478);
     }
   }
@@ -53,43 +52,31 @@ class BarGraph extends StatelessWidget {
         ],
         barsSpace: 20,
       ),
-      if (vocabScore != null)
-        BarChartGroupData(
-          x: 1,
-          barRods: [
-            BarChartRodData(
-              y: vocabScore!,
-              colors: [getScoreColor(vocabScore!)],
-              width: 80,
-              borderRadius: BorderRadius.zero,
-              backDrawRodData: BackgroundBarChartRodData(
-                show: true,
-                y: 100,
-                colors: [Colors.grey[200]!],
-              ),
-            ),
-          ],
-          barsSpace: 20,
-        ),
-      if (comprehensionScore != null)
-        BarChartGroupData(
-          x: 2,
-          barRods: [
-            BarChartRodData(
-              y: comprehensionScore!,
-              colors: [getScoreColor(comprehensionScore!)],
-              width: 80,
-              borderRadius: BorderRadius.zero,
-              backDrawRodData: BackgroundBarChartRodData(
-                show: true,
-                y: 100,
-                colors: [Colors.grey[200]!],
-              ),
-            ),
-          ],
-          barsSpace: 20,
-        ),
     ];
+
+    int xValue = 1;
+    categoryScores.forEach((category, categoryScore) {
+        barGroups.add(
+          BarChartGroupData(
+            x: xValue,
+            barRods: [
+              BarChartRodData(
+                y: categoryScore,
+                colors: [getScoreColor(categoryScore)],
+                width: 80,
+                borderRadius: BorderRadius.zero,
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: true,
+                  y: 100,
+                  colors: [Colors.grey[200]!],
+                ),
+              ),
+            ],
+            barsSpace: 20,
+          ),
+        );
+        xValue++;
+    });
 
     return Container(
       width: 400,
@@ -113,15 +100,12 @@ class BarGraph extends StatelessWidget {
               margin: 10,
               reservedSize: 14,
               getTitles: (double value) {
-                switch (value.toInt()) {
-                  case 0:
-                    return 'Total';
-                  case 1:
-                    return 'Vocabulary';
-                  case 2:
-                    return 'Comprehension';
-                  default:
-                    return '';
+                if (value.toInt() == 0) {
+                  return 'Total';
+                } else if (value.toInt() <= categoryScores.keys.length) {
+                  return categoryScores.keys.elementAt(value.toInt()-1);
+                } else {
+                  return '';
                 }
               },
             ),
@@ -136,18 +120,12 @@ class BarGraph extends StatelessWidget {
               tooltipBgColor: Colors.blueGrey,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 String category;
-                switch (group.x.toInt()) {
-                  case 0:
-                    category = 'Total';
-                    break;
-                  case 1:
-                    category = 'Vocabulary';
-                    break;
-                  case 2:
-                    category = 'Comprehension';
-                    break;
-                  default:
-                    category = '';
+                if (group.x.toInt() == 0) {
+                  category = 'Total';
+                } else if (group.x.toInt() <= categoryScores.length) {
+                  category = categoryScores.keys.elementAt(group.x.toInt() - 1);
+                } else {
+                  category = '';
                 }
                 return BarTooltipItem(
                   category + '\n',
@@ -175,9 +153,6 @@ class BarGraph extends StatelessWidget {
   }
 }
 
-
-
-
 class ReportDetailScreen extends StatefulWidget {
   final int reportId;
 
@@ -192,8 +167,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   String reportTitle = " ";
   String reportNotes = " ";
   double reportScore = 0.0;
-  double? vocabScore;
-  double? comprehensionScore;
+  Map<String, dynamic> categoryScores = {};
 
   @override
   void initState() {
@@ -202,16 +176,29 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   Future<void> queryReportInformation() async {
-    var x = await DatabaseHelper().queryReport(widget.reportId);
-    setState(() {
-      reportInfo = x!;
-      reportTitle = x['title'];
-      reportNotes = x['notes'];
-      reportScore = x['score'];
-      vocabScore = x['vocab_score'];
-      comprehensionScore = x['comp_score'];
+    var report = await DatabaseHelper().queryReport(widget.reportId);
+    int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
+    print(studentTestId);
+    Map<String,double?> categories = await DatabaseHelper().getCategoryScoresbyStudentTestId(studentTestId!);
+    Map<String,double> cats_no_null = {};
+    categories.forEach((key,val) {
+      if(val != null) {
+        cats_no_null[key] = val;
+      }
     });
+
+    print(categories);
+    setState(() {
+      reportInfo = report ?? {};
+      reportTitle = report?['title'] ?? '';
+      reportNotes = report?['notes'] ?? '';
+      reportScore = report?['score']?.toDouble() ?? 0.0;
+      categoryScores = cats_no_null;
+    });
+
+
   }
+
 
   void _navigateToEditReportScreen() {
     Navigator.push(
@@ -235,19 +222,15 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   Color getStatusColorFill(double currStatus) {
-    if(currStatus >=70) {
+    if (currStatus >= 70) {
       return Color(0xFFBBFABB);
-    }
-    else if (currStatus >=50){
+    } else if (currStatus >= 50) {
       return Color(0xFFFAECBB);
-    }
-    else if (currStatus >=20){
+    } else if (currStatus >= 20) {
       return Color(0xFFFFB68F);
-    }
-    else if (currStatus >= 0.01) {
+    } else if (currStatus >= 0.01) {
       return Color(0xFFFABBBB);
-    }
-    else {
+    } else {
       return Color(0xFFD8D0DB);
     }
   }
@@ -262,7 +245,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
-            child: Text('Edit Report', style: GoogleFonts.raleway(color: White)),
+            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
             style: TextButton.styleFrom(
               side: BorderSide(color: Colors.white, width: 1),
               shape: RoundedRectangleBorder(
@@ -292,23 +275,21 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 alignment: Alignment.center,
                 child: Container(
                   decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: getStatusColorFill(reportScore), // Adjust the color based on the score
-                      border: Border.all(color: getReportColor(reportScore),width: 2)
+                    shape: BoxShape.circle,
+                    color: getStatusColorFill(reportScore), // Adjust the color based on the score
+                    border: Border.all(color: getReportColor(reportScore), width: 2),
                   ),
                   padding: EdgeInsets.all(20),
                   child: Text(
                     '${reportScore.toStringAsFixed(1)}',
                     style: TextStyle(fontSize: 24, color: Colors.black),
-
                   ),
                 ),
               ),
               SizedBox(height: 20),
               BarGraph(
                 score: reportScore,
-                vocabScore: vocabScore,
-                comprehensionScore: comprehensionScore,
+                categoryScores: categoryScores, // Exclude null scores
               ),
               SizedBox(height: 20),
               Align(
@@ -341,13 +322,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       return Colors.green;
     } else if (score >= 50) {
       return Colors.yellow;
-    } else if (score >=20){
+    } else if (score >= 20) {
       return Colors.orange;
-    } else if (score >= 0.01){
+    } else if (score >= 0.01) {
       return Colors.red;
-    }
-    else {
+    } else {
       return Colors.blueGrey;
     }
   }
 }
+

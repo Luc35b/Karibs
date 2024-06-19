@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
 import 'student_info_screen.dart';
 import 'teacher_dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherClassScreen extends StatefulWidget {
   final int classId;
@@ -65,14 +66,17 @@ String changeStatus(double avgScore) {
 class _TeacherClassScreenState extends State<TeacherClassScreen> {
   List<Map<String, dynamic>> _students = [];
   List<Map<String, dynamic>> _filteredStudents = [];
+  List<Map<String, dynamic>> _originalStudents = [];
   bool _isLoading = true;
   TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _className = '';
+  String _selectedSortOption = 'Low Score';
 
   @override
   void initState() {
     super.initState();
+    _loadSortOption();
     _fetchStudents();
   }
 
@@ -82,6 +86,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _fetchStudents();
     }
     super.didChangeDependencies();
+  }
+
+  Future<void> _loadSortOption() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedSortOption = prefs.getString('sortOption') ?? 'Low Score';
+    });
+  }
+
+  Future<void> _saveSortOption(String option) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('sortOption', option);
   }
 
   Future<void> _fetchStudents() async {
@@ -103,9 +119,13 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     data = await DatabaseHelper().queryAllStudents(widget.classId);
     setState(() {
       _students = data;
-      _filteredStudents = List.from(data);
+      _originalStudents = List<Map<String, dynamic>>.from(_students);
+      _filteredStudents = List<Map<String, dynamic>>.from(_students);
       _isLoading = false;
     });
+
+    //apply saved sort option
+    _sortStudents(_selectedSortOption);
   }
 
   void _addStudent(String studentName) async {
@@ -173,20 +193,22 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
   void _filterStudents(String query) {
     setState(() {
-      List<Map<String, dynamic>> filteredList = _students;
+      _filteredStudents = List<Map<String, dynamic>>.from(_students); // Start with a copy of _students
+
       if (_selectedStatus != 'All') {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['status'] == _selectedStatus;
         }).toList();
       }
+
       if (query.isNotEmpty) {
-        filteredList = filteredList.where((student) {
+        _filteredStudents = _filteredStudents.where((student) {
           return student['name'].toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
-      _filteredStudents = filteredList;
     });
   }
+
 
   void _filterByStatus(String status) {
     setState(() {
@@ -239,6 +261,96 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           _students.length;
     }
     await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
+  }
+
+  void _sortStudents(String criteria) {
+    setState(() {
+
+      _selectedSortOption = criteria;
+      _saveSortOption(criteria);
+
+      if (criteria == 'Name') {
+        _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
+      } else if (criteria == 'Low Score') {
+        _filteredStudents.sort((a, b) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return 1; // a is considered greater (null or 'No status' is considered greater)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return -1; // b is considered greater (null or 'No status' is considered greater)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
+      else if (criteria == 'High Score') {
+        _filteredStudents.sort((b, a) {
+          // Handle case where average_score is null or 'No status'
+          if (a['average_score'] == null && b['average_score'] == null) {
+            return 0;
+          } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+            return -1; // a is considered lesser (null or 'No status' is considered lesser)
+          } else if (b['average_score'] == null || b['average_score'] == 'No status') {
+            return 1; // b is considered lesser (null or 'No status' is considered lesser)
+          } else {
+            // Sort by average_score ascending
+            return a['average_score'].compareTo(b['average_score']);
+          }
+        });
+      }
+    });
+  }
+
+  void _showSortOptionsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Sort by'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text('Name'),
+                value: 'Name',
+                groupValue: _selectedSortOption,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('Low Score'),
+                value: 'Low Score',
+                groupValue: _selectedSortOption,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              RadioListTile<String>(
+                title: Text('High Score'),
+                value: 'High Score',
+                groupValue: _selectedSortOption,
+                onChanged: (String? value) {
+                  if (value != null) {
+                    _sortStudents(value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -318,6 +430,13 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     ),
     SizedBox(width: 8),
+      IconButton(
+        icon: Icon(
+          Icons.build_rounded,
+          color: White,
+        ),
+        onPressed: _showSortOptionsDialog,
+      ),
     ],
     ),
     ),
