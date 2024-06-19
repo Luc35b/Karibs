@@ -293,6 +293,22 @@ class DatabaseHelper {
 
   }
 
+  Future<String?> getSubjectName(int subjectId) async {
+    final db = await database;
+
+    List<Map<String,dynamic>> result = await db.query(
+      'subjects',
+      columns:['name'],
+      where: 'id = ?',
+      whereArgs: [subjectId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['name'] as String;
+    }
+    return null;
+
+  }
+
   Future<int?> getCategoryId(String categoryName) async {
     final db = await database;
 
@@ -585,6 +601,38 @@ class DatabaseHelper {
 
   Future<int> deleteReport(int id) async {
     Database db = await database;
+
+    // Fetch the related student_test IDs
+    List<Map<String, dynamic>> studentTests = await db.query(
+      'student_tests',
+      where: 'test_id = (SELECT test_id FROM reports WHERE id = ?)',
+      whereArgs: [id],
+    );
+
+    // Extract student_test IDs
+    List<int> studentTestIds = studentTests.map((st) => st['id'] as int).toList();
+
+    if (studentTestIds.isNotEmpty) {
+      // Delete related entries in student_test_question
+      await db.delete(
+        'student_test_question',
+        where: 'student_test_id IN (${studentTestIds.join(',')})',
+      );
+
+      // Delete related entries in student_test_category_scores
+      await db.delete(
+        'student_test_category_scores',
+        where: 'student_test_id IN (${studentTestIds.join(',')})',
+      );
+
+      // Delete the student_tests entries
+      await db.delete(
+        'student_tests',
+        where: 'id IN (${studentTestIds.join(',')})',
+      );
+    }
+
+    // Delete the report
     return await db.delete('reports', where: 'id = ?', whereArgs: [id]);
   }
 
@@ -792,7 +840,7 @@ class DatabaseHelper {
       whereArgs: [reportId],
     );
 
-    if (result.isNotEmpty) {
+    if (result.isNotEmpty && result.first['test_id'] != null) {
       int studentId = result.first['student_id'];
       int testId = result.first['test_id'];
 
