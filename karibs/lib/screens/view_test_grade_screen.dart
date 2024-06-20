@@ -126,7 +126,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                               color: choice['is_correct'] == 1 ? Colors.green : Colors.red,
                             ),
                           );
-                        }),
+                        }).toList(),
                       ],
                     ),
                   ),

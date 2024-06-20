@@ -383,7 +383,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
           ),
         ],
       )
-          : SizedBox(
+          : Container(
         width: double.minPositive, // Adjust the width to fit the content
         child: ListView.builder(
           shrinkWrap: true,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
-import 'student_info_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'add_report_screen.dart';
+import 'student_info_screen.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
@@ -123,7 +123,7 @@ class BarGraph extends StatelessWidget {
                   category = '';
                 }
                 return BarTooltipItem(
-                  '$category\n',
+                  '$category\n', //category + '\n',
                   const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

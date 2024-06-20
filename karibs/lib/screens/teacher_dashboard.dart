@@ -77,22 +77,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       _tests = tData;
       _isLoading = false;
     });
-
+    print(_classes);
   }
   void _deleteClass(int classId) async{
     bool confirmDelete = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Class'),
-        content: const Text('Are you sure you want to delete this class?'),
+        title: Text('Delete Class'),
+        content: Text('Are you sure you want to delete this class?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: const Text('Delete'),
+            child: Text('Delete', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),
@@ -157,7 +157,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Add New Class'),
+              title: Text('Add New Class'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -165,7 +165,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          hint: const Text('Select Class'),
+                          hint: Text('Select Class'),
                           value: selectedClass,
                           onChanged: (String? newValue) {
                             setState(() {
@@ -197,7 +197,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             });
                           }
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                       ),
                     ],
                   ),
@@ -207,21 +207,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       children: [
                         TextFormField(
                           controller: customClassController,
-                          decoration: const InputDecoration(labelText: 'Enter custom class'),
+                          decoration: InputDecoration(labelText: 'Enter custom class'),
                         ),
-                        const SizedBox(height: 10),
-                        const Text(
+                        SizedBox(height: 10),
+                        Text(
                           'Enter additional details for custom class...',
                           style: TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          hint: const Text('Select Subject'),
+                          hint: Text('Select Subject'),
                           value: selectedSubject,
                           onChanged: (String? newValue) {
                             setState(() {
@@ -253,7 +253,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             });
                           }
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                       ),
                     ],
                   ),
@@ -264,29 +264,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
                     String classToAdd = selectedClass ?? '';
                     String subjectToAdd = selectedSubject ?? '';
-                    if(subjectToAdd.isEmpty){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select a subject'),
-                          duration: Duration(milliseconds: 1500),
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-                        ),
-                      );
-                    }
+
                     if (classToAdd.isNotEmpty && subjectToAdd.isNotEmpty) {
                       _addClass(classToAdd, subjectToAdd);
                     }
 
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Add'),
+                  child: Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -304,13 +295,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add Custom Class'),
+          title: Text('Add Custom Class'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
                 controller: customClassController,
-                decoration: const InputDecoration(labelText: 'Enter custom class'),
+                decoration: InputDecoration(labelText: 'Enter custom class'),
               ),
             ],
           ),
@@ -319,14 +310,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customClassName = customClassController.text.trim();
                 Navigator.of(context).pop(customClassName); // Return custom class name
               },
-              child: const Text('Add'),
+              child: Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -340,13 +331,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add Custom Subject'),
+          title: Text('Add Custom Subject'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
                 controller: customSubjectController,
-                decoration: const InputDecoration(labelText: 'Enter custom subject'),
+                decoration: InputDecoration(labelText: 'Enter custom subject'),
               ),
             ],
           ),
@@ -355,14 +346,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customSubjectName = customSubjectController.text.trim();
                 Navigator.of(context).pop(customSubjectName); // Return custom subject name
               },
-              child: const Text('Add'),
+              child: Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -388,7 +379,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Edit Class Details'),
+              title: Text('Edit Class Details'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -396,7 +387,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          hint: const Text('Select Class'),
+                          hint: Text('Select Class'),
                           value: selectedClass,
                           onChanged: (String? newValue) {
                             setState(() {
@@ -426,16 +417,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             });
                           }
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          hint: const Text('Select Subject'),
+                          hint: Text('Select Subject'),
                           value: selectedSubject,
                           onChanged: (String? newValue) {
                             setState(() {
@@ -466,7 +457,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             });
                           }
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                       ),
                     ],
                   ),
@@ -477,7 +468,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -489,7 +480,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: const Text('Save'),
+                  child: Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -502,7 +493,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
+    print('Updating class with ID: $classId');
+    print('New class name: $newClassName');
+    print('New subject name: $newSubjectName');
     int? newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+    print('new subject id: ' + newSubjectId.toString());
     _editClassName(classId, newClassName, newSubjectId!);
 
   }
@@ -517,19 +512,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Dashboard'),
+        title: Text('My Dashboard'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child:Column(
           children: [
-            const SizedBox(height: 100),
-            Container(margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
+            SizedBox(height: 100),
+            Container(margin: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
                 color: MidPurple,
                 //border: Border.all(width: 3),
                 borderRadius: BorderRadius.only(
@@ -555,12 +550,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   ),
                   Container(
                     height: 250, // Adjust height as needed
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
                       color: NotWhite,
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
-                        const BoxShadow(
+                        BoxShadow(
                           color: Colors.black12,
                           blurRadius: 10,
                           offset: Offset(3, 3), // Shadow position
@@ -579,14 +574,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         children: [
                           ListView.builder(
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
+                            physics: NeverScrollableScrollPhysics(),
                             itemCount: _classes.length,
                             itemBuilder: (context, index) {
                               return Container(
                                 decoration: BoxDecoration(
                                   color: White, // Background color of the box
                                   //borderRadius: BorderRadius.circular(20), // Rounded corners for the box
-                                  borderRadius: const BorderRadius.only(
+                                  borderRadius: BorderRadius.only(
                                     topRight: Radius.circular(10),
                                     topLeft: Radius.circular(10),
                                     bottomRight: Radius.circular(10),
@@ -594,27 +589,27 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                   ),
                                   border: Border.all(color: MidPurple, width: 2),
                                 ),
-                                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                                 child: ListTile(
                                   title: Text(
                                     _classes[index]['name'],
-                                    style: const TextStyle(fontSize: 32),
+                                    style: TextStyle(fontSize: 32),
                                   ),
                                   subtitle: Text(
                                     _classes[index]['subjectName'],
-                                    style: const TextStyle(fontSize: 20),
+                                    style: TextStyle(fontSize: 20),
                                   ),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
                                         onPressed: () {_showEditClassDialog(_classes[index]['id'], _classes[index]['name'], _classes[index]['subjectName']);},
-                                        icon: const Icon(Icons.edit),
+                                        icon: Icon(Icons.edit),
                                       ),
                                       IconButton(
                                         onPressed: () {_deleteClass(_classes[index]['id']);},
                                         color: Colors.red[900],
-                                        icon: const Icon(Icons.delete),
+                                        icon: Icon(Icons.delete),
                                       ),
                                     ],
                                   ),
@@ -635,19 +630,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                               );
                             },
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _showAddClassDialog,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: White,
                       foregroundColor: DeepPurple,
-                      side: const BorderSide(width: 2, color: DeepPurple),
-                      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                      side: BorderSide(width: 2, color: DeepPurple),
+                      padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -657,16 +652,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       style: GoogleFonts.raleway(fontSize: 25),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                 ],
               ),
             ),
 
 
-            const SizedBox(height: 15),
-            Container(margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
+            SizedBox(height: 15),
+            Container(margin: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
                 color: MidPurple,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
@@ -685,20 +680,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TestsScreen()),
+                  MaterialPageRoute(builder: (context) => TestsScreen()),
                 ).then((_){
                   _fetchSubjects();
                 });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: White,
-                side: const BorderSide(width: 2, color: DeepPurple),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
+                side: BorderSide(width: 2, color: DeepPurple),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -708,7 +703,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
               ),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
           ],
         ),
       ),
