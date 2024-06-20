@@ -55,8 +55,6 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     ).then((_){_fetchQuestionsAndAnswers();});
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,14 +79,30 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
             padding: EdgeInsets.all(10.0),
             color: Colors.grey[200],
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Icon(Icons.check, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Green tile means the student got it correct.'),
-                SizedBox(width: 16),
-                Icon(Icons.close, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Red tile means the student got it incorrect.'),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      color: Colors.green[100],
+                    ),
+                    SizedBox(width: 8),
+                    Text('Correct', style: TextStyle(color: Colors.green)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      color: Colors.red[100],
+                    ),
+                    SizedBox(width: 8),
+                    Text('Incorrect', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
               ],
             ),
           ),

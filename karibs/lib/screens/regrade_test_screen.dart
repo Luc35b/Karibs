@@ -22,7 +22,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
-  Map<int, double> categoryScores = {}; // Updated to store category scores
+  Map<int, double?> categoryScores = {}; // Updated to store category scores
   Map<int, int> questionCorrectness = {};
   String? _testTitle;
   int? _testId;
@@ -41,7 +41,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _testId = report['test_id'];
       _testTitle = report['title'];
       _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-
 
       // Fetch student and questions details
       _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
@@ -65,20 +64,22 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       // Initialize questionCorrectness based on saved results
       _initializeQuestionCorrectness(savedResults);
       // Initialize categoryScores based on saved results
-      _initializeCategoryScores(savedResults);
+      await _initializeCategoryScores(savedResults);
     }
   }
 
-  void _initializeCategoryScores(Map<String, dynamic> savedResults) async {
+  Future<void> _initializeCategoryScores(Map<String, dynamic> savedResults) async {
     categoryScores.clear();
-    Map<int, double> cats = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
+    Map<int, double?> cats = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
 
     // Convert percentage scores to raw scores based on the number of questions
     for (var entry in cats.entries) {
-      int categoryId = entry.key;
-      double percentageScore = entry.value;
-      int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
-      cats[categoryId] = (percentageScore / 100) * categoryQuestions;
+      if (entry.value != null) {
+        int categoryId = entry.key;
+        double? percentageScore = entry.value;
+        int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
+        cats[categoryId] = (percentageScore! / 100.0) * categoryQuestions;
+      }
     }
 
     setState(() {
@@ -87,7 +88,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
     print(categoryScores); // Ensure correct initialization
   }
-
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
     questionCorrectness.clear();
@@ -126,9 +126,10 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   void _saveRegradingResults() async {
     // Calculate total score and category scores
     int totalQuestions = _questions.length;
-    double totalScore = (categoryScores.values.fold(0.0, (sum, score) => sum + score) / totalQuestions) * 100;
-    print('totalScore: ' + totalScore.toString());
+    double totalScore = (categoryScores.values.where((score) => score != null).fold(0.0, (sum, score) => sum + score!) / totalQuestions) * 100;
+    print('totalScore: $totalScore');
     print(categoryScores);
+
     // Ensure total score is not negative
     totalScore = totalScore.clamp(0.0, 100.0);
 
@@ -136,9 +137,11 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     for (var category in _categories) {
       int categoryId = category['id'];
       int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
-      double categoryScore = (categoryScores[categoryId] ?? 0) / categoryQuestions * 100;
-      categoryScore = categoryScore.clamp(0, 100);
-      categoryScoresPercentage[categoryId] = categoryScore;
+      if (categoryScores[categoryId] != null) {
+        double categoryScore = (categoryScores[categoryId]! / categoryQuestions) * 100;
+        categoryScore = categoryScore.clamp(0, 100);
+        categoryScoresPercentage[categoryId] = categoryScore;
+      }
     }
 
     print(categoryScoresPercentage);

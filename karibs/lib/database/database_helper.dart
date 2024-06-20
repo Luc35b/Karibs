@@ -899,7 +899,7 @@ class DatabaseHelper {
     return classResults;
   }
 
-  Future<Map<String, double>> getCategoryScoresbyStudentTestId(int studentTestId) async {
+  Future<Map<String, double?>> getCategoryScoresbyStudentTestId(int studentTestId) async {
     final db = await database;
 
     final List<Map<String, dynamic>> result = await db.rawQuery('''
@@ -909,7 +909,7 @@ class DatabaseHelper {
       WHERE student_test_category_scores.student_test_id = ?
     ''', [studentTestId]);
 
-    Map<String, double> categoryScores = {};
+    Map<String, double?> categoryScores = {};
 
     for (var row in result) {
       categoryScores[row['category']] = row['score'];
@@ -918,7 +918,7 @@ class DatabaseHelper {
     return categoryScores;
   }
 
-  Future<Map<int, double>> getCategoryScoresbyIndexbyStudentTestId(int studentTestId) async {
+  Future<Map<int, double?>> getCategoryScoresbyIndexbyStudentTestId(int studentTestId) async {
     final db = await database;
 
     final List<Map<String, dynamic>> result = await db.rawQuery('''
@@ -928,7 +928,7 @@ class DatabaseHelper {
       WHERE student_test_category_scores.student_test_id = ?
     ''', [studentTestId]);
 
-    Map<int, double> categoryScores = {};
+    Map<int, double?> categoryScores = {};
 
     for (var row in result) {
       categoryScores[row['category']] = row['score'];
