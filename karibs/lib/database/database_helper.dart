@@ -515,6 +515,16 @@ CREATE TABLE questions (
     return savedResults;
   }
 
+  Future<List<Map<String, dynamic>>> getStudentScoresByTestId(int testId) async {
+    final db = await database;
+    return await db.query(
+      'student_tests',
+      columns: ['student_id', 'total_score'],
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getStudentTestQuestions(int studentId, int testId) async {
     final db = await database;
     return await db.query('student_test_questions', where: 'student_id = ? AND test_id = ?', whereArgs: [studentId, testId]);

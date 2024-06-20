@@ -7,7 +7,7 @@ class AddQuestionScreen extends StatefulWidget {
   final Function onQuestionAdded;
   final int subjectId;
 
-  AddQuestionScreen({required this.testId, required this.onQuestionAdded, required this.subjectId});
+  const AddQuestionScreen({super.key, required this.testId, required this.onQuestionAdded, required this.subjectId});
 
   @override
   _AddQuestionScreenState createState() => _AddQuestionScreenState();
@@ -20,8 +20,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   int? _selectedCategoryId; // New field for category
   final List<String> _questionTypes = ['Multiple Choice', 'Fill in the Blank', 'Essay'];
   List<Map<String, dynamic>> _questionCategories = []; // New list of categories
-  List<TextEditingController> _choiceControllers = [];
-  List<bool> _correctChoices = [];
+  final List<TextEditingController> _choiceControllers = [];
+  final List<bool> _correctChoices = [];
   int? _questionOrder;
   int _essaySpaces = 1; // Default number of spaces for essay questions
 
@@ -40,7 +40,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
 
     if (_questionCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('No categories available. Please create a new category using +.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 60.0, left: 16.0, right: 16.0),
@@ -69,7 +69,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         }
         if (hasBlankChoice) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Correct choice cannot be blank.'),
               behavior: SnackBarBehavior.floating,
               margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -79,7 +79,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         }
         if (!_correctChoices.contains(true)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Please select at least one correct choice for multiple-choice questions.'),
               behavior: SnackBarBehavior.floating,
               margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -118,7 +118,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill out all fields'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -148,17 +148,17 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Category'),
+          title: const Text('Add New Category'),
           content: TextField(
             controller: categoryNameController,
-            decoration: InputDecoration(labelText: 'Category Name'),
+            decoration: const InputDecoration(labelText: 'Category Name'),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel', style: TextStyle(fontSize: 20)),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () async {
@@ -172,7 +172,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Add', style: TextStyle(fontSize: 20)),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -234,11 +234,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     _selectedCategoryId = value;
     });
     },
-    decoration: InputDecoration(labelText: 'Question Category'),
+    decoration: const InputDecoration(labelText: 'Question Category'),
     ),
     ),
     IconButton(
-    icon: Icon(Icons.add),
+    icon: const Icon(Icons.add),
     onPressed: _showAddCategoryDialog,
     ),
     ],
@@ -279,7 +279,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     _correctChoices[i                                    ] = value!;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Correct choice cannot be blank.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),

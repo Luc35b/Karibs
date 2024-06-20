@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'add_report_screen.dart';
-import 'student_info_screen.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
@@ -13,7 +11,7 @@ class BarGraph extends StatelessWidget {
   final double score;
   final Map<String, dynamic> categoryScores;
 
-  BarGraph({required this.score, required this.categoryScores});
+  const BarGraph({super.key, required this.score, required this.categoryScores});
 
   Color getScoreColor(double currScore) {
     if (currScore >= 70) {
@@ -73,7 +71,7 @@ class BarGraph extends StatelessWidget {
         xValue++;
     });
 
-    return Container(
+    return SizedBox(
       width: 400,
       height: 350,
       child: BarChart(
@@ -151,7 +149,7 @@ class BarGraph extends StatelessWidget {
 class ReportDetailScreen extends StatefulWidget {
   final int reportId;
 
-  ReportDetailScreen({required this.reportId});
+  const ReportDetailScreen({super.key, required this.reportId});
 
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
@@ -173,13 +171,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Future<void> queryReportInformation() async {
     var report = await DatabaseHelper().queryReport(widget.reportId);
     int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-    Map<String, double> cats_no_null = {};
+    Map<String, double> catsNoNull = {};
     if(studentTestId != null) {
       Map<String, double?> categories = await DatabaseHelper()
           .getCategoryScoresbyStudentTestId(studentTestId);
         categories.forEach((key, val) {
         if (val != null) {
-          cats_no_null[key] = val;
+          catsNoNull[key] = val;
         }
       });
     }
@@ -188,7 +186,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
       reportTitle = report?['title'] ?? '';
       reportNotes = report?['notes'] ?? '';
       reportScore = report?['score']?.toDouble() ?? 0.0;
-      categoryScores = cats_no_null;
+      categoryScores = catsNoNull;
     });
 
 

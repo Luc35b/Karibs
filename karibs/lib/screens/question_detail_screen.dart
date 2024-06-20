@@ -8,7 +8,7 @@ class QuestionDetailScreen extends StatefulWidget {
   final int subjectId; // Added subjectId to pass to EditQuestionScreen
 
   //const QuestionDetailScreen({super.key, required this.questionId});
-  QuestionDetailScreen({required this.questionId, required this.subjectId});
+  const QuestionDetailScreen({super.key, required this.questionId, required this.subjectId});
 
   @override
   _QuestionDetailScreenState createState() => _QuestionDetailScreenState();
