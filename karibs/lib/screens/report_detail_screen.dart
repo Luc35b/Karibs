@@ -173,19 +173,16 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Future<void> queryReportInformation() async {
     var report = await DatabaseHelper().queryReport(widget.reportId);
     int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-    print(studentTestId);
     Map<String, double> cats_no_null = {};
     if(studentTestId != null) {
       Map<String, double?> categories = await DatabaseHelper()
           .getCategoryScoresbyStudentTestId(studentTestId);
-      print(categories);
-      categories.forEach((key, val) {
+        categories.forEach((key, val) {
         if (val != null) {
           cats_no_null[key] = val;
         }
       });
     }
-    print(cats_no_null);
     setState(() {
       reportInfo = report ?? {};
       reportTitle = report?['title'] ?? '';
@@ -205,7 +202,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         builder: (context) => EditReportScreen(reportId: widget.reportId),
       ),
     ).then((_) {
-      print("updating report info");
       queryReportInformation();
     });
   }
@@ -243,7 +239,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
-            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
             style: TextButton.styleFrom(
               side: const BorderSide(color: Colors.white, width: 1),
               shape: RoundedRectangleBorder(

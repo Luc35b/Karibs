@@ -92,8 +92,6 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${category}',
-                  style: TextStyle(fontSize: 16),
                   '$category',
                   style: const TextStyle(fontSize: 16),
                 ),

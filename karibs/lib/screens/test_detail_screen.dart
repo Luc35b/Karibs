@@ -253,8 +253,6 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: White,
                     foregroundColor: DeepPurple,
-                    side: BorderSide(width: 2, color: DeepPurple),
-                    padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                     side: const BorderSide(width: 2, color: DeepPurple),
                     padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                     shape: RoundedRectangleBorder(

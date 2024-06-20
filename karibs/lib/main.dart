@@ -29,8 +29,6 @@ class TutorialDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Welcome to KLAS'),
-      content: Column(
       title: const Text('Welcome to KLAS'),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
