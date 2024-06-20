@@ -20,13 +20,13 @@ class StudentInfoScreen extends StatefulWidget {
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Color(0xFFBBFABB);
+    return const Color(0xFFBBFABB);
   } else if (currScore >= 50) {
-    return Color(0xFFe6cc00);
+    return const Color(0xFFe6cc00);
   } else if (currScore >=20) {
-    return Color(0xFFFFB68F);
+    return const Color(0xFFFFB68F);
   }else {
-    return Color(0xFFFA6478);
+    return const Color(0xFFFA6478);
   }
 }
 
@@ -78,7 +78,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
-    print(mutableReports);
     setState(() {
       _student = student;
       _reports = mutableReports;
@@ -421,7 +420,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                           margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
                           child: ListTile(
                             title: Text(_reports[index]['title'],
-                              style: TextStyle(fontSize: 24),
+                              style: const TextStyle(fontSize: 24),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
 
@@ -430,7 +429,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30),),
+                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: const TextStyle(fontSize: 30),),
                           ),
                         ));
                   },
