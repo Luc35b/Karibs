@@ -191,7 +191,6 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   }
 
   void _generateAndPrintPdf() {
-    // Call your PdfGenerator class to generate and print the PDF
     PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
 
@@ -301,33 +300,36 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
             ],
         ),
       bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: (_selectedStudentId != null &&
-                    _questions.isNotEmpty &&
-                    !_gradedStudentIds.contains(_selectedStudentId) &&
-                    !_questions.any((question) => questionCorrectness[question['id']] == 0))
-                    ? () {
-                  _saveGradingResults();
-                }
-                    : null,
-                child: Text('Save Grade'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _goToTeacherDashboard(widget.classId);
-                },
-                child: Text('Go to Class'),
-              ),
-              ElevatedButton(
-                onPressed: _generateAndPrintPdf,
-                child: Text('Generate PDF'), // Add this button for generating and printing PDF
-              ),
-            ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  onPressed: (_selectedStudentId != null &&
+                      _questions.isNotEmpty &&
+                      !_gradedStudentIds.contains(_selectedStudentId) &&
+                      !_questions.any((question) => questionCorrectness[question['id']] == 0))
+                      ? () {
+                    _saveGradingResults();
+                  }
+                      : null,
+                  child: Text('Save Grade'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _goToTeacherDashboard(widget.classId);
+                  },
+                  child: Text('Go to Class'),
+                ),
+                ElevatedButton(
+                  onPressed: _generateAndPrintPdf,
+                  child: Text('Scores'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

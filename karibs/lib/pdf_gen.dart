@@ -12,32 +12,67 @@ class PdfGenerator {
     final questions = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(testTitle, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
-              ...questions.map((question) {
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Q: ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
-                    pw.SizedBox(height: 10),
-                    if (question['type'] != 'Fill in the Blank' && question['choices'] != null)
-                      ...question['choices'].map<pw.Widget>((choice) {
-                        return pw.Text(
-                          'A. ${choice['choice_text']}',
-                          style: const pw.TextStyle(fontSize: 16),
-                        );
-                      }).toList(),
-                    pw.SizedBox(height: 20),
-                  ],
-                );
-              }),
-            ],
-          );
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Name: _________________  Date: ________  Marks: ____', style: const pw.TextStyle(fontSize: 18)),
+                pw.SizedBox(height: 20),
+                pw.Text(testTitle, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                ...questions.asMap().entries.map((entry) {
+                  int index = entry.key + 1;
+                  var question = entry.value;
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('$index. ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
+                      pw.SizedBox(height: 10),
+                      if (question['type'] == 'Multiple Choice' && question['choices'] != null)
+                        ...question['choices'].asMap().entries.map<pw.Widget>((choiceEntry) {
+                          int choiceIndex = choiceEntry.key;
+                          var choice = choiceEntry.value;
+                          String choiceLabel = String.fromCharCode(65 + choiceIndex); // A, B, C, etc.
+                          return pw.Text(
+                            '$choiceLabel. ${choice['choice_text']}',
+                            style: const pw.TextStyle(fontSize: 16),
+                          );
+                        }).toList(),
+                      if (question['type'] == 'Essay')
+                        pw.Column(
+                          children: List.generate(question['essay_spaces'] ?? 1, (_) {
+                            return pw.Container(
+                              margin: const pw.EdgeInsets.only(top: 15), // Increase top margin for more spacing
+                              padding: const pw.EdgeInsets.only(bottom: 1),
+                              decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                  bottom: pw.BorderSide(width: 0.5),
+                                ),
+                              ),
+                              height: 20, // Add a height to make the line more visible
+                            );
+                          }),
+                        ),
+                      if (question['type'] == 'Fill in the Blank')
+                        pw.Container(
+                          margin: const pw.EdgeInsets.only(top: 10, bottom: 10), // Add margins for spacing
+                          padding: const pw.EdgeInsets.only(bottom: 1),
+                          decoration: pw.BoxDecoration(
+                            border: pw.Border(
+                              bottom: pw.BorderSide(width: 0.5),
+                            ),
+                          ),
+                          height: 20, // Add a height to make the line more visible
+                        ),
+                      pw.SizedBox(height: 20),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ];
         },
       ),
     );
@@ -55,37 +90,46 @@ class PdfGenerator {
     final questions = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(testTitle, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
-              ...questions.map((question) {
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Q: ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
-                    pw.SizedBox(height: 10),
-                    if (question['choices'] != null)
-                      ...question['choices'].map<pw.Widget>((choice) {
-                        return pw.Text(
-                          'A: ${choice['choice_text']} - ${choice['is_correct'] == 1 ? 'Correct' : 'Incorrect'}',
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Answer Key', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text(testTitle, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                ...questions.asMap().entries.map((entry) {
+                  int index = entry.key + 1;
+                  var question = entry.value;
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('$index. ${question['text']}', style: const pw.TextStyle(fontSize: 18)),
+                      pw.SizedBox(height: 10),
+                      if (question['choices'] != null)
+                        ...question['choices'].asMap().entries.map<pw.Widget>((choiceEntry) {
+                          int choiceIndex = choiceEntry.key;
+                          var choice = choiceEntry.value;
+                          String choiceLabel = String.fromCharCode(65 + choiceIndex); // A, B, C, etc.
+                          return pw.Text(
+                            '$choiceLabel: ${choice['choice_text']} - ${choice['is_correct'] == 1 ? 'Correct' : 'Incorrect'}',
+                            style: const pw.TextStyle(fontSize: 16),
+                          );
+                        }).toList()
+                      else
+                        pw.Text(
+                          'Answer: ${question['answer'] ?? 'No answer provided'}',
                           style: const pw.TextStyle(fontSize: 16),
-                        );
-                      }).toList()
-                    else
-                      pw.Text(
-                        'A: ${question['answer'] ?? 'No answer provided'}',
-                        style: const pw.TextStyle(fontSize: 16),
-                      ),
-                    pw.SizedBox(height: 20),
-                  ],
-                );
-              }),
-            ],
-          );
+                        ),
+                      pw.SizedBox(height: 20),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ];
         },
       ),
     );
@@ -102,38 +146,39 @@ class PdfGenerator {
     final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
-              pw.Text('Reports:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 10),
-              ...reports.map((report) {
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                        pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                      ],
-                    ),
-                    pw.SizedBox(height: 5),
-                    pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
-                    pw.SizedBox(height: 10),
-                  ],
-                );
-              }),
-            ],
-          );
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('Reports:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
+                ...reports.map((report) {
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                          pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                        ],
+                      ),
+                      pw.SizedBox(height: 5),
+                      pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
+                      pw.SizedBox(height: 10),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ];
         },
       ),
     );
-
 
     final output = await getTemporaryDirectory();
     final file = File('${output.path}/${student['name']} - Report.pdf');
@@ -147,28 +192,32 @@ class PdfGenerator {
     final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) => pw.Column(
-          children: [
-            pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
-            pw.SizedBox(height: 10),
-            pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            ...students.map((student) {
-              final averageScore = student['average_score'];
-              final scoreText = averageScore != null ? averageScore.toStringAsFixed(2) : '—';
-              return pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(student['name'], style: const pw.TextStyle(fontSize: 16)),
-                  pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
-                ],
-              );
-            }),
-          ],
-        ),
+      pw.MultiPage(
+        build: (pw.Context context) {
+          return [
+            pw.Column(
+              children: [
+                pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
+                pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
+                pw.SizedBox(height: 10),
+                pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
+                ...students.map((student) {
+                  final averageScore = student['average_score'];
+                  final scoreText = averageScore != null ? averageScore.toStringAsFixed(2) : '—';
+                  return pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(student['name'], style: const pw.TextStyle(fontSize: 16)),
+                      pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ];
+        },
       ),
     );
 
@@ -184,26 +233,28 @@ class PdfGenerator {
     final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
-              pw.Text('Report Details:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                  pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
-            ],
-          );
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(student['name'], style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('Report Details:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  ],
+                ),
+                pw.SizedBox(height: 5),
+                pw.Text('Notes: ${report['notes']}', style: const pw.TextStyle(fontSize: 16)),
+              ],
+            ),
+          ];
         },
       ),
     );
@@ -220,24 +271,26 @@ class PdfGenerator {
     final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text('Test Scores - $testTitle', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
-              for (var student in students)
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Student: ${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Score: ${student['score']}', style: pw.TextStyle(fontSize: 16)),
-                    pw.SizedBox(height: 10),
-                  ],
-                ),
-            ],
-          );
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Test Scores - $testTitle', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                for (var student in students)
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('Student: ${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Score: ${student['score']}', style: pw.TextStyle(fontSize: 16)),
+                      pw.SizedBox(height: 10),
+                    ],
+                  ),
+              ],
+            ),
+          ];
         },
       ),
     );

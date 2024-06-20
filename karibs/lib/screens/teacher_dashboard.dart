@@ -88,11 +88,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: Text('Delete'),
+            child: Text('Delete', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),
@@ -264,7 +264,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -277,7 +277,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
                     Navigator.of(context).pop();
                   },
-                  child: Text('Add'),
+                  child: Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -310,14 +310,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customClassName = customClassController.text.trim();
                 Navigator.of(context).pop(customClassName); // Return custom class name
               },
-              child: Text('Add'),
+              child: Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -346,14 +346,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customSubjectName = customSubjectController.text.trim();
                 Navigator.of(context).pop(customSubjectName); // Return custom subject name
               },
-              child: Text('Add'),
+              child: Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -468,7 +468,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -480,7 +480,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Save'),
+                  child: Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );

@@ -262,7 +262,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Save'),
+                  child: Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );

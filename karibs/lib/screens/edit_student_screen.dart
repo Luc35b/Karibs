@@ -202,14 +202,14 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteReport(reportId);
                 Navigator.of(context).pop();
               },
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
