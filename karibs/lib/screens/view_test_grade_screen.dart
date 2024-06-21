@@ -6,7 +6,7 @@ import 'package:karibs/screens/regrade_test_screen.dart';
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
 
-  ViewTestGradeScreen({required this.reportId});
+  const ViewTestGradeScreen({super.key, required this.reportId});
 
   @override
   _ViewTestGradeScreenState createState() => _ViewTestGradeScreenState();
@@ -126,7 +126,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                               color: choice['is_correct'] == 1 ? Colors.green : Colors.red,
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),

@@ -382,7 +382,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
           );
         },
       ),
@@ -441,7 +441,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     const SizedBox(width: 8),
       IconButton(
-        icon: Icon(
+        icon: const Icon(
           Icons.build_rounded,
           color: White,
         ),

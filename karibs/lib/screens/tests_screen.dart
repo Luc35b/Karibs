@@ -5,7 +5,6 @@ import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../overlay.dart';
 
 
 class TestsScreen extends StatefulWidget {
@@ -50,7 +49,7 @@ class _TestsScreenState extends State<TestsScreen> {
   void _addTest(String testName, int subjectId) async {
     if (_tests.any((test) => test['title'] == testName)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -75,19 +74,19 @@ class _TestsScreenState extends State<TestsScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Add New Exam'),
+              title: const Text('Add New Exam'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: testNameController,
-                    decoration: InputDecoration(labelText: 'Exam Title'),
+                    decoration: const InputDecoration(labelText: 'Exam Title'),
                   ),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButton<int>(
-                          hint: Text('Select Subject'),
+                          hint: const Text('Select Subject'),
                           value: selectedSubjectId,
                           onChanged: (int? newValue) {
                             setState(() {
@@ -104,7 +103,7 @@ class _TestsScreenState extends State<TestsScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: () {
                           _testName = testNameController.text;
                           _selectedSubjectId = selectedSubjectId;
@@ -121,7 +120,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -130,7 +129,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Add', style: TextStyle(fontSize: 20)),
+                  child: const Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -148,10 +147,10 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add New Subject'),
+          title: const Text('Add New Subject'),
           content: TextField(
             controller: subjectNameController,
-            decoration: InputDecoration(labelText: 'Subject Name'),
+            decoration: const InputDecoration(labelText: 'Subject Name'),
           ),
           actions: [
             TextButton(
@@ -167,7 +166,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   bool subjectExists = _subjects.any((subject) => subject['name'] == newSubjectName);
                   if (subjectExists) {
                     _scaffoldMessengerKey.currentState?.showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Subject with this name already exists. Please choose a different name.'),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -210,19 +209,19 @@ class _TestsScreenState extends State<TestsScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Edit Exam Name/Subject'),
+              title: const Text('Edit Exam Name/Subject'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: testNameController,
-                    decoration: InputDecoration(labelText: 'Exam Title'),
+                    decoration: const InputDecoration(labelText: 'Exam Title'),
                   ),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButton<int>(
-                          hint: Text('Select Subject'),
+                          hint: const Text('Select Subject'),
                           value: selectedSubjectId,
                           onChanged: (int? newValue) {
                             setState(() {
@@ -238,7 +237,7 @@ class _TestsScreenState extends State<TestsScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: () {
                           Navigator.pop(context);
                           _showAddSubjectDialog(testId, testNameController.text);
@@ -253,7 +252,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel', style: TextStyle(fontSize: 20)),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -262,7 +261,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: Text('Save', style: TextStyle(fontSize: 20)),
+                  child: const Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -275,7 +274,7 @@ class _TestsScreenState extends State<TestsScreen> {
   void _editTestName(int testId, String newTitle, int subjectId) async {
     if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Exam with this name already exists. Please choose a different name.'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
@@ -293,8 +292,8 @@ class _TestsScreenState extends State<TestsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Delete Exam'),
-          content: Text('Are you sure you want to delete this exam?'),
+          title: const Text('Delete Exam'),
+          content: const Text('Are you sure you want to delete this exam?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -373,17 +372,17 @@ class _TestsScreenState extends State<TestsScreen> {
         appBar: AppBar(
           backgroundColor: DeepPurple,
           foregroundColor: White,
-          title: Text('Exams'),
+          title: const Text('Exams'),
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
           child:Column(
 
               children: [
-              SizedBox(height: 70),
-          Container(margin: EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
+              const SizedBox(height: 70),
+          Container(margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: const BoxDecoration(
               color: MidPurple,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30),
@@ -408,11 +407,11 @@ class _TestsScreenState extends State<TestsScreen> {
                 ),
                 Container(
                   height: 400,
-                  margin: EdgeInsets.only(left:20, right:20, bottom: 20),
+                  margin: const EdgeInsets.only(left:20, right:20, bottom: 20),
                   decoration: BoxDecoration(
                     color: NotWhite,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
                         blurRadius: 10,
@@ -427,7 +426,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       children: [
                         Text('No exams available.', style: GoogleFonts.raleway(fontSize: 32)),
                         Text('Please add!', style: GoogleFonts.raleway(fontSize: 32)),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                       ],
                     ),
@@ -439,7 +438,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       for (int index = 0; index < _tests.length; index++)
                         Container(
                           key: ValueKey(_tests[index]['id']),
-                          margin: EdgeInsets.only(top:12, left: 16, right: 16),
+                          margin: const EdgeInsets.only(top:12, left: 16, right: 16),
                           decoration: BoxDecoration(
                             color: White,
                             border: Border.all(color: DeepPurple, width: 1),
@@ -449,7 +448,7 @@ class _TestsScreenState extends State<TestsScreen> {
                                 color: Colors.grey.withOpacity(0.5),
                                 spreadRadius: 2,
                                 blurRadius: 5,
-                                offset: Offset(0,3),
+                                offset: const Offset(0,3),
                               ),
                             ],
                           ),
@@ -462,11 +461,11 @@ class _TestsScreenState extends State<TestsScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit),
+                                  icon: const Icon(Icons.edit),
                                   onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete),
+                                  icon: const Icon(Icons.delete),
                                   onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
                                 ),
                               ],
@@ -490,8 +489,8 @@ class _TestsScreenState extends State<TestsScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: White,
                         foregroundColor: DeepPurple,
-                        side: BorderSide(width: 2, color: DeepPurple),
-                        padding: EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                        side: const BorderSide(width: 2, color: DeepPurple),
+                        padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -500,8 +499,8 @@ class _TestsScreenState extends State<TestsScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
-                          SizedBox(width: 8),
-                          Icon(Icons.add),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.add),
                         ],
                       ),
                     ),

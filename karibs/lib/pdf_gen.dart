@@ -4,12 +4,25 @@ import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:printing/printing.dart';
 //import 'package:screenshot/screenshot.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PdfGenerator {
 
+  Future<List<Map<String, dynamic>>> _getOrderedQuestions(int testId) async {
+    final data = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
+    final prefs = await SharedPreferences.getInstance();
+    final orderList = prefs.getStringList('test_${testId}_order');
+
+    if (orderList != null) {
+      data.sort((a, b) => orderList.indexOf(a['id'].toString()).compareTo(orderList.indexOf(b['id'].toString())));
+    }
+
+    return data;
+  }
   Future<void> generateTestQuestionsPdf(int testId, String testTitle) async {
     final pdf = pw.Document();
-    final questions = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
+    final questions = await _getOrderedQuestions(testId);
 
     pdf.addPage(
       pw.MultiPage(
@@ -46,7 +59,7 @@ class PdfGenerator {
                             return pw.Container(
                               margin: const pw.EdgeInsets.only(top: 15), // Increase top margin for more spacing
                               padding: const pw.EdgeInsets.only(bottom: 1),
-                              decoration: pw.BoxDecoration(
+                              decoration: const pw.BoxDecoration(
                                 border: pw.Border(
                                   bottom: pw.BorderSide(width: 0.5),
                                 ),
@@ -59,7 +72,7 @@ class PdfGenerator {
                         pw.Container(
                           margin: const pw.EdgeInsets.only(top: 10, bottom: 10), // Add margins for spacing
                           padding: const pw.EdgeInsets.only(bottom: 1),
-                          decoration: pw.BoxDecoration(
+                          decoration: const pw.BoxDecoration(
                             border: pw.Border(
                               bottom: pw.BorderSide(width: 0.5),
                             ),
@@ -69,7 +82,7 @@ class PdfGenerator {
                       pw.SizedBox(height: 20),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             ),
           ];
@@ -87,7 +100,7 @@ class PdfGenerator {
 
   Future<void> generateTestAnswerKeyPdf(int testId, String testTitle) async {
     final pdf = pw.Document();
-    final questions = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
+    final questions = await _getOrderedQuestions(testId);
 
     pdf.addPage(
       pw.MultiPage(
@@ -126,7 +139,7 @@ class PdfGenerator {
                       pw.SizedBox(height: 20),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             ),
           ];
@@ -172,7 +185,7 @@ class PdfGenerator {
                       pw.SizedBox(height: 10),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             ),
           ];
@@ -188,8 +201,15 @@ class PdfGenerator {
     Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
   }
 
+
   Future<void> generateClassReportPdf(String className, double averageGrade, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
+
+    // Create a copy of the students list before sorting
+    final List<Map<String, dynamic>> sortedStudents = List.from(students);
+
+    // Sort students by name alphabetically
+    sortedStudents.sort((a, b) => a['name'].compareTo(b['name']));
 
     pdf.addPage(
       pw.MultiPage(
@@ -199,13 +219,13 @@ class PdfGenerator {
               children: [
                 pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
-                pw.Text('Average Grade: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
+                pw.Text('Class Grade Average: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
                 pw.SizedBox(height: 10),
                 pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
-                ...students.map((student) {
+                ...sortedStudents.map((student) {
                   final averageScore = student['average_score'];
-                  final scoreText = averageScore != null ? averageScore.toStringAsFixed(2) : '—';
+                  final scoreText = (averageScore != null) ? averageScore.toStringAsFixed(2) : '—'; // Check if averageScore is null
                   return pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
@@ -270,6 +290,9 @@ class PdfGenerator {
   Future<void> generateTestScoresPdf(int testId, String testTitle, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
 
+    // Fetch scores for each student from the student_test table
+    List<Map<String, dynamic>> studentScores = await DatabaseHelper().getStudentScoresByTestId(testId);
+
     pdf.addPage(
       pw.MultiPage(
         build: (pw.Context context) {
@@ -279,12 +302,14 @@ class PdfGenerator {
               children: [
                 pw.Text('Test Scores - $testTitle', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 20),
+                pw.Text('Students:', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
                 for (var student in students)
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('Student: ${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Score: ${student['score']}', style: pw.TextStyle(fontSize: 16)),
+                      pw.Text('${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Score: ${studentScores.firstWhere((score) => score['student_id'] == student['id'])['total_score']}', style: const pw.TextStyle(fontSize: 16)),
                       pw.SizedBox(height: 10),
                     ],
                   ),

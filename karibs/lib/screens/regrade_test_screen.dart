@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/screens/student_info_screen.dart';
-import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
-import 'teacher_class_screen.dart';
 
 class RegradeScreen extends StatefulWidget {
   final int reportId;
 
-  const RegradeScreen({Key? key, required this.reportId}) : super(key: key);
+  const RegradeScreen({super.key, required this.reportId});
 
   @override
   _RegradeScreenState createState() => _RegradeScreenState();
@@ -67,11 +65,11 @@ class _RegradeScreenState extends State<RegradeScreen> {
 
   void _initializeCategoryScores(Map<String, dynamic> savedResults) {
     categoryScores.clear();
-    _questions.forEach((question) {
+    for (var question in _questions) {
       int categoryId = question['category_id'];
       int correctness = savedResults['question_correctness'][question['id']] ?? 0;
       categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + correctness;
-    });
+    }
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -132,7 +130,7 @@ class _RegradeScreenState extends State<RegradeScreen> {
       await DatabaseHelper().updateReport(widget.reportId, {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
-        'notes': 'Regraded test for student',
+        //'notes': 'Regraded test for student',
         'score': existingScore ?? totalScore, // Keep the existing score if available
       });
 
