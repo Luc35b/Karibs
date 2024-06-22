@@ -165,7 +165,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
         //'notes': 'Regraded test for student',
-        'score': existingScore ?? totalScore, // Keep the existing score if available
+        'score': totalScore, // Keep the existing score if available
       });
 
       int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, _testId!);
