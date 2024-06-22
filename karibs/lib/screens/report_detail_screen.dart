@@ -1,33 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
-import 'student_info_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'add_report_screen.dart';
-import 'student_info_screen.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
 
 
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-
 class BarGraph extends StatelessWidget {
   final double score;
   final Map<String, dynamic> categoryScores;
 
-  BarGraph({required this.score, required this.categoryScores});
+  const BarGraph({super.key, required this.score, required this.categoryScores});
 
   Color getScoreColor(double currScore) {
     if (currScore >= 70) {
-      return Color(0xFFBBFABB);
+      return const Color(0xFFBBFABB);
     } else if (currScore >= 50) {
-      return Color(0xFFe6cc00);
+      return const Color(0xFFe6cc00);
     } else if (currScore >= 20) {
-      return Color(0xFFFFB68F);
+      return const Color(0xFFFFB68F);
     } else {
-      return Color(0xFFFA6478);
+      return const Color(0xFFFA6478);
     }
   }
 
@@ -77,7 +71,7 @@ class BarGraph extends StatelessWidget {
         xValue++;
     });
 
-    return Container(
+    return SizedBox(
       width: 400,
       height: 350,
       child: BarChart(
@@ -127,15 +121,15 @@ class BarGraph extends StatelessWidget {
                   category = '';
                 }
                 return BarTooltipItem(
-                  category + '\n',
-                  TextStyle(
+                  '$category\n', //category + '\n',
+                  const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                   children: <TextSpan>[
                     TextSpan(
                       text: rod.y.toString(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.yellow,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
@@ -155,7 +149,7 @@ class BarGraph extends StatelessWidget {
 class ReportDetailScreen extends StatefulWidget {
   final int reportId;
 
-  ReportDetailScreen({required this.reportId});
+  const ReportDetailScreen({super.key, required this.reportId});
 
   @override
   _ReportDetailScreenState createState() => _ReportDetailScreenState();
@@ -177,25 +171,22 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Future<void> queryReportInformation() async {
     var report = await DatabaseHelper().queryReport(widget.reportId);
     int? studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-    print(studentTestId);
-    Map<String, double> cats_no_null = {};
+    Map<String, double> catsNoNull = {};
     if(studentTestId != null) {
       Map<String, double?> categories = await DatabaseHelper()
           .getCategoryScoresbyStudentTestId(studentTestId);
-      print(categories);
-      categories.forEach((key, val) {
+        categories.forEach((key, val) {
         if (val != null) {
-          cats_no_null[key] = val;
+          catsNoNull[key] = val;
         }
       });
     }
-    print(cats_no_null);
     setState(() {
       reportInfo = report ?? {};
       reportTitle = report?['title'] ?? '';
       reportNotes = report?['notes'] ?? '';
       reportScore = report?['score']?.toDouble() ?? 0.0;
-      categoryScores = cats_no_null;
+      categoryScores = catsNoNull;
     });
 
 
@@ -209,7 +200,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         builder: (context) => EditReportScreen(reportId: widget.reportId),
       ),
     ).then((_) {
-      print("updating report info");
       queryReportInformation();
     });
   }
@@ -227,15 +217,15 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   Color getStatusColorFill(double currStatus) {
     if (currStatus >= 70) {
-      return Color(0xFFBBFABB);
+      return const Color(0xFFBBFABB);
     } else if (currStatus >= 50) {
-      return Color(0xFFFAECBB);
+      return const Color(0xFFFAECBB);
     } else if (currStatus >= 20) {
-      return Color(0xFFFFB68F);
+      return const Color(0xFFFFB68F);
     } else if (currStatus >= 0.01) {
-      return Color(0xFFFABBBB);
+      return const Color(0xFFFABBBB);
     } else {
-      return Color(0xFFD8D0DB);
+      return const Color(0xFFD8D0DB);
     }
   }
 
@@ -243,19 +233,19 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Report Details'),
+        title: const Text('Report Details'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
-            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
             style: TextButton.styleFrom(
-              side: BorderSide(color: Colors.white, width: 1),
+              side: const BorderSide(color: Colors.white, width: 1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
+            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -267,14 +257,14 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             children: [
               Text(
                 reportTitle,
-                style: TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 24),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 'Notes: $reportNotes',
-                style: TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 20),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.center,
                 child: Container(
@@ -283,19 +273,19 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     color: getStatusColorFill(reportScore), // Adjust the color based on the score
                     border: Border.all(color: getReportColor(reportScore), width: 2),
                   ),
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Text(
-                    '${reportScore.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 24, color: Colors.black),
+                    reportScore.toStringAsFixed(2),
+                    style: const TextStyle(fontSize: 24, color: Colors.black),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               BarGraph(
                 score: reportScore,
                 categoryScores: categoryScores, // Exclude null scores
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: ElevatedButton(
@@ -303,12 +293,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'View Test Grade',
                     style: TextStyle(fontSize: 16),
                   ),

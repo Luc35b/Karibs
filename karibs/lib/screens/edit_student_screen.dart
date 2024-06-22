@@ -7,13 +7,13 @@ import 'package:karibs/main.dart';
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
-    return Color(0xFFBBFABB);
+    return const Color(0xFFBBFABB);
   } else if (currScore >= 50) {
-    return Color(0xFFe6cc00);
+    return const Color(0xFFe6cc00);
   } else if (currScore >=20) {
-    return Color(0xFFFFB68F);
+    return const Color(0xFFFFB68F);
   }else {
-    return Color(0xFFFA6478);
+    return const Color(0xFFFA6478);
   }
 }
 
@@ -190,6 +190,32 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
 
   }
+  void _showDeleteConfirmationDialog(int reportId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Report'),
+          content: const Text('Are you sure you want to delete this report?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteReport(reportId);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Delete', style: TextStyle(fontSize: 20)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _deleteStudent() async {
     // Show a confirmation dialog
@@ -224,7 +250,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child:Scaffold(
       appBar: AppBar(
           backgroundColor: DeepPurple,
           foregroundColor: White,
@@ -236,16 +266,10 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               }
           ),
           actions: [
+
             IconButton(onPressed: _deleteStudent, icon: const Icon(Icons.delete)),
-            IconButton(
-              onPressed: () {
-                // Save the updated name when the user clicks the save button.
-                _updateStudentName(_nameController.text);
-                //navigate back
-                Navigator.of(context).pop(true);
-              },
-              icon: const Icon(Icons.save),
-            ),
+
+
           ],
       ),
       body: _isLoading
@@ -253,19 +277,52 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
           : Column(
         children: [
           const SizedBox(height: 15),
-          if(_student !=null)
+          if(_student != null)
             Padding(
               padding: const EdgeInsets.all(8),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Student Name',
-                  border: OutlineInputBorder(),
-                ),
-                onEditingComplete: () {
-                  // Save the updated name when editing is complete
-                  _updateStudentName(_nameController.text);
-                },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Student Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      onEditingComplete: () {
+                        // Save the updated name when editing is complete
+                        //_updateStudentName(_nameController.text);
+                        // Dismiss the keyboard
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () {
+                      // Save the updated name when the user clicks the save button.
+                      _updateStudentName(_nameController.text);
+                      // Dismiss the keyboard
+                      FocusScope.of(context).unfocus();
+                      // Optionally navigate back or show a confirmation message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Student name saved')),
+                      );
+                    },
+                      style: TextButton.styleFrom(
+                        backgroundColor: White,
+                        side: const BorderSide(color: DeepPurple, width: 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      child: const Text(
+                        'SAVE',
+                        style: TextStyle(color: DeepPurple, fontWeight: FontWeight.bold),
+                      ),
+                  ),
+                ],
+
               ),
             ),
           if (_averageScore != null)
@@ -392,20 +449,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               child: ListView.builder(
                 itemCount: _reports.length,
                 itemBuilder: (context, index) {
-                  return Dismissible(
-                    key: UniqueKey(),
-                    onDismissed: (direction){
-                      _deleteReport(_reports[index]['id']);
-                    },
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      child: const Padding(
-                        padding: EdgeInsets.only(right:16),
-                        child: Icon(Icons.delete, color: Colors.white),
-                      ),
-                    ),
-                  child: Container(
+                  return Container(
                     decoration: BoxDecoration(
                       color: getReportColor(_reports[index]['score']).withOpacity(0.5), // Background color of the box
                       borderRadius: BorderRadius.circular(8), // Rounded corners for the box
@@ -418,13 +462,14 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         width: 130,
                         child: Row(
                           children: [
-                            Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 30)),
-                            IconButton(onPressed: () {_deleteReport(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
+                            Text(_reports[index]['score']?.toString() ?? '', style: const TextStyle(fontSize: 30)),
+                            IconButton(onPressed: () {_showDeleteConfirmationDialog(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
+
                           ]
                         ),
                       ),
                     ),
-                  ),
+
                   );
                 },
               ),
@@ -432,6 +477,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -23,7 +23,7 @@ Color getStatusColor(String currStatus) {
     case 'Doing well':
       return Colors.green;
     case 'Doing okay':
-      return Color(0xFFe6cc00);
+      return const Color(0xFFe6cc00);
     case 'Doing poorly':
       return Colors.orange;
     case 'Needs help':
@@ -40,9 +40,9 @@ Color getStatusColorFill(String currStatus) {
     case 'Doing well':
       return const Color(0xFFBBFABB);
     case 'Doing okay':
-      return Color(0xFFFAECBB);
+      return const Color(0xFFFAECBB);
     case 'Doing poorly':
-      return Color(0xFFFFB68F);
+      return const Color(0xFFFFB68F);
     case 'Needs help':
       return const Color(0xFFFABBBB);
     case 'No status':
@@ -150,7 +150,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             controller: studentNameController,
             focusNode: focusNode,
             autofocus: true,
-            decoration: InputDecoration(labelText: 'Student Name'),
+            decoration: const InputDecoration(labelText: 'Student Name'),
           ),
           actions: [
             TextButton(
@@ -174,7 +174,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ).then((_) {
       focusNode.dispose();
     });
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       focusNode.requestFocus();
     });
   }
@@ -319,12 +319,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Sort by'),
+          title: const Text('Sort by'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               RadioListTile<String>(
-                title: Text('Name'),
+                title: const Text('Name'),
                 value: 'Name',
                 groupValue: _selectedSortOption,
                 onChanged: (String? value) {
@@ -335,7 +335,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                 },
               ),
               RadioListTile<String>(
-                title: Text('Low Score'),
+                title: const Text('Low Score'),
                 value: 'Low Score',
                 groupValue: _selectedSortOption,
                 onChanged: (String? value) {
@@ -346,7 +346,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                 },
               ),
               RadioListTile<String>(
-                title: Text('High Score'),
+                title: const Text('High Score'),
                 value: 'High Score',
                 groupValue: _selectedSortOption,
                 onChanged: (String? value) {
@@ -378,11 +378,11 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           backgroundColor: DeepPurple,
           foregroundColor: White,
           leading: IconButton(
-          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          icon: const Icon(Icons.arrow_back), // Use the back arrow icon
           onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
           );
         },
       ),
@@ -439,9 +439,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
     ),
     ),
-    SizedBox(width: 8),
+    const SizedBox(width: 8),
       IconButton(
-        icon: Icon(
+        icon: const Icon(
           Icons.build_rounded,
           color: White,
         ),
@@ -504,14 +504,14 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             child: Text(
               '${_filteredStudents[index]['average_score']
                   ?.round() ?? ''}',
-              style: TextStyle(
+              style: const TextStyle(
                 color: DeepPurple,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 5),
         FittedBox(
           child: Text(
               _filteredStudents[index]['status'] ?? 'No status',
@@ -521,11 +521,11 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       ],
     ),
     ),
-      SizedBox(width: 40),
+      const SizedBox(width: 40),
       Expanded(
         child: Text(
           '${_filteredStudents[index]['name']}',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 30,
           ),

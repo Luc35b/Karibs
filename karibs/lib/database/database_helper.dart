@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(documentsDirectory.path, 'school.db');
     return await openDatabase(
       path,
-      version: 2, // Increment the version to trigger the upgrade
+      version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       readOnly: false,
@@ -85,17 +85,18 @@ class DatabaseHelper {
     )
   ''');
     await db.execute('''
-    CREATE TABLE questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      text TEXT NOT NULL,
-      type TEXT NOT NULL,
-      category_id INTEGER NOT NULL,
-      test_id INTEGER NOT NULL,
-      "order" INTEGER NOT NULL DEFAULT 0,
-      FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
-      FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-    )
-  ''');
+CREATE TABLE questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL,
+  type TEXT NOT NULL,
+  category_id INTEGER NOT NULL,
+  test_id INTEGER NOT NULL,
+  "order" INTEGER NOT NULL DEFAULT 0,
+  essay_spaces INTEGER,
+  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+  FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+)
+''');
     await db.execute('''
     CREATE TABLE question_choices (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,17 +156,18 @@ class DatabaseHelper {
       )
     ''');
       await db.execute('''
-      CREATE TABLE questions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        text TEXT NOT NULL,
-        type TEXT NOT NULL,
-        category_id INTEGER NOT NULL,
-        test_id INTEGER NOT NULL,
-        "order" INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
-        FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-      )
-    ''');
+CREATE TABLE questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL,
+  type TEXT NOT NULL,
+  category_id INTEGER NOT NULL,
+  test_id INTEGER NOT NULL,
+  "order" INTEGER NOT NULL DEFAULT 0,
+  essay_spaces INTEGER,
+  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+  FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+)
+''');
       await db.execute('''
       CREATE TABLE student_test_category_scores (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -187,9 +189,7 @@ class DatabaseHelper {
 
     if (await databaseFile.exists()) {
       await databaseFile.delete();
-      print('Database deleted');
     } else {
-      print('Database file not found');
     }
 
     _database = null;
@@ -384,6 +384,46 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<double?> getStudentTestTotalScore(int studentId, int testId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT total_score FROM student_tests WHERE student_id = ? AND test_id = ?',
+      [studentId, testId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['total_score'] as double?;
+    } else {
+      return null;
+    }
+  }
+
+  Future<double?> getReportScore(int reportId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT score FROM reports WHERE id = ?',
+      [reportId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['score'] as double?;
+    } else {
+      return null;
+    }
+  }
+
+  Future<int?> getStudentTestQuestionResult(int studentTestId, int questionId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+    SELECT got_correct
+    FROM student_test_question
+    WHERE student_test_id = ? AND question_id = ?
+  ''', [studentTestId, questionId]);
+    if (result.isNotEmpty) {
+      return result.first['got_correct'];
+    }
+    return null;
+  }
+
+
   Future<Map<String, dynamic>> getQuestionsAndAnswersForReport(int reportId) async {
     final db = await database;
 
@@ -473,6 +513,16 @@ class DatabaseHelper {
     }
 
     return savedResults;
+  }
+
+  Future<List<Map<String, dynamic>>> getStudentScoresByTestId(int testId) async {
+    final db = await database;
+    return await db.query(
+      'student_tests',
+      columns: ['student_id', 'total_score'],
+      where: 'test_id = ?',
+      whereArgs: [testId],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getStudentTestQuestions(int studentId, int testId) async {

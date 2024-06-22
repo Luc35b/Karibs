@@ -23,7 +23,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
     if (titleController.text.isNotEmpty) {
       if( score != null && (score < 0 || score > 100)){
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Score must be a number between 0 and 100'),
             duration: Duration(seconds: 2),
           ),
@@ -32,7 +32,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
       }
       if(notesController.text.isEmpty && scoreController.text.isEmpty){
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Report must have either notes or a exam score'),
             duration: Duration(seconds: 2),
           ),

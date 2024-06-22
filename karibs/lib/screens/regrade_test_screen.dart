@@ -3,12 +3,13 @@ import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
-import 'teacher_class_screen.dart';
 
 class RegradeTestScreen extends StatefulWidget {
   final int reportId;
 
+
   const RegradeTestScreen({Key? key, required this.reportId}) : super(key: key);
+
 
   @override
   _RegradeTestScreenState createState() => _RegradeTestScreenState();
@@ -87,6 +88,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     });
 
     print(categoryScores); // Ensure correct initialization
+
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -124,11 +126,16 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   }
 
   void _saveRegradingResults() async {
+    // Retrieve existing total score and score from the database
+    double? existingTotalScore = await DatabaseHelper().getStudentTestTotalScore(_selectedStudentId!, _testId!);
+    double? existingScore = await DatabaseHelper().getReportScore(widget.reportId);
+
     // Calculate total score and category scores
     int totalQuestions = _questions.length;
     double totalScore = (categoryScores.values.where((score) => score != null).fold(0.0, (sum, score) => sum + score!) / totalQuestions) * 100;
     print('totalScore: $totalScore');
     print(categoryScores);
+
 
     // Ensure total score is not negative
     totalScore = totalScore.clamp(0.0, 100.0);
@@ -146,6 +153,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
     print(categoryScoresPercentage);
 
+
     // Save scores to the database
     if (_selectedStudentId != null) {
       await DatabaseHelper().updateStudentTest({
@@ -156,19 +164,25 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       await DatabaseHelper().updateReport(widget.reportId, {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
-        'notes': 'Regraded test for student',
-        'score': totalScore,
+        //'notes': 'Regraded test for student',
+        'score': existingScore ?? totalScore, // Keep the existing score if available
       });
 
       int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, _testId!);
 
+      // Update database with current values in question_answer_map if they exist,
+      // otherwise keep the existing values from the database
       question_answer_map.forEach((key, value) async {
-        await DatabaseHelper().updateStudentTestQuestion({
-          'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value,
-        });
+        int? existingValue = await DatabaseHelper().getStudentTestQuestionResult(studentTestId!, key);
+        if (existingValue != null) {
+          await DatabaseHelper().updateStudentTestQuestion({
+            'student_test_id': studentTestId,
+            'question_id': key,
+            'got_correct': value,
+          });
+        }
       });
+
 
       for (var entry in categoryScoresPercentage.entries) {
         await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
@@ -183,6 +197,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         });
       }
 
+
       // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -195,6 +210,8 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
+
+
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
