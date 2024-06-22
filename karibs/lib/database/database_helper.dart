@@ -560,6 +560,16 @@ CREATE TABLE questions (
     );
   }
 
+  Future<void> updateStudentTestCategoryScore(int studentTestId, int categoryId, Map<String,dynamic> updatedSTCategoryScore) async {
+    final db = await database;
+    await db.update(
+      'student_test_category_scores',
+      updatedSTCategoryScore,
+      where: 'student_test_id = ? AND category_id = ?',
+      whereArgs: [studentTestId, categoryId]
+    );
+  }
+
   Future<void> updateStudentTest(Map<String, dynamic> test) async {
     final db = await database;
     await db.update('student_tests', test, where: 'student_id = ? AND test_id = ?', whereArgs: [test['student_id'], test['test_id']]);
@@ -939,7 +949,7 @@ CREATE TABLE questions (
     return classResults;
   }
 
-  Future<Map<String, double>> getCategoryScoresbyStudentTestId(int studentTestId) async {
+  Future<Map<String, double?>> getCategoryScoresbyStudentTestId(int studentTestId) async {
     final db = await database;
 
     final List<Map<String, dynamic>> result = await db.rawQuery('''
@@ -949,7 +959,7 @@ CREATE TABLE questions (
       WHERE student_test_category_scores.student_test_id = ?
     ''', [studentTestId]);
 
-    Map<String, double> categoryScores = {};
+    Map<String, double?> categoryScores = {};
 
     for (var row in result) {
       categoryScores[row['category']] = row['score'];
@@ -957,6 +967,27 @@ CREATE TABLE questions (
 
     return categoryScores;
   }
+
+  Future<Map<int, double?>> getCategoryScoresbyIndexbyStudentTestId(int studentTestId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.rawQuery('''
+      SELECT categories.id AS category, student_test_category_scores.score AS score
+      FROM student_test_category_scores
+      JOIN categories ON student_test_category_scores.category_id = categories.id
+      WHERE student_test_category_scores.student_test_id = ?
+    ''', [studentTestId]);
+
+    Map<int, double?> categoryScores = {};
+
+    for (var row in result) {
+      categoryScores[row['category']] = row['score'];
+    }
+
+    return categoryScores;
+  }
+
+
 
 
   Future<int?> getStudentTestIdFromReport(int reportId) async {
