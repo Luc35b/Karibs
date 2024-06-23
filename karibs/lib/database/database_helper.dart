@@ -742,11 +742,12 @@ CREATE TABLE questions (
     Database db = await database;
 
     // Fetch the related student_test IDs
-    List<Map<String, dynamic>> studentTests = await db.query(
-      'student_tests',
-      where: 'test_id = (SELECT test_id FROM reports WHERE id = ?)',
-      whereArgs: [id],
-    );
+    List<Map<String, dynamic>> studentTests = await db.rawQuery('''
+    SELECT student_tests.*
+    FROM student_tests
+    INNER JOIN reports ON student_tests.test_id = reports.test_id AND student_tests.student_id = reports.student_id
+    WHERE reports.id = ?
+  ''', [id]);
 
     // Extract student_test IDs
     List<int> studentTestIds = studentTests.map((st) => st['id'] as int).toList();
