@@ -460,9 +460,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   children: [
   const Text('No Classes Available For This Subject'),
   const SizedBox(height: 10),
-  Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
+  Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.deepPurpleAccent)),
   const SizedBox(height: 16),
   ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: DeepPurple,
+      side: const BorderSide(
+          width: 2, color: DeepPurple),
+    ),
   onPressed: _navigateToTeacherDashboard,
   child: const Text('Go to Teacher Dashboard'),
   ),

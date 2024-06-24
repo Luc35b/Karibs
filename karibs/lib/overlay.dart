@@ -382,7 +382,7 @@ class _TeacherClassScreenTutorialDialogState
               ),
               TextSpan(text: ' by their status, click on the '),
               WidgetSpan(
-                child: Icon(Icons.filter_list, size: 16.0, color: Colors.black),
+                child: Icon(Icons.filter_alt, size: 16.0, color: Colors.black),
               ),
               TextSpan(text: ' icon at the top left of the screen next to the search bar.'),
             ],
@@ -413,7 +413,7 @@ class _TeacherClassScreenTutorialDialogState
           ),
           TextSpan(text: ' alphabetically or by their average score, click on the '),
           WidgetSpan(
-            child: Icon(Icons.build_rounded, size: 16.0, color: Colors.black),
+            child: Icon(Icons.settings, size: 16.0, color: Colors.black),
           ),
           TextSpan(text: ' icon at the top right of the screen next to the search bar.'),
         ],
