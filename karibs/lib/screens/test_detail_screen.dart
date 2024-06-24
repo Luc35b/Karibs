@@ -272,9 +272,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: Colors.deepPurple,
-                        side: const BorderSide(width: 2, color: Colors
-                            .deepPurple),
+                        foregroundColor: DeepPurple,
+                        side: const BorderSide(width: 2, color: DeepPurple),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 55, vertical: 12),
                         // Button padding
@@ -284,7 +283,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                       ),
                       onPressed: _navigateToAddQuestionScreen,
                       child: Text('Add Question +',
-                          style: GoogleFonts.raleway(fontSize: 20)),
+                          style: GoogleFonts.raleway(fontSize: 24, color: DeepPurple)),
                     ),
                   ],
                 ),
@@ -329,9 +328,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
+                      foregroundColor: DeepPurple,
                       side: const BorderSide(
-                          width: 2, color: Colors.deepPurple),
+                          width: 2, color: DeepPurple),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 55, vertical: 12),
                       // Button padding

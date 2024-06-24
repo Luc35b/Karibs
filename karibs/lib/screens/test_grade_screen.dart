@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:karibs/main.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -221,6 +222,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
           title: Row(
               children:[
                 Text('Grade Exam for ${widget.testTitle}'),
@@ -237,16 +240,25 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Column(
+            : Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
             if (_className != null)
-        Padding(
-        padding: const EdgeInsets.all(8.0),
-    child: Text(
-    'Grading details for class: $_className and exam: ${widget.testTitle}',
-    style: const TextStyle(fontSize: 20),
-    ),
-    ),
+              Padding(
+                padding: const EdgeInsets.only(left:8.0, right: 8, top: 28),
+                child: Text(
+                  'Grading details for class: $_className',
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Exam: ${widget.testTitle}',
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ),
     Padding(
     padding: const EdgeInsets.all(8.0),
     child: DropdownButton<int>(
@@ -321,17 +333,45 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                     },
                   ),
                 ),
-              if (_gradedStudentIds.length == _students.length)
+              if(_students.length == 0)
                 const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "View student report to edit their score.",
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
+                  child: Column(
+                    children:[
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'No students in class.',
+                          style: TextStyle(fontSize: 18, color: MidPurple),
+                        ),
+                      ),
+                      Text(
+                        'Please click Go to Class to add students.',
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                    ],
+                  ),
+                )
+              else if (_gradedStudentIds.length == _students.length)
+                const Center(
+                  child: Column(
+                    children:[
+                      Text(
+                        "All students in the class graded.",
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                      Text(
+                        "Go to class to view student reports",
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                      Text(
+                        "or edit their scores.",
+                        style: TextStyle(fontSize: 18, color: MidPurple),
+                      ),
+                    ],
                   ),
                 ),
             ],
+        ),
         ),
       bottomNavigationBar: BottomAppBar(
         child: SingleChildScrollView(
@@ -339,9 +379,21 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: (_selectedStudentId != null &&
                       _questions.isNotEmpty &&
                       !_gradedStudentIds.contains(_selectedStudentId) &&
@@ -353,14 +405,38 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   child: const Text('Save Grade'),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: () {
                     _goToTeacherDashboard(widget.classId);
                   },
                   child: const Text('Go to Class'),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: _generateAndPrintPdf,
-                  child: const Text('Scores'),
+                  child: Icon(Icons.print),
                 ),
               ],
             ),
