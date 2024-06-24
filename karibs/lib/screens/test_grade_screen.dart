@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
+import '../overlay.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/pdf_gen.dart';
@@ -205,12 +206,34 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _generateAndPrintPdf() {
     PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestGradeScreenTutorialDialog();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Grade Exam for ${widget.testTitle}'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        title: Row(
+          children: [
+            Text('Grade Exam for ${widget.testTitle}'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

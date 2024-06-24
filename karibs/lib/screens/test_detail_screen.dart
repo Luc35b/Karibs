@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
@@ -186,13 +187,33 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     await prefs.setStringList('test_${widget.testId}_order', order);
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestDetailScreenTutorialDialog();
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: DeepPurple,
         foregroundColor: White,
-        title: Text(widget.testTitle),
+        title: Row(
+          children: [
+          Text(widget.testTitle),
+          SizedBox(width: 8), // Adjust spacing between title and icon
+          IconButton(
+            icon: Icon(Icons.help_outline),
+            onPressed: () {
+              // Show tutorial dialog
+              _showTutorialDialog();
+            },
+          ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: _showChooseClassDialog,
@@ -227,7 +248,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: White,
                 foregroundColor: DeepPurple,
-                side: const BorderSide(width: 2, color: Colors.deepPurple),
+                side: const BorderSide(width: 2, color: DeepPurple),
                 padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -291,8 +312,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       ElevatedButton(
       style: ElevatedButton.styleFrom(
       backgroundColor: Colors.white,
-      foregroundColor: Colors.deepPurple,
-      side: const BorderSide(width: 2, color: Colors.deepPurple),
+      foregroundColor: DeepPurple,
+      side: const BorderSide(width: 2, color: DeepPurple),
       padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
