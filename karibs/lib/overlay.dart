@@ -733,6 +733,319 @@ class EditStudentScreenTutorialDialog extends StatefulWidget {
       _EditStudentScreenTutorialDialogState();
 }
 
+class _EditStudentScreenTutorialDialogState
+    extends State<EditStudentScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Edit Student Screen',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text(
+          'This screen allows you to edit student information and manage their reports.',
+          style: TextStyle(fontSize: 16.0),
+        ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '1. To '),
+          TextSpan(
+            text: 'edit a student’s name',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: ', select the ',
+          ),
+          TextSpan(
+            text: 'Student Name',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: ' text box at the top of the screen and type in your desired name.',
+          ),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. To '),
+          TextSpan(
+            text: 'delete a report',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: ', click on the ',
+          ),
+          WidgetSpan(
+            child: Icon(Icons.delete),
+          ),
+          TextSpan(
+            text: ' icon to the right of a given report, or swipe all the way to the left on a report.',
+          ),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'delete a student',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: ', click on the ',
+          ),
+          WidgetSpan(
+            child: Icon(Icons.delete),
+          ),
+          TextSpan(
+            text: ' icon at the top right of the screen. Confirm the deletion when prompted.',
+          ),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '4. To '),
+          TextSpan(
+            text: 'save your changes',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: ', click on the ',
+          ),
+          WidgetSpan(
+            child: Icon(Icons.check_box),
+          ),
+          TextSpan(
+            text: ' icon in the top right corner of the screen.',
+          ),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class ReportDetailsScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Report Detail Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'This screen allows you to view the grade that your student has '
+                    'received for a given report. You can see the total grade as '
+                    'well as various categories for an exam.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '1. To '),
+                    TextSpan(
+                      text: 'edit the title, notes, or score',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' for a given report, click on the '),
+                    TextSpan(
+                      text: 'EDIT REPORT button',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' at the top right of the screen.'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '2. To '),
+                    TextSpan(
+                      text: 'view the correct and incorrect answers',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' from the graded exam, click on the '),
+                    TextSpan(
+                      text: 'VIEW TEST GRADE button',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ' at the bottom of the screen.'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class EditReportScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Edit Report Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'The title, notes, and score of the report can be changed here.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '1. To '),
+                    TextSpan(
+                      text: 'save your changes',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', click the '),
+                    TextSpan(
+                      text: 'SAVE CHANGES button.',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '2. To '),
+                    TextSpan(
+                      text: 'delete a report',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', select the '),
+                    WidgetSpan(
+                      child: Icon(Icons.delete),
+                    ),
+                    TextSpan(text: '  icon at the top right of the screen. '
+                        'Confirm the deletion when prompted.'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
 class TestsScreenTutorialDialog extends StatefulWidget {
   @override
   _TestsScreenTutorialDialogState createState() =>
@@ -913,6 +1226,8 @@ class _TestsScreenTutorialDialogState
   }
 }
 
+
+
 class TestDetailScreenTutorialDialog extends StatefulWidget {
   @override
   _TestDetailScreenTutorialDialogState createState() =>
@@ -1055,6 +1370,8 @@ class _TestDetailScreenTutorialDialogState
     );
   }
 }
+
+
 
 class AddQuestionScreenTutorialDialog extends StatefulWidget {
   @override
@@ -1205,6 +1522,8 @@ class _AddQuestionScreenTutorialDialogState
     );
   }
 }
+
+
 
 class TestGradeScreenTutorialDialog extends StatefulWidget {
   @override
