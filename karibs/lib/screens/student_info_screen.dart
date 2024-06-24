@@ -7,6 +7,7 @@ import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 import 'report_detail_screen.dart';
+import 'package:karibs/overlay.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
@@ -141,7 +142,14 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
-
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StudentInfoScreenTutorialDialog();
+      },
+    );
+  }
 
 
   List<FlSpot> _prepareDataForChart() {

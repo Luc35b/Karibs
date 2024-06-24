@@ -395,7 +395,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
                   );
                 },
               ),
-              const Text('Teacher Dashboard'),
+              const Text('Class Viewing'),
               SizedBox(width: 8), // Adjust spacing between title and icon
               IconButton(
                 icon: Icon(Icons.help_outline),

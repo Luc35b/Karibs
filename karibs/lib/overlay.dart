@@ -10,10 +10,22 @@ class MainTutorialDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            'This is a tutorial to guide you through the app features. \n\n You can view these '
-                'instructions again at any time by clicking the question mark icon at the top of every page.',
-            style: TextStyle(fontSize: 16.0),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(fontSize: 16.0, color: Colors.black),
+              children: [
+                TextSpan(
+                  text: 'This is a tutorial to guide you through the app features. \n\n You can view these '
+                      'instructions again at any time by clicking the ',
+                ),
+                WidgetSpan(
+                  child: Icon(Icons.help_outline, size: 16.0),
+                ),
+                TextSpan(
+                  text: ' icon at the top of every page.',
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 16.0),
           Text(
@@ -33,6 +45,8 @@ class MainTutorialDialog extends StatelessWidget {
     );
   }
 }
+
+
 
 class TeacherDashboardTutorialDialog extends StatefulWidget {
   @override
@@ -69,13 +83,18 @@ class _TeacherDashboardTutorialDialogState
               TextSpan(text: '1. '),
               TextSpan(
                 text: 'Add a class',
-                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
               TextSpan(text: ' by clicking on the '),
-              TextSpan(text: ' MANAGE EXAMS button at the bottom of the screen.\n'),
-              TextSpan(text: '  \n a. Select a desired class and subject from the dropdown, or create your own name by clicking on the '),
+              TextSpan(
+                  text: ' ADD CLASS button at the bottom of the screen.\n'),
+              TextSpan(
+                  text:
+                  '  \n a. Select a desired class and subject from the dropdown, or create your own name by clicking on the '),
               WidgetSpan(
-                child: Icon(Icons.add, size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
+                child: Icon(Icons.add,
+                    size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
               ),
               TextSpan(text: ' icon on the right.'),
             ],
@@ -90,7 +109,8 @@ class _TeacherDashboardTutorialDialogState
           TextSpan(text: '2. To '),
           TextSpan(
             text: 'view your classes',
-            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
           ),
           TextSpan(text: ', click inside the rectangle with your class name.'),
         ],
@@ -103,11 +123,13 @@ class _TeacherDashboardTutorialDialogState
           TextSpan(text: '3. To '),
           TextSpan(
             text: 'edit your class name',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.deepPurple),
           ),
           TextSpan(text: ', click on the '),
           WidgetSpan(
-            child: Icon(Icons.edit, size: 24.0, color: Colors.black, semanticLabel: 'Edit Icon'),
+            child: Icon(Icons.edit,
+                size: 24.0, color: Colors.black, semanticLabel: 'Edit Icon'),
           ),
           TextSpan(text: ' icon next to the class name.'),
         ],
@@ -120,11 +142,13 @@ class _TeacherDashboardTutorialDialogState
           TextSpan(text: '4. To '),
           TextSpan(
             text: 'delete a class',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.deepPurple),
           ),
           TextSpan(text: ', click on the '),
           WidgetSpan(
-            child: Icon(Icons.delete, size: 24.0, color: Colors.black, semanticLabel: 'Delete Icon'),
+            child: Icon(Icons.delete,
+                size: 24.0, color: Colors.black, semanticLabel: 'Delete Icon'),
           ),
           TextSpan(
             text: ' icon next to the class name. '
@@ -140,28 +164,10 @@ class _TeacherDashboardTutorialDialogState
           TextSpan(text: '5. To '),
           TextSpan(
             text: 'view or create your exams, ',
-            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
           ),
-          TextSpan(text: 'click on'),
-          WidgetSpan(
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.deepPurple,
-                side: BorderSide(width: 2, color: Colors.deepPurple),
-                padding: EdgeInsets.symmetric(horizontal: 35, vertical: 7),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              child: Text(
-                'MANAGE EXAMS',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-          TextSpan(text: ' \n button at the bottom of the screen.\n'),
+          TextSpan(text: 'click on the MANAGE EXAMS button at the bottom of the screen.'),
         ],
       ),
     ),
@@ -200,193 +206,490 @@ class _TeacherDashboardTutorialDialogState
         ),
       ),
       actions: <Widget>[
-        if (_currentIndex > 0)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
               IconButton(
                 onPressed: _previousInstruction,
                 icon: Icon(Icons.arrow_back),
               ),
+            if (_currentIndex < _instructions.length - 1)
               IconButton(
                 onPressed: _nextInstruction,
                 icon: Icon(Icons.arrow_forward),
               ),
-            ],
-          ),
-        if (_currentIndex == 0)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class TeacherClassScreenTutorialDialog extends StatefulWidget {
+  @override
+  _TeacherClassScreenTutorialDialogState createState() =>
+      _TeacherClassScreenTutorialDialogState();
+}
+
+class _TeacherClassScreenTutorialDialogState
+    extends State<TeacherClassScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Class Viewing Screen',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text(
+          'This screen allows you to view all of your students for a given class, '
+              'search and filter for specific students, add new students, '
+              'and create a PDF document for an entire class.',
+          style: TextStyle(fontSize: 16.0),
+        ),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
             children: [
+              TextSpan(text: '1. '),
+              TextSpan(
+                text: 'Add a student',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' by clicking on the '),
+              TextSpan(
+                text: 'ADD STUDENT',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' button in the bottom left corner of the screen.'),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '\n a. Type in your student’s name and click the add button to add your student to the class.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              Text(
+                '\n b. You should now be able to view your students, their average score, and '
+                    'status in the circle to the left of the student’s name.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. To '),
+          TextSpan(
+            text: 'view a student',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', click inside the rectangle with your student’s name.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'search for a student',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' by name, click on the '),
+          WidgetSpan(
+            child: Icon(Icons.search, size: 16.0, color: Colors.black),
+          ),
+          TextSpan(text: ' icon at the top of the screen and type the desired student’s name.'),
+        ],
+      ),
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '4. To '),
+              TextSpan(
+                text: 'filter the students',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' by their status, click on the '),
+              WidgetSpan(
+                child: Icon(Icons.filter_list, size: 16.0, color: Colors.black),
+              ),
+              TextSpan(text: ' icon at the top left of the screen next to the search bar.'),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '\n a. You should now be able to view all the students with the selected status.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '5. To '),
+          TextSpan(
+            text: 'sort the students',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' alphabetically or by their average score, click on the '),
+          WidgetSpan(
+            child: Icon(Icons.build_rounded, size: 16.0, color: Colors.black),
+          ),
+          TextSpan(text: ' icon at the top right of the screen next to the search bar.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '6. To '),
+          TextSpan(
+            text: 'save or print a PDF',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' document of all of your students within your class, click on the '),
+          TextSpan(
+            text: 'PDF Button',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' at the bottom right of the screen.'),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
               IconButton(
                 onPressed: _nextInstruction,
                 icon: Icon(Icons.arrow_forward),
               ),
-            ],
-          ),
-        if (_currentIndex == _instructions.length - 1)
-          TextButton(
-            onPressed: () {
-              _goToNextScreen(); // Navigate to the next screen
-              Navigator.of(context).pop(); // Close the dialog
-            },
-            child: Text('Got it'),
-          ),
-      ],
-    );
-  }
-}
-
-class TeacherClassScreenTutorialDialog extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Welcome to the Class Viewing Screen'),
-      content: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.8, // 80% of screen width
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'This screen allows you to view all of your students for a given class,'
-                    'search and filter for specific students, add new students, and create a PDF document for an entire class.',
-                style: TextStyle(fontSize: 16.0),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '1. Add a student by clicking on the Add Student button in the bottom left corner of the screen.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\n a. Type in your student’s name and click the add button to add your student to the class.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                    Text(
-                      '\n b. You should now be able to view your students, their average score, and '
-                          'status in the circle to the left of the student’s name.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '2. To view a student, click inside the rectangle with your student’s name.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '3. To search for a student by name, click on the search bar at the '
-                    'top of the screen and type the desired student’s name.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '4. To filter the students by their status, click on the funnel '
-                    'icon at the top left of the screen next to the search bar.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\n a. You should now be able to view all the students with the selected status',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '5. To sort the students alphabetically or by their average score, click on the gear '
-                    'icon at the top right of the screen next to the search bar.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              Text(
-                '6. To save or print a PDF document of all of your students within your class, '
-                    'click on the PDF button at the bottom right of the screen.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Got it'),
+          ],
         ),
       ],
     );
   }
 }
 
-class StudentInfoScreenTutorialDialog extends StatelessWidget {
+
+
+class StudentInfoScreenTutorialDialog extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Welcome to the Student Information Screen'),
-      content: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9, // 80% of screen width
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'This screen allows you to view all of the previous reports for a '
-                    'student and track their progress throughout many terms',
-                style: TextStyle(fontSize: 16.0),
+  _StudentInfoScreenTutorialDialogState createState() =>
+      _StudentInfoScreenTutorialDialogState();
+}
+
+class _StudentInfoScreenTutorialDialogState
+    extends State<StudentInfoScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Student Information Screen',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text(
+          'This screen allows you to view all of the previous reports for a '
+              'student and track their progress throughout many terms.',
+          style: TextStyle(fontSize: 16.0),
+        ),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. To '),
+              TextSpan(
+                text: 'add a custom report',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '1. To add a custom report to your student, click on the Add '
-                    'Report button at the middle right area of the screen.',
-                style: TextStyle(fontSize: 16.0),
+              TextSpan(text: ' to your student, click on the '),
+              TextSpan(
+                text: 'Add Report button',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '2. To view a report, click inside the rectangle with the given report’s name.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '3. To save or print a PDF of the individual student, click on the'
-                    ' PDF button at the center right of the screen',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '4. To edit a student’s name, delete a student, or delete reports, '
-                    'click on the Edit button at the top right of the screen.',
-                style: TextStyle(fontSize: 16.0),
-              ),
+              TextSpan(text: ' at the middle right area of the screen.'),
             ],
           ),
         ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. To '),
+          TextSpan(
+            text: 'view a report',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', click inside the rectangle with the given report’s name.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'save or print a PDF',
+            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' of the individual student, click on the PDF button at the center right of the screen.'),
+        ],
+      ),
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '4. To '),
+              TextSpan(
+                text: 'edit a student’s name',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ', '),
+              TextSpan(
+                text: 'delete a student',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ', or '),
+              TextSpan(
+                text: 'delete reports',
+                style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ', click on the Edit button at the top right of the screen.'),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
       ),
       actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Got it'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
         ),
       ],
     );
   }
 }
+
+
+
+// class StudentInfoScreenTutorialDialog extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return AlertDialog(
+//       title: Text('Welcome to the Student Information Screen'),
+//       content: SingleChildScrollView(
+//         child: Container(
+//           width: MediaQuery.of(context).size.width * 0.9, // 80% of screen width
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: <Widget>[
+//               Text(
+//                 'This screen allows you to view all of the previous reports for a '
+//                     'student and track their progress throughout many terms',
+//                 style: TextStyle(fontSize: 16.0),
+//               ),
+//               SizedBox(height: 16.0),
+//               Text(
+//                 '1. To add a custom report to your student, click on the Add '
+//                     'Report button at the middle right area of the screen.',
+//                 style: TextStyle(fontSize: 16.0),
+//               ),
+//               SizedBox(height: 16.0),
+//               Text(
+//                 '2. To view a report, click inside the rectangle with the given report’s name.',
+//                 style: TextStyle(fontSize: 16.0),
+//               ),
+//               SizedBox(height: 16.0),
+//               Text(
+//                 '3. To save or print a PDF of the individual student, click on the'
+//                     ' PDF button at the center right of the screen',
+//                 style: TextStyle(fontSize: 16.0),
+//               ),
+//               SizedBox(height: 16.0),
+//               Text(
+//                 '4. To edit a student’s name, delete a student, or delete reports, '
+//                     'click on the Edit button at the top right of the screen.',
+//                 style: TextStyle(fontSize: 16.0),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//       actions: <Widget>[
+//         TextButton(
+//           onPressed: () {
+//             Navigator.of(context).pop();
+//           },
+//           child: Text('Got it'),
+//         ),
+//       ],
+//     );
+//   }
+// }
 
 class AddReportScreenTutorialDialog extends StatelessWidget {
   @override
