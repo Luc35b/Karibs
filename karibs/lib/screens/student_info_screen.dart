@@ -215,12 +215,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back), // Use the back arrow icon
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
             const Text('Student Info'),
             SizedBox(width: 8), // Adjust spacing between title and icon
             IconButton(
@@ -246,7 +240,6 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             );
           },
         ),
-
         automaticallyImplyLeading: false,
 
       ),
