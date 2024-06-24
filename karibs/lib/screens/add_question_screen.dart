@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
+
 class AddQuestionScreen extends StatefulWidget {
   final int testId;
-  final Function onQuestionAdded;
+  final Function(int) onQuestionAdded; // Update the type of callback to expect an int
   final int subjectId;
 
   const AddQuestionScreen({super.key, required this.testId, required this.onQuestionAdded, required this.subjectId});
@@ -114,7 +115,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         });
       }
 
-      widget.onQuestionAdded();
+      widget.onQuestionAdded(questionId); // Pass the new question ID here
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -184,6 +185,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
     _fetchCategories();
   }
+
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -196,11 +198,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: DeepPurple,
-        foregroundColor: White,
-        title: Row(
-            children:[
+        appBar: AppBar(
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
+          title: Row(
+            children: [
               Text('Add New Question'),
               SizedBox(width: 8), // Adjust spacing between title and icon
               IconButton(
@@ -210,9 +212,9 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   _showTutorialDialog();
                 },
               ),
-            ]
+            ],
+          ),
         ),
-      ),
         body: Stack(
             children: [
         SingleChildScrollView(
@@ -238,89 +240,89 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           },
           decoration: const InputDecoration(labelText: 'Question Type'),
         ),
-    Row(
-    children: [
-    Expanded(
-    child: DropdownButtonFormField<int>(
-    value: _selectedCategoryId,
-    items: _questionCategories.map((category) {
-    return DropdownMenuItem<int>(
-    value: category['id'],
-    child: Text(category['name']),
-    );
-    }).toList(),
-    onChanged: (value) {
-    setState(() {
-    _selectedCategoryId = value;
-    });
-    },
-    decoration: const InputDecoration(labelText: 'Question Category'),
-    ),
-    ),
-    IconButton(
-    icon: const Icon(Icons.add),
-    onPressed: _showAddCategoryDialog,
-    ),
-    ],
-    ),
-            if (_selectedType == 'Essay')
-              DropdownButtonFormField<int>(
-                value: _essaySpaces,
-                items: List.generate(10, (index) => index + 1).map((num) {
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<int>(
+                value: _selectedCategoryId,
+                items: _questionCategories.map((category) {
                   return DropdownMenuItem<int>(
-                    value: num,
-                    child: Text('$num lines'),
+                    value: category['id'],
+                    child: Text(category['name']),
                   );
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    _essaySpaces = value!;
+                    _selectedCategoryId = value;
                   });
                 },
-                decoration: const InputDecoration(labelText: 'Number of lines for Essay'),
+                decoration: const InputDecoration(labelText: 'Question Category'),
               ),
-    if (_selectedType == 'Multiple Choice')
-    Column(
-    children: [
-    for (int i = 0; i < _choiceControllers.length; i++)
-    Row(
-    children: [
-    Expanded(
-    child: TextField(
-    controller: _choiceControllers[i],
-    decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
-    ),
-    ),
-    Checkbox(
-    value: _correctChoices[i],
-    onChanged: (value) {
-    setState(() {
-    if (_choiceControllers[i].text.isNotEmpty) {
-    _correctChoices[i                                    ] = value!;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Correct choice cannot be blank.'),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _showAddCategoryDialog,
+            ),
+          ],
         ),
-      );
-    }
-    });
-    },
+        if (_selectedType == 'Essay')
+    DropdownButtonFormField<int>(
+        value: _essaySpaces,
+        items: List.generate(10, (index) => index + 1).map((num) {
+    return DropdownMenuItem<int>(
+    value: num,
+    child: Text('$num lines'),
+    );
+    }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _essaySpaces = value!;
+        });
+      },
+      decoration: const InputDecoration(labelText: 'Number of lines for Essay'),
     ),
-      IconButton(
-        icon: const Icon(Icons.delete),
-        onPressed: () => _removeChoiceField(i),
-      ),
-    ],
-    ),
-      ElevatedButton(
-        onPressed: _addChoiceField,
-        child: const Text('Add Choice'),
-      ),
-    ],
-    ),
+            if (_selectedType == 'Multiple Choice')
+              Column(
+                children: [
+                  for (int i = 0; i < _choiceControllers.length; i++)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _choiceControllers[i],
+                            decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
+                          ),
+                        ),
+                        Checkbox(
+                          value: _correctChoices[i],
+                          onChanged: (value) {
+                            setState(() {
+                              if (_choiceControllers[i].text.isNotEmpty) {
+                                _correctChoices[i] = value!;
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Correct choice cannot be blank.'),
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _removeChoiceField(i),
+                        ),
+                      ],
+                    ),
+                  ElevatedButton(
+                    onPressed: _addChoiceField,
+                    child: const Text('Add Choice'),
+                  ),
+                ],
+              ),
             if (_selectedType == 'Fill in the Blank')
               TextField(
                 controller: _correctAnswerController,
