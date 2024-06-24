@@ -191,6 +191,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     if (_reports.isEmpty) {
       return 0.0;
     }
+    //int min = _reports.first['id'];
     int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
     return min.toDouble();
   }
@@ -199,6 +200,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     if (_reports.isEmpty) {
       return 0.0;
     }
+    //int max = _reports.last['id'];
     int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
   }
@@ -289,7 +291,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
           SizedBox(
             height: 300, // Provide a fixed height for the chart
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(right: 20.0, top: 8.0, left: 8.0, bottom: 8.0),
               child: _reports.isEmpty
                   ? Center(
                 child: Column(
@@ -335,6 +337,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     bottomTitles: SideTitles(
                       showTitles: true,
                       getTitles: (value) {
+                        value-=1;
                         int index = value.toInt();
                         if(value >=0 && value< _reports.length){
                           return _reports[index]['title'] ?? '';
