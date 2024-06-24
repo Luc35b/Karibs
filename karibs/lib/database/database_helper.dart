@@ -423,6 +423,17 @@ CREATE TABLE questions (
     return null;
   }
 
+  Future<Map<String, dynamic>> getQuestionById(int questionId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'questions',
+      where: 'id = ?',
+      whereArgs: [questionId],
+      limit: 1,
+    );
+    return result.isNotEmpty ? result.first : {};
+  }
+
 
   Future<Map<String, dynamic>> getQuestionsAndAnswersForReport(int reportId) async {
     final db = await database;

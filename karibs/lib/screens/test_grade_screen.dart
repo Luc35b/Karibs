@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/main.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -210,6 +211,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Grade Exam for ${widget.testTitle}'),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -318,28 +321,66 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: (_selectedStudentId != null &&
-                      _questions.isNotEmpty &&
-                      !_gradedStudentIds.contains(_selectedStudentId) &&
-                      !_questions.any((question) => questionCorrectness[question['id']] == 0))
-                      ? () {
-                    _saveGradingResults();
-                  }
-                      : null,
-                  child: const Text('Save Grade'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: ElevatedButton(
+                    onPressed: (_selectedStudentId != null &&
+                        _questions.isNotEmpty &&
+                        !_gradedStudentIds.contains(_selectedStudentId) &&
+                        !_questions.any((question) => questionCorrectness[question['id']] == 0))
+                        ? () {
+                      _saveGradingResults();
+                    }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: const Text('Save Grade'),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    _goToTeacherDashboard(widget.classId);
-                  },
-                  child: const Text('Go to Class'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _goToTeacherDashboard(widget.classId);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: const Text('Go to Class'),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: _generateAndPrintPdf,
-                  child: const Text('Scores'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: IconButton(
+                    onPressed: _generateAndPrintPdf,
+                    icon: Icon(Icons.print),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    color: DeepPurple,
+                    iconSize: 24,
+                  ),
                 ),
               ],
             ),

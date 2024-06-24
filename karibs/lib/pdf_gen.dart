@@ -177,7 +177,7 @@ class PdfGenerator {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                          pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                          pw.Text('Score: ${report['score']?.toStringAsFixed(2) ?? 'N/A'}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)), // Truncated score
                         ],
                       ),
                       pw.SizedBox(height: 5),
@@ -230,6 +230,10 @@ class PdfGenerator {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(student['name'] ?? '', style: const pw.TextStyle(fontSize: 16)), // Add a null check for student name
+                      pw.Text(
+                        '.' * ((80 - (student['name'] ?? '').length).round()), // Fill the gap with "."
+                        style: const pw.TextStyle(fontSize: 16),
+                      ),
                       pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
                     ],
                   );
@@ -249,6 +253,7 @@ class PdfGenerator {
     await Printing.sharePdf(bytes: await pdf.save(), filename: '$className - Report.pdf');
   }
 
+
   Future<void> generateIndividualReportPdf(Map<String, dynamic> student, Map<String, dynamic> report) async {
     final pdf = pw.Document();
 
@@ -267,7 +272,7 @@ class PdfGenerator {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Score: ${report['score']?.toStringAsFixed(2) ?? 'N/A'}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)), // Truncated score
                   ],
                 ),
                 pw.SizedBox(height: 5),
@@ -313,16 +318,19 @@ class PdfGenerator {
                     children: [
                       pw.Expanded(
                         child: pw.Text(
-                          '${student['name']}',
+                          '${student['name']}  ',
                           style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
                       pw.Text(
-                        generateFillerString('${student['name']}', '${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '--'}'),
+                        generateFillerString(
+                          '${student['name']}  ',
+                          '   ${_formatScore(studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'])}',
+                        ),
                         style: const pw.TextStyle(fontSize: 16),
                       ),
                       pw.Text(
-                        '   ${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '  --'}', // Check for null and display '--'
+                        '   ${_formatScore(studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'])}', // Check for null and display '--'
                         style: const pw.TextStyle(fontSize: 16),
                       ),
                     ],
@@ -341,10 +349,23 @@ class PdfGenerator {
     Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Scores.pdf');
   }
 
+  String _formatScore(dynamic score) {
+    if (score == null) {
+      return '   --   ';
+    } else {
+      return double.tryParse(score.toString())?.toStringAsFixed(2) ?? '   --   ';
+    }
+  }
+
+
   String generateFillerString(String name, String score) {
-    // Calculate the remaining length after name and score
-    final maxLength = 94;
-    final remainingLength = maxLength - name.length - score.length - 9;
+    final maxLength = 90;
+    int remainingLength = 0;
+    if(score == '   --   '){
+      remainingLength = maxLength - name.length - score.length + 10;
+    }else {
+      remainingLength = maxLength - name.length - score.length;
+    }
     return '.' * remainingLength;
   }
 }

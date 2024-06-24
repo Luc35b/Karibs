@@ -59,10 +59,23 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         builder: (context) => AddQuestionScreen(
           testId: widget.testId,
           subjectId: widget.subjectId,
-          onQuestionAdded: _fetchQuestions,
+          onQuestionAdded: _handleQuestionAdded,
         ),
       ),
     );
+  }
+
+  void _handleQuestionAdded(int newQuestionId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? savedOrder = prefs.getStringList('test_${widget.testId}_order') ?? [];
+    savedOrder.add(newQuestionId.toString());
+    await prefs.setStringList('test_${widget.testId}_order', savedOrder);
+
+    // Fetch the newly added question and add it to the end of the questions list
+    final newQuestion = await DatabaseHelper().getQuestionById(newQuestionId);
+    setState(() {
+      _questions.add(newQuestion);
+    });
   }
 
   void _navigateToQuestionDetailScreen(int questionId) {
@@ -189,89 +202,89 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+        appBar: AppBar(
         backgroundColor: DeepPurple,
         foregroundColor: White,
         title: Text(widget.testTitle),
-        actions: [
-          TextButton(
-            onPressed: _showChooseClassDialog,
-            style: TextButton.styleFrom(
-              side: const BorderSide(color: Colors.white, width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            child: Text(
-              'GRADE',
-              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-          children: [
-      SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
-      child: _questions.isEmpty
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: White,
-                foregroundColor: DeepPurple,
-                side: const BorderSide(width: 2, color: Colors.deepPurple),
-                padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              onPressed: _navigateToAddQuestionScreen,
-              child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-            ),
-          ],
-        ),
-      )
-          : Column(
-        children: [
-        ReorderableListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
-        onReorder: _updateQuestionOrder,
-        children: [
-          for (int index = 0; index < _questions.length; index++)
-            ListTile(
-              key: ValueKey(_questions[index]['id']),
-              title: Text(_questions[index]['text']),
-              subtitle: Text('Type: ${_questions[index]['type']}'),
-              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-      const SizedBox(height: 20),
-      ElevatedButton(
-      style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
+    actions: [
+    TextButton(
+    onPressed: _showChooseClassDialog,
+    style: TextButton.styleFrom(
+    side: const BorderSide(color: Colors.white, width: 1),
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(5),
+    ),
+    ),
+    child: Text(
+    'GRADE',
+    style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+    ),
+    ),
+    ],
+    ),
+    body: _isLoading
+    ? const Center(child: CircularProgressIndicator())
+        : Stack(
+    children: [
+    SingleChildScrollView(
+    padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+    child: _questions.isEmpty
+    ? Center(
+    child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+    const SizedBox(height: 20),
+    Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
+    const SizedBox(height: 20),
+    ElevatedButton(
+    style: ElevatedButton.styleFrom(
+    backgroundColor: White,
+    foregroundColor: DeepPurple,
+    side: const BorderSide(width: 2, color: Colors.deepPurple),
+    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(15),
+    ),
+    ),
+    onPressed: _navigateToAddQuestionScreen,
+    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+    ),
+    ],
+    ),
+    )
+        : Column(
+    children: [
+    ReorderableListView(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+    onReorder: _updateQuestionOrder,
+    children: [
+    for (int index = 0; index < _questions.length; index++)
+    ListTile(
+    key: ValueKey(_questions[index]['id']),
+    title: Text(_questions[index]['text']),
+    subtitle: Text('Type: ${_questions[index]['type']}'),
+    onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+    trailing: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+    IconButton(
+    icon: const Icon(Icons.edit),
+    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
+    ),
+    IconButton(
+    icon: const Icon(Icons.delete),
+    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
+    ),
+    ],
+    ),
+    ),
+    ],
+    ),
+    const SizedBox(height: 20),
+    ElevatedButton(
+    style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
       foregroundColor: Colors.deepPurple,
       side: const BorderSide(width: 2, color: Colors.deepPurple),
       padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
@@ -279,64 +292,63 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
         borderRadius: BorderRadius.circular(15),
       ),
     ),
-    onPressed: _navigateToAddQuestionScreen,
-    child: Text('Add Question +', style:                   GoogleFonts.raleway(fontSize: 20)),
-      ),
-        ],
-      ),
-      ),
-
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: FloatingActionButton(
-                  onPressed: () {
-                    showMenu(
-                      context: context,
-                      position: RelativeRect.fromLTRB(
-                        MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
-                        MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
-                        16, // Padding from right
-                        16, // Padding from bottom
-                      ),
-                      items: [
-                        PopupMenuItem<int>(
-                          value: 0,
-                          child: TextButton(
-                            onPressed: _generateAndPrintQuestionsPdf,
-                            child: const Row(
-                              children: [
-                                Icon(Icons.print),
-                                SizedBox(width: 8),
-                                Text('Print Questions'),
-                              ],
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem<int>(
-                          value: 1,
-                          child: TextButton(
-                            onPressed: _generateAndPrintAnswerKeyPdf,
-                            child: const Row(
-                              children: [
-                                Icon(Icons.print),
-                                SizedBox(width: 8),
-                                Text('Print Answer Key'),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                      elevation: 8.0,
-                    );
-                  },
-                  child: const Icon(Icons.print),
+      onPressed: _navigateToAddQuestionScreen,
+      child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+    ),
+    ],
+    ),
+    ),
+      Align(
+        alignment: Alignment.bottomRight,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              showMenu(
+                context: context,
+                position: RelativeRect.fromLTRB(
+                  MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
+                  MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
+                  16, // Padding from right
+                  16, // Padding from bottom
                 ),
-              ),
-            ),
-          ],
+                items: [
+                  PopupMenuItem<int>(
+                    value: 0,
+                    child: TextButton(
+                      onPressed: _generateAndPrintQuestionsPdf,
+                      child: const Row(
+                        children: [
+                          Icon(Icons.print),
+                          SizedBox(width: 8),
+                          Text('Print Questions'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem<int>(
+                    value: 1,
+                    child: TextButton(
+                      onPressed: _generateAndPrintAnswerKeyPdf,
+                      child: const Row(
+                        children: [
+                          Icon(Icons.print),
+                          SizedBox(width: 8),
+                          Text('Print Answer Key'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                elevation: 8.0,
+              );
+            },
+            child: const Icon(Icons.print),
+          ),
+        ),
       ),
+    ],
+    ),
     );
   }
 }
