@@ -276,10 +276,12 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     onPressed: _navigateToAddQuestionScreen,
                     child: Text('Add Question +',
                         style: GoogleFonts.raleway(fontSize: 20)),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
-                  ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
+                    ),
+
                 ],
               ),
             ),
@@ -400,55 +402,6 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
 
   @override
   Widget build(BuildContext context) {
-  return AlertDialog(
-  title: const Text('Choose Class'),
-  content: _isLoading
-  ? const Center(child: CircularProgressIndicator())
-      : _classes.isEmpty
-  ? Column(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-  const Text('No Classes Available For This Subject'),
-  const SizedBox(height: 10),
-  Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.deepPurpleAccent)),
-  const SizedBox(height: 16),
-  ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
-      foregroundColor: DeepPurple,
-      side: const BorderSide(
-          width: 2, color: DeepPurple),
-    ),
-  onPressed: _navigateToTeacherDashboard,
-  child: const Text('Go to Teacher Dashboard'),
-  ),
-  ],
-  )
-      : SizedBox(
-  width: double.minPositive, // Adjust the width to fit the content
-  child: ListView.builder(
-  shrinkWrap: true,
-  itemCount: _classes.length,
-  itemBuilder: (context, index) {
-  return ListTile(
-  title: Text(_classes[index]['name']),
-  onTap: () {
-  widget.onClassSelected(_classes[index]['id']);
-  },
-  );
-  },
-  ),
-  ),
-  actions: [
-  TextButton(
-  onPressed: () {
-  Navigator.of(context).pop();
-  },
-  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-  ),
-  ],
-  );
-  }
     return AlertDialog(
       title: const Text('Choose Class'),
       content: _isLoading
@@ -459,9 +412,16 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
         children: [
           const Text('No Classes Available For This Subject'),
           const SizedBox(height: 10),
-          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          Text(subjName, style: const TextStyle(
+              fontSize: 24, color: Colors.deepPurpleAccent)),
           const SizedBox(height: 16),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: DeepPurple,
+              side: const BorderSide(
+                  width: 2, color: DeepPurple),
+            ),
             onPressed: _navigateToTeacherDashboard,
             child: const Text('Go to Teacher Dashboard'),
           ),
