@@ -10,9 +10,7 @@ import '../providers/student_grading_provider.dart';
 class RegradeTestScreen extends StatefulWidget {
   final int reportId;
 
-
   const RegradeTestScreen({Key? key, required this.reportId}) : super(key: key);
-
 
   @override
   _RegradeTestScreenState createState() => _RegradeTestScreenState();
@@ -45,14 +43,13 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _selectedStudentId = report['student_id'];
       _testId = report['test_id'];
       _testTitle = report['title'];
-      _studentTestId =
-      await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-    }
+      _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
+
       // Fetch student details
-    _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
-    _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
-    _className = await DatabaseHelper().getClassName(_student!['class_id']);
-    _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
+      _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
+      _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
+      _className = await DatabaseHelper().getClassName(_student!['class_id']);
+      _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
 
       // Fetch questions details in the correct order
       final data = await DatabaseHelper().queryAllQuestionsWithChoices(_testId!);
@@ -66,23 +63,22 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
       }
 
-
       // Initialize categoryScores and questionCorrectness based on saved data
       await _initializeSavedResults();
 
-    if(_categories.isEmpty) {
-      setState(() {
-        _testDeleted = true;
-        _isLoading = false;
-      });
-      return;
-    }
+      if (_categories.isEmpty) {
+        setState(() {
+          _testDeleted = true;
+          _isLoading = false;
+        });
+        return;
+      }
 
       setState(() {
         _questions = orderedQuestions;
         _isLoading = false;
       });
-
+    }
   }
 
   Future<void> _initializeSavedResults() async {
@@ -93,6 +89,17 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _initializeQuestionCorrectness(savedResults);
       // Initialize categoryScores based on saved results
       await _initializeCategoryScores(savedResults);
+    }
+
+    // Ensure all questions have an entry in questionCorrectness and question_answer_map
+    for (var question in _questions) {
+      int questionId = question['id'];
+      if (!questionCorrectness.containsKey(questionId)) {
+        questionCorrectness[questionId] = 0; // Default state for new questions
+      }
+      if (!question_answer_map.containsKey(questionId)) {
+        question_answer_map[questionId] = 0; // Default state for new questions
+      }
     }
   }
 
@@ -115,7 +122,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     });
 
     print(categoryScores); // Ensure correct initialization
-
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -163,7 +169,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     print('totalScore: $totalScore');
     print(categoryScores);
 
-
     // Ensure total score is not negative
     totalScore = totalScore.clamp(0.0, 100.0);
 
@@ -180,7 +185,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
     print(categoryScoresPercentage);
 
-
     // Save scores to the database
     if (_selectedStudentId != null) {
       await DatabaseHelper().updateStudentTest({
@@ -191,7 +195,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       await DatabaseHelper().updateReport(widget.reportId, {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
-        //'notes': 'Regraded test for student',
         'score': totalScore, // Keep the existing score if available
       });
 
@@ -199,17 +202,25 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
       // Update database with current values in question_answer_map if they exist,
       // otherwise keep the existing values from the database
-      question_answer_map.forEach((key, value) async {
-        int? existingValue = await DatabaseHelper().getStudentTestQuestionResult(studentTestId!, key);
+      for (var entry in question_answer_map.entries) {
+        int questionId = entry.key;
+        int gotCorrect = entry.value;
+        int? existingValue = await DatabaseHelper().getStudentTestQuestionResult(studentTestId!, questionId);
+
         if (existingValue != null) {
           await DatabaseHelper().updateStudentTestQuestion({
             'student_test_id': studentTestId,
-            'question_id': key,
-            'got_correct': value,
+            'question_id': questionId,
+            'got_correct': gotCorrect,
+          });
+        } else {
+          await DatabaseHelper().insertStudentTestQuestion({
+            'student_test_id': studentTestId,
+            'question_id': questionId,
+            'got_correct': gotCorrect,
           });
         }
-      });
-
+      }
 
       for (var entry in categoryScoresPercentage.entries) {
         await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
@@ -223,7 +234,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
           'score': entry.value,
         });
       }
-
 
       // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
@@ -246,8 +256,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       },
     );
   }
-
-
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
@@ -282,78 +290,81 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       body: Stack(
         children: [
           _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _testDeleted
-            ? const Center(
-          child: Text(
-            'The Test has been Deleted.',
-            style: TextStyle(fontSize: 30),
-          ),
-        )
-          : Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_className != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center( // Center the text widget
-                child: Text(
-                  'Regrading Exam: $_testTitle for "$_className" ',
-                  style: const TextStyle(fontSize: 20),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              ? const Center(child: CircularProgressIndicator())
+              : _testDeleted
+              ? const Center(
+            child: Text(
+              'The Test has been Deleted.',
+              style: TextStyle(fontSize: 30),
             ),
-          if (_student != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center( // Center the text widget
-                child: Text(
-                  'Regrading Student: ${_student!['name']}',
-                  style: const TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _questions.length,
-              itemBuilder: (context, index) {
-                int questionId = _questions[index]['id'];
-                int categoryId = _questions[index]['category_id'];
-                String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
-                return ListTile(
-                  title: Text(_questions[index]['text']),
-                  subtitle: Text('Category: $categoryName'),
-                  tileColor: questionCorrectness[questionId] == 1
-                      ? Colors.green.withOpacity(0.2)
-                      : questionCorrectness[questionId] == -1
-                      ? Colors.red.withOpacity(0.2)
-                      : questionCorrectness[questionId] == 0
-                      ? Colors.grey.withOpacity(0.2)
-                      : null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        onPressed: () {
-                          _markCorrect(questionId, categoryId);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.red),
-                        onPressed: () {
-                          _markIncorrect(questionId, categoryId);
-                        },
-                      ),
-                    ],
+          )
+              : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_className != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    // Center the text widget
+                    child: Text(
+                      'Regrading Exam: $_testTitle for "$_className" ',
+                      style: const TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                );
-              },
-            ),
-          ),
-          ],
+                ),
+              if (_student != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    // Center the text widget
+                    child: Text(
+                      'Regrading Student: ${_student!['name']}',
+                      style: const TextStyle(fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _questions.length,
+                  itemBuilder: (context, index) {
+                    int questionId = _questions[index]['id'];
+                    int categoryId = _questions[index]['category_id'];
+                    String categoryName = _categories
+                        .firstWhere((category) => category['id'] == categoryId)['name'];
+                    return ListTile(
+                      title: Text(_questions[index]['text']),
+                      subtitle: Text('Category: $categoryName'),
+                      tileColor: questionCorrectness[questionId] == 1
+                          ? Colors.green.withOpacity(0.2)
+                          : questionCorrectness[questionId] == -1
+                          ? Colors.red.withOpacity(0.2)
+                          : questionCorrectness[questionId] == 0
+                          ? Colors.grey.withOpacity(0.2)
+                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.check, color: Colors.green),
+                            onPressed: () {
+                              _markCorrect(questionId, categoryId);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.red),
+                            onPressed: () {
+                              _markIncorrect(questionId, categoryId);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
           Positioned(
             bottom: 0,
@@ -385,8 +396,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
                   ],
                 ),
               ),
-            )
-            ,
+            ),
           ),
         ],
       ),
