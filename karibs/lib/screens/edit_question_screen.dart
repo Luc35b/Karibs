@@ -207,7 +207,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                 Navigator.pop(context);
               },
             ),
-            const Text('Class Viewing'),
+            const Text('Edit Question'),
             SizedBox(width: 8), // Adjust spacing between title and icon
             IconButton(
               icon: Icon(Icons.help_outline),
@@ -352,6 +352,12 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: DeepPurple,
+                      side: const BorderSide(
+                          width: 2, color: DeepPurple),
+                    ),
                     onPressed: _updateQuestion,
                     child: const Text('Save'),
                   ),

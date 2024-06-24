@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
-import 'package:karibs/overlay.dart';
-import 'package:karibs/main.dart';
 
 class RegradeTestScreen extends StatefulWidget {
   final int reportId;
 
+
   const RegradeTestScreen({Key? key, required this.reportId}) : super(key: key);
+
 
   @override
   _RegradeTestScreenState createState() => _RegradeTestScreenState();
@@ -23,7 +24,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
-  bool _testDeleted = false;
   Map<int, double?> categoryScores = {}; // Updated to store category scores
   Map<int, int> questionCorrectness = {};
   String? _testTitle;
@@ -38,37 +38,39 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
   Future<void> _fetchReportDetails() async {
     Map<String, dynamic>? report = await DatabaseHelper().getReportById(widget.reportId);
-
     if (report != null) {
       _selectedStudentId = report['student_id'];
       _testId = report['test_id'];
       _testTitle = report['title'];
-      _studentTestId =
-      await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
-    }
+      _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
 
-    // Fetch student and questions details
-    _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
-    _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
-    _className = await DatabaseHelper().getClassName(_student!['class_id']);
-    _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
+      // Fetch student details
+      _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
+      _className = await DatabaseHelper().getClassName(_student!['class_id']);
 
-    // Initialize categoryScores and questionCorrectness based on saved data
-    await _initializeSavedResults();
+      // Fetch questions details in the correct order
+      final data = await DatabaseHelper().queryAllQuestionsWithChoices(_testId!);
+      final prefs = await SharedPreferences.getInstance();
+      final orderList = prefs.getStringList('test_${_testId!}_order'); // Corrected method
 
-    if(_categories.isEmpty) {
+      List<Map<String, dynamic>> orderedQuestions = data;
+
+      if (orderList != null) {
+        final orderIntList = orderList.map((e) => int.parse(e)).toList();
+        orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
+      }
+
+      // Fetch categories details
+      _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
+
+      // Initialize categoryScores and questionCorrectness based on saved data
+      await _initializeSavedResults();
+
       setState(() {
-        _testDeleted = true;
+        _questions = orderedQuestions;
         _isLoading = false;
       });
-      return;
-
-
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Future<void> _initializeSavedResults() async {
@@ -101,6 +103,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     });
 
     print(categoryScores); // Ensure correct initialization
+
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -148,6 +151,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     print('totalScore: $totalScore');
     print(categoryScores);
 
+
     // Ensure total score is not negative
     totalScore = totalScore.clamp(0.0, 100.0);
 
@@ -163,6 +167,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     }
 
     print(categoryScoresPercentage);
+
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -193,6 +198,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         }
       });
 
+
       for (var entry in categoryScoresPercentage.entries) {
         await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
           'student_test_id': studentTestId,
@@ -205,6 +211,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
           'score': entry.value,
         });
       }
+
 
       // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
@@ -219,14 +226,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     }
   }
 
-  void _showTutorialDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return RegradeTestScreenTutorialDialog();
-      },
-    );
-  }
 
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
@@ -243,123 +242,95 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: White,
-        backgroundColor: DeepPurple,
-        title: Row(
-          children: [
-            Text('Regrade Test for $_testTitle'),
-            SizedBox(width: 8), // Adjust spacing between title and icon
-            IconButton(
-              icon: Icon(Icons.help_outline),
-              onPressed: () {
-                // Show tutorial dialog
-                _showTutorialDialog();
+        title: Text('Regrade Test for $_testTitle'),
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_className != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center( // Center the text widget
+                child: Text(
+                  'Regrading Exam: $_testTitle for "$_className" ',
+                  style: const TextStyle(fontSize: 20),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          if (_student != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center( // Center the text widget
+                child: Text(
+                  'Regrading Student: ${_student!['name']}',
+                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _questions.length,
+              itemBuilder: (context, index) {
+                int questionId = _questions[index]['id'];
+                int categoryId = _questions[index]['category_id'];
+                String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                return ListTile(
+                  title: Text(_questions[index]['text']),
+                  subtitle: Text('Category: $categoryName'),
+                  tileColor: questionCorrectness[questionId] == 1
+                      ? Colors.green.withOpacity(0.2)
+                      : questionCorrectness[questionId] == -1
+                      ? Colors.red.withOpacity(0.2)
+                      : questionCorrectness[questionId] == 0
+                      ? Colors.grey.withOpacity(0.2)
+                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green),
+                        onPressed: () {
+                          _markCorrect(questionId, categoryId);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.red),
+                        onPressed: () {
+                          _markIncorrect(questionId, categoryId);
+                        },
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
-          ],
-        ),
-      ),
-      body: Stack(
-        children: [
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _testDeleted
-              ? const Center(
-            child: Text(
-              'The Test has been Deleted.',
-              style: TextStyle(fontSize: 30),
-            ),
-          )
-              : Column(
-            children: [
-              if (_className != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Regrading details for class $_className and test $_testTitle',
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                ),
-              if (_student != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Regrading Student: ${_student!['name']}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _questions.length,
-                  itemBuilder: (context, index) {
-                    int questionId = _questions[index]['id'];
-                    int categoryId = _questions[index]['category_id'];
-                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
-                    return ListTile(
-                      title: Text(_questions[index]['text']),
-                      subtitle: Text('Category: $categoryName'), // Display category instead of subject
-                      tileColor: questionCorrectness[questionId] == 1
-                          ? Colors.green.withOpacity(0.2)
-                          : questionCorrectness[questionId] == -1
-                          ? Colors.red.withOpacity(0.2)
-                          : questionCorrectness[questionId] == 0
-                          ? Colors.grey.withOpacity(0.2)
-                          : null,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.check, color: Colors.green),
-                            onPressed: () {
-                              _markCorrect(questionId, categoryId);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.red),
-                            onPressed: () {
-                              _markIncorrect(questionId, categoryId);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_testDeleted == false) ...[
-                      ElevatedButton(
-                        onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
-                            ? () {
-                          _saveRegradingResults(); // Save regrading results
-                        }
-                            : null,
-                        child: const Text('Save Regrade'),
-                      ),
-                      const SizedBox(width: 42), // Add some space between the buttons
-                    ],
-                    ElevatedButton(
-                      onPressed: () {
-                        _navigateToStudentInfoScreen(_selectedStudentId!);
-                      },
-                      child: const Text('Return to Student'),
-                    ),
-                  ],
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
+                      ? () {
+                    _saveRegradingResults(); // Save regrading results
+                  }
+                      : null,
+                  child: const Text('Save Regrade'),
                 ),
-              ),
-            )
-            ,
+                const SizedBox(width: 42),
+                ElevatedButton(
+                  onPressed: () {
+                    _navigateToStudentInfoScreen(_selectedStudentId!);
+                  },
+                  child: const Text('Return to Student'),
+                ),
+              ],
+            ),
           ),
         ],
       ),

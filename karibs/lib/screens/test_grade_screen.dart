@@ -1,14 +1,12 @@
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:karibs/main.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
+import '../overlay.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
-import 'package:karibs/overlay.dart';
 import 'package:karibs/pdf_gen.dart';
 
 class TestGradeScreen extends StatefulWidget {
@@ -204,6 +202,10 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       _fetchStudents();
     });
   }
+
+  void _generateAndPrintPdf() {
+    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
+  }
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -213,52 +215,40 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     );
   }
 
-  void _generateAndPrintPdf() {
-    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Row(
-              children:[
-                Text('Grade Exam for ${widget.testTitle}'),
-                SizedBox(width: 8), // Adjust spacing between title and icon
-                IconButton(
-                  icon: Icon(Icons.help_outline),
-                  onPressed: () {
-                    // Show tutorial dialog
-                    _showTutorialDialog();
-                  },
-                ),
-              ]
-          ),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        title: Row(
+          children: [
+            Text('Grade Exam for ${widget.testTitle}'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
         ),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          if (_className != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Grading details for class: $_className and exam: ${widget.testTitle}',
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
-          if (_students.isEmpty)
-            Expanded(
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _goToTeacherDashboard(widget.classId);
-                  },
-                  child: const Text('Go to Class to Create Students'),
+          : Center(
+        child: Column(
+          children: [
+            if (_className != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Grading Exam: ${widget.testTitle} for "$_className" ',
+                  style: const TextStyle(fontSize: 20),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            )
-          else ...[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButton<int>(
@@ -267,19 +257,19 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                 onChanged: (int? newValue) {
                   setState(() {
                     _selectedStudentId = newValue;
-                    _initializeCategoryScores(); // Clear categoryScores when a new student is selected
-                    _initializeQuestionCorrectness(); // Clear questionCorrectness when a new student is selected
+                    _initializeCategoryScores();
+                    _initializeQuestionCorrectness();
                     question_answer_map.clear();
                   });
                 },
                 items: _students.map<DropdownMenuItem<int>>((Map<String, dynamic> student) {
                   return DropdownMenuItem<int>(
                     value: student['id'],
-                    enabled: !_gradedStudentIds.contains(student['id']), // Disable graded students
+                    enabled: !_gradedStudentIds.contains(student['id']),
                     child: Text(
                       student['name'],
                       style: TextStyle(
-                        color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black, // Change color based on grading status
+                        color: _gradedStudentIds.contains(student['id']) ? Colors.grey : Colors.black,
                       ),
                     ),
                   );
@@ -301,7 +291,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   itemBuilder: (context, index) {
                     int questionId = _questions[index]['id'];
                     int categoryId = _questions[index]['category_id'];
-                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                    String categoryName =
+                    _categories.firstWhere((category) => category['id'] == categoryId)['name'];
                     return ListTile(
                       title: Text(_questions[index]['text']),
                       subtitle: Text(categoryName),
@@ -334,21 +325,19 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                 ),
               ),
             if (_gradedStudentIds.length == _students.length)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "View student report to edit their score.",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "View student report to edit their score.",
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
               ),
           ],
-        ],
+        ),
+
       ),
-      bottomNavigationBar: _students.isEmpty
-          ? null
-          : BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Padding(
@@ -357,6 +346,18 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: (_selectedStudentId != null &&
                       _questions.isNotEmpty &&
                       !_gradedStudentIds.contains(_selectedStudentId) &&
@@ -368,14 +369,38 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   child: const Text('Save Grade'),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: () {
                     _goToTeacherDashboard(widget.classId);
                   },
                   child: const Text('Go to Class'),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 12),
+                    // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onPressed: _generateAndPrintPdf,
-                  child: const Text('Scores'),
+                  child: Icon(Icons.print),
                 ),
               ],
             ),
@@ -385,3 +410,4 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     );
   }
 }
+
