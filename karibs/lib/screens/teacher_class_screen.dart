@@ -449,8 +449,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     children: [
     IconButton(
     icon: const Icon(
-    Icons.filter_list,
+    Icons.filter_alt,
     color: White,
+      size: 30,
     ),
     onPressed: _showStatusFilterDialog,
     ),
@@ -471,8 +472,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     const SizedBox(width: 8),
       IconButton(
         icon: const Icon(
-          Icons.build_rounded,
+          Icons.settings,
           color: White,
+          size: 30,
         ),
         onPressed: _showSortOptionsDialog,
       ),

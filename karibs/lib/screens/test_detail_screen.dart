@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
+import 'package:karibs/screens/tests_screen.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
@@ -199,94 +201,125 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     await prefs.setStringList('test_${widget.testId}_order', order);
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestDetailScreenTutorialDialog();
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
         backgroundColor: DeepPurple,
         foregroundColor: White,
-        title: Text(widget.testTitle),
-    actions: [
-    TextButton(
-    onPressed: _showChooseClassDialog,
-    style: TextButton.styleFrom(
-    side: const BorderSide(color: Colors.white, width: 1),
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(5),
-    ),
-    ),
-    child: Text(
-    'GRADE',
-    style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
-    ),
-    ),
-    ],
-    ),
-    body: _isLoading
-    ? const Center(child: CircularProgressIndicator())
-        : Stack(
-    children: [
-    SingleChildScrollView(
-    padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
-    child: _questions.isEmpty
-    ? Center(
-    child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-    const SizedBox(height: 20),
-    Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
-    const SizedBox(height: 20),
-    ElevatedButton(
-    style: ElevatedButton.styleFrom(
-    backgroundColor: White,
-    foregroundColor: DeepPurple,
-    side: const BorderSide(width: 2, color: Colors.deepPurple),
-    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(15),
-    ),
-    ),
-    onPressed: _navigateToAddQuestionScreen,
-    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-    ),
-    ],
-    ),
-    )
-        : Column(
-    children: [
-    ReorderableListView(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
-    onReorder: _updateQuestionOrder,
-    children: [
-    for (int index = 0; index < _questions.length; index++)
-    ListTile(
-    key: ValueKey(_questions[index]['id']),
-    title: Text(_questions[index]['text']),
-    subtitle: Text('Type: ${_questions[index]['type']}'),
-    onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-    trailing: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-    IconButton(
-    icon: const Icon(Icons.edit),
-    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
-    ),
-    IconButton(
-    icon: const Icon(Icons.delete),
-    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
-    ),
-    ],
-    ),
-    ),
-    ],
-    ),
-    const SizedBox(height: 20),
-    ElevatedButton(
-    style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-      foregroundColor: Colors.deepPurple,
-      side: const BorderSide(width: 2, color: Colors.deepPurple),
+        title: Row(
+          children: [
+          Text(widget.testTitle),
+          SizedBox(width: 8), // Adjust spacing between title and icon
+          IconButton(
+            icon: Icon(Icons.help_outline),
+            onPressed: () {
+              // Show tutorial dialog
+              _showTutorialDialog();
+            },
+          ),
+          ],
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+            Navigator.pop(
+              context,
+              MaterialPageRoute(builder: (context) => TestsScreen()),
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: _showChooseClassDialog,
+            style: TextButton.styleFrom(
+              side: const BorderSide(color: Colors.white, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            child: Text(
+              'GRADE',
+              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+          children: [
+      SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+      child: _questions.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: White,
+                foregroundColor: DeepPurple,
+                side: const BorderSide(width: 2, color: DeepPurple),
+                padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onPressed: _navigateToAddQuestionScreen,
+              child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+            ),
+          ],
+        ),
+      )
+          : Column(
+        children: [
+        ReorderableListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+        onReorder: _updateQuestionOrder,
+        children: [
+          for (int index = 0; index < _questions.length; index++)
+            ListTile(
+              key: ValueKey(_questions[index]['id']),
+              title: Text(_questions[index]['text']),
+              subtitle: Text('Type: ${_questions[index]['type']}'),
+              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
+                  ),
+                  const SizedBox(height: 20),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
+                    ),
+
+                ],
+              ),
+            ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+      style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: DeepPurple,
+      side: const BorderSide(width: 2, color: DeepPurple),
       padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -405,9 +438,16 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
         children: [
           const Text('No Classes Available For This Subject'),
           const SizedBox(height: 10),
-          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          Text(subjName, style: const TextStyle(
+              fontSize: 24, color: Colors.deepPurpleAccent)),
           const SizedBox(height: 16),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: DeepPurple,
+              side: const BorderSide(
+                  width: 2, color: DeepPurple),
+            ),
             onPressed: _navigateToTeacherDashboard,
             child: const Text('Go to Teacher Dashboard'),
           ),

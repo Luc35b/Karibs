@@ -34,7 +34,6 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllTests();
     setState(() {
       _tests = List<Map<String, dynamic>>.from(data);
-      _isLoading = false;
     });
   }
 
@@ -43,6 +42,7 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllSubjects();
     setState(() {
       _subjects = List<Map<String, dynamic>>.from(data);
+      _isLoading = false;
     });
   }
 
@@ -482,7 +482,7 @@ class _TestsScreenState extends State<TestsScreen> {
                                   onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete),
+                                  icon:  Icon(Icons.delete, color: Colors.red[900],),
                                   onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
                                 ),
                               ],

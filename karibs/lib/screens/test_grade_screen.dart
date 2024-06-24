@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
+import '../overlay.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/pdf_gen.dart';
@@ -205,14 +206,34 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   void _generateAndPrintPdf() {
     PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestGradeScreenTutorialDialog();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Grade Exam for ${widget.testTitle}'),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+        title: Row(
+          children: [
+            Text('Grade Exam for ${widget.testTitle}'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -228,6 +249,18 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            if (_students.isEmpty)
+              Expanded(
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _goToTeacherDashboard(widget.classId);
+                    },
+                    child: const Text('Go to Class to Create Students'),
+                  ),
+                ),
+              )
+            else...[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButton<int>(
@@ -270,8 +303,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   itemBuilder: (context, index) {
                     int questionId = _questions[index]['id'];
                     int categoryId = _questions[index]['category_id'];
-                    String categoryName =
-                    _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
                     return ListTile(
                       title: Text(_questions[index]['text']),
                       subtitle: Text(categoryName),
@@ -312,10 +344,14 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            ],
           ],
         ),
+
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _students.isEmpty
+          ? null
+          : BottomAppBar(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Padding(
