@@ -212,7 +212,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               ),
             ]
         ),
-
+      ),
         body: Stack(
             children: [
         SingleChildScrollView(

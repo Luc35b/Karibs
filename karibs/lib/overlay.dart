@@ -1084,7 +1084,9 @@ class _TestsScreenTutorialDialogState
                 style: TextStyle(
                     color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
-              TextSpan(text: ' by clicking on the \n ADD EXAM + button at the bottom of the screen.\n'),
+              TextSpan(text: ' by clicking on the'),
+              TextSpan(text: ' ADD EXAM button', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: ' at the bottom of the screen.\n'),
               TextSpan(text: '  \n a. To name your exam, start typing in the Exam Title box. \n '
                               '\n b. To select a subject for the exam, select from the dropdown menu or'
                               'create a custom subject name by clicking on the '),
@@ -1092,7 +1094,9 @@ class _TestsScreenTutorialDialogState
                 child: Icon(Icons.add,
                     size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
               ),
-              TextSpan(text:'icon next to the subject dropdown.\n \n c. Click the Add button to successfully create the new exam.'),
+              TextSpan(text:'icon next to the subject dropdown.\n \n c. Click the '),
+              TextSpan(text: 'ADD button ', style: TextStyle(fontWeight: FontWeight.bold),),
+              TextSpan(text:'to successfully create the new exam.'),
             ],
           ),
         ),
@@ -1136,7 +1140,9 @@ class _TestsScreenTutorialDialogState
           TextSpan(text: ' icon to the right of the exam.'
           '\n \n a. Here you can rename your exam, select a different subject from the dropdown,'
               'or create a new subject name for your exam. \n'
-              '\n b. Click on the Save button to save your new changes.'),
+              '\n b. Click on the '),
+          TextSpan(text: 'SAVE button', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' to save your new changes.'),
         ],
       ),
     ),
@@ -1265,7 +1271,9 @@ class _TestDetailScreenTutorialDialogState
                 style: TextStyle(
                     color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
-              TextSpan(text: ' by clicking on the \n ADD QUESTION + button in the center of the screen.\n'),
+              TextSpan(text: ' by clicking on the '),
+              TextSpan(text: 'ADD QUESTION + ', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: 'button in the center of the screen.\n'),
               ],
           ),
         ),
@@ -1281,8 +1289,9 @@ class _TestDetailScreenTutorialDialogState
             style: TextStyle(
                 color: Colors.deepPurple, fontWeight: FontWeight.bold),
           ),
-          TextSpan(text: ' by clicking on the GRADE button in the top right of the screen.'
-                    '\n \n a. Choose and click on the class you would like to grade the exam for.'),
+          TextSpan(text: ' by clicking on the '),
+          TextSpan(text: 'GRADE button', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text:' in the top right of the screen.\n \n a. Choose and click on the class you would like to grade the exam for.'),
         ],
       ),
     ),
@@ -1303,8 +1312,11 @@ class _TestDetailScreenTutorialDialogState
           ),
           TextSpan(text: ' icon at the bottom right of the screen. '
               'You will have the option to print out the questions or the answer key.'
-              '\n \n a. Click Print Questions to hand out blank exams to students to fill out. \n'
-              '\n b. Click Print Answer Key to print out the questions along with the correct answer for easy grading.'),
+              '\n \n a. Click '),
+          TextSpan(text: 'Print Questions', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' to hand out blank exams to students to fill out. \n \n b. Click '),
+          TextSpan(text: 'Print Answer Key', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' to print out the questions along with the correct answer for easy grading.'),
         ],
       ),
     ),
@@ -1456,7 +1468,9 @@ class _AddQuestionScreenTutorialDialogState
                 color: Colors.deepPurple, fontWeight: FontWeight.bold),
           ),
           TextSpan(text: ', type in the correct answer in the Correct Answer box at the bottom. \n '
-            '\n 6. Finish adding the question by clicking the Save button at the bottom.'),
+            '\n 6. Finish adding the question by clicking the '),
+          TextSpan(text: 'SAVE button', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' at the bottom.'),
         ],
       ),
     ),
@@ -1572,9 +1586,9 @@ class _TestGradeScreenTutorialDialogState
               size: 24.0, color: Colors.red[900], semanticLabel: 'Add Icon'),
               ),
               TextSpan(text: ' icon if the student got the question incorrect. \n \n 3. '
-                  'After finishing grading each question, click the '),
+                  'After finishing grading each question, click the'),
               TextSpan(text: ' SAVE GRADE ', style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(text: ' at the bottom left of the screen.'),
+              TextSpan(text: 'button at the bottom left of the screen.'),
             ],
           ),
         ),
@@ -1588,9 +1602,9 @@ class _TestGradeScreenTutorialDialogState
             style: TextStyle(fontSize: 16.0, color: Colors.black87),
             children: [
               TextSpan(text: '4. You can grade the exam for a different student by selecting a new student in the drop down.'
-                  '\n \n 5. You can view the class that took the exam by clicking'),
+                  '\n \n 5. You can view the class that took the exam by clicking the'),
               TextSpan(text: ' GO TO CLASS ', style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(text: ' at the bottom of the screen. \n \n 6. Click  the '),
+              TextSpan(text: 'button at the bottom of the screen. \n \n 6. Click  the '),
               WidgetSpan(
                 child: Icon(Icons.print,
                     size: 24.0, color: Colors.black, semanticLabel: 'Print Icon'),
@@ -1659,6 +1673,173 @@ class _TestGradeScreenTutorialDialogState
                 child: Text('Got it'),
               ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class EditQuestionScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Edit Question Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery
+              .of(context)
+              .size
+              .width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'The question text, type, category, and answer can be changed here.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: 'To '),
+                    TextSpan(
+                      text: 'save your changes',
+                      style: TextStyle(color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', click the '),
+                    TextSpan(
+                      text: 'SAVE button.',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class ViewTestGradeScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the View Exam Grade Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'You can see the specific questions the student got correct or incorrect here.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: 'To '),
+                    TextSpan(
+                      text: 'regrade an exam',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', click the '),
+                    WidgetSpan(
+                      child: Icon(Icons.refresh),
+                    ),
+                    TextSpan(
+                      text: ' icon at the top right corner of the screen.',
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class RegradeTestScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Regrade Exam Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '1. For each question, you can click the '),
+                    WidgetSpan(
+                      child: Icon(Icons.check,
+                          size: 24.0, color: Colors.green[900], semanticLabel: 'Add Icon'),
+                    ),
+                    TextSpan(text: ' icon if the student got the question correct, or the '),
+                    WidgetSpan(
+                      child: Icon(Icons.clear,
+                          size: 24.0, color: Colors.red[900], semanticLabel: 'Add Icon'),
+                    ),
+                    TextSpan(text: ' icon if the student got the question incorrect. \n \n 2. '
+                        'After finishing grading each question, click the '),
+                    TextSpan(text: ' SAVE GRADE ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: ' at the bottom left of the screen.'),
+                    TextSpan(text: '\n \n 3. To return back to the student’s information screen, click the '),
+                    TextSpan(text: 'RETURN TO STUDENT button', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: ' at the bottom right of the screen.'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
         ),
       ],
     );
