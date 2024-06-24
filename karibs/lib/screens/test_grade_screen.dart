@@ -249,6 +249,18 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            if (_students.isEmpty)
+              Expanded(
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _goToTeacherDashboard(widget.classId);
+                    },
+                    child: const Text('Go to Class to Create Students'),
+                  ),
+                ),
+              )
+            else...[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButton<int>(
@@ -291,8 +303,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   itemBuilder: (context, index) {
                     int questionId = _questions[index]['id'];
                     int categoryId = _questions[index]['category_id'];
-                    String categoryName =
-                    _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
                     return ListTile(
                       title: Text(_questions[index]['text']),
                       subtitle: Text(categoryName),
@@ -333,11 +344,14 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            ],
           ],
         ),
 
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _students.isEmpty
+          ? null
+          : BottomAppBar(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Padding(
