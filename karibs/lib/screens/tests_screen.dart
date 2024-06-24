@@ -332,19 +332,6 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
-  void _navigateToAddQuestionScreen(int testId, int subjId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddQuestionScreen(
-          testId: testId,
-          onQuestionAdded: _fetchTests,
-          subjectId: subjId,
-        ),
-      ),
-    );
-  }
-
   void _updateTestOrder(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {

@@ -103,34 +103,50 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       await PdfGenerator().generateStudentReportPdf(_student!, _reports);
     } else {
       // Show a snackbar or dialog indicating no reports available
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Reports. Add a Report!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
 
   void _selectIndividualReport() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Report'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: _reports.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  title: Text(_reports[index]['title']),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _generatePdfIndividualReport(_reports[index]);
-                  },
-                );
-              },
+    if(_reports.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Select Report'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _reports.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(_reports[index]['title']),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _generatePdfIndividualReport(_reports[index]);
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    }
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Reports. Add a Report!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   void _generatePdfIndividualReport(Map<String, dynamic> report) async {
@@ -138,6 +154,12 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       await PdfGenerator().generateIndividualReportPdf(_student!, report);
     } else {
       // Show a snackbar or dialog indicating report not available
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Reports. Add a Report!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
 
@@ -188,16 +210,11 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back), // Use the back arrow icon
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
             const Text('Student Info'),
             SizedBox(width: 8), // Adjust spacing between title and icon
             IconButton(
@@ -211,7 +228,20 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
         ),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate back to TeacherClassScreen using popUntil
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TeacherClassScreen(classId: _student?['class_id'], refresh: true),
+              ),
+            );
+          },
+        ),
         automaticallyImplyLeading: false,
+
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

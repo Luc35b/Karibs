@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/screens/tests_screen.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
-import 'package:karibs/overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -35,13 +32,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   Future<void> _fetchQuestions() async {
     final data = await DatabaseHelper().queryAllQuestions(widget.testId);
-    List<Map<String, dynamic>> questions = List<Map<String, dynamic>>.from(
-        data);
+    List<Map<String, dynamic>> questions = List<Map<String, dynamic>>.from(data);
 
     // Load order from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? savedOrder = prefs.getStringList(
-        'test_${widget.testId}_order');
+    List<String>? savedOrder = prefs.getStringList('test_${widget.testId}_order');
 
     if (savedOrder != null) {
       questions.sort((a, b) {
@@ -61,12 +56,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AddQuestionScreen(
-              testId: widget.testId,
-              subjectId: widget.subjectId,
-              onQuestionAdded: _fetchQuestions,
-            ),
+        builder: (context) => AddQuestionScreen(
+          testId: widget.testId,
+          subjectId: widget.subjectId,
+          onQuestionAdded: _fetchQuestions,
+        ),
       ),
     );
   }
@@ -75,11 +69,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            QuestionDetailScreen(
-              questionId: questionId,
-              subjectId: widget.subjectId,
-            ),
+        builder: (context) => QuestionDetailScreen(
+          questionId: questionId,
+          subjectId: widget.subjectId,
+        ),
       ),
     );
   }
@@ -88,12 +81,11 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            EditQuestionScreen(
-              questionId: questionId,
-              onQuestionUpdated: _fetchQuestions,
-              subjectId: widget.subjectId,
-            ),
+        builder: (context) => EditQuestionScreen(
+          questionId: questionId,
+          onQuestionUpdated: _fetchQuestions,
+          subjectId: widget.subjectId,
+        ),
       ),
     );
   }
@@ -132,26 +124,23 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   void _generateAndPrintQuestionsPdf() async {
     await _fetchQuestions();
-    await PdfGenerator().generateTestQuestionsPdf(
-        widget.testId, widget.testTitle);
+    await PdfGenerator().generateTestQuestionsPdf(widget.testId, widget.testTitle);
   }
 
   void _generateAndPrintAnswerKeyPdf() async {
     await _fetchQuestions();
-    await PdfGenerator().generateTestAnswerKeyPdf(
-        widget.testId, widget.testTitle);
+    await PdfGenerator().generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
   }
 
   void _navigateToGradeTestScreen(int classId) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            TestGradeScreen(
-              classId: classId,
-              testTitle: widget.testTitle,
-              testId: widget.testId,
-            ),
+        builder: (context) => TestGradeScreen(
+          classId: classId,
+          testTitle: widget.testTitle,
+          testId: widget.testId,
+        ),
       ),
     );
   }
@@ -191,138 +180,84 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     }
   }
 
-
-  void _showTutorialDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return TestDetailScreenTutorialDialog();
-      },
-    );
+  Future<void> _saveOrderToPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> order = _questions.map((question) => question['id'].toString()).toList();
+    await prefs.setStringList('test_${widget.testId}_order', order);
   }
-    Future<void> _saveOrderToPreferences() async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      List<String> order = _questions.map((question) =>
-          question['id'].toString()).toList();
-      await prefs.setStringList('test_${widget.testId}_order', order);
-    }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          foregroundColor: White,
-          backgroundColor: DeepPurple,
-          title: Row(
-              children: [
-                Text(widget.testTitle),
-                SizedBox(width: 8), // Adjust spacing between title and icon
-                IconButton(
-                  icon: Icon(Icons.help_outline),
-                  onPressed: () {
-                    // Show tutorial dialog
-                    _showTutorialDialog();
-                  },
-                ),
-              ]
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        title: Text(widget.testTitle),
+        actions: [
+          TextButton(
+            onPressed: _showChooseClassDialog,
+            style: TextButton.styleFrom(
+              side: const BorderSide(color: Colors.white, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            child: Text(
+              'GRADE',
+              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
           ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back), // Use the back arrow icon
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TestsScreen()),
-              );
-            },
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: _showChooseClassDialog,
-              style: TextButton.styleFrom(
-                side: const BorderSide(color: Colors.white, width: 1),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+          children: [
+      SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+      child: _questions.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: White,
+                foregroundColor: DeepPurple,
+                side: const BorderSide(width: 2, color: Colors.deepPurple),
+                padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              child: Text(
-                'GRADE',
-                style: GoogleFonts.raleway(
-                    color: Colors.white, fontWeight: FontWeight.bold),
-              ),
+              onPressed: _navigateToAddQuestionScreen,
+              child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
             ),
           ],
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 80.0),
-              // Padding to avoid overlap with buttons
-              child: _questions.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    Text('No questions available. Please add!',
-                        style: GoogleFonts.raleway(fontSize: 20)),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: DeepPurple,
-                        side: const BorderSide(width: 2, color: DeepPurple),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 55, vertical: 12),
-                        // Button padding
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                      onPressed: _navigateToAddQuestionScreen,
-                      child: Text('Add Question +',
-                          style: GoogleFonts.raleway(fontSize: 24, color: DeepPurple)),
-                    ),
-                  ],
-                ),
-              )
-                  : Column(
+      )
+          : Column(
+        children: [
+        ReorderableListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+        onReorder: _updateQuestionOrder,
+        children: [
+          for (int index = 0; index < _questions.length; index++)
+            ListTile(
+              key: ValueKey(_questions[index]['id']),
+              title: Text(_questions[index]['text']),
+              subtitle: Text('Type: ${_questions[index]['type']}'),
+              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ReorderableListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    // Disable scrolling for ReorderableListView
-                    onReorder: _updateQuestionOrder,
-                    children: [
-                      for (int index = 0; index < _questions.length; index++)
-                        ListTile(
-                          key: ValueKey(_questions[index]['id']),
-                          title: Text(_questions[index]['text']),
-                          subtitle: Text('Type: ${_questions[index]['type']}'),
-                          onTap: () =>
-                              _navigateToQuestionDetailScreen(
-                                  _questions[index]['id']),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () =>
-                                    _navigateToEditQuestionScreen(
-                                        _questions[index]['id']),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () =>
-                                    _showDeleteConfirmationDialog(
-                                        _questions[index]['id']),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -341,10 +276,32 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     onPressed: _navigateToAddQuestionScreen,
                     child: Text('Add Question +',
                         style: GoogleFonts.raleway(fontSize: 20)),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
                   ),
                 ],
               ),
             ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+      style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.deepPurple,
+      side: const BorderSide(width: 2, color: Colors.deepPurple),
+      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+    ),
+    onPressed: _navigateToAddQuestionScreen,
+    child: Text('Add Question +', style:                   GoogleFonts.raleway(fontSize: 20)),
+      ),
+        ],
+      ),
+      ),
 
             Align(
               alignment: Alignment.bottomRight,
@@ -355,15 +312,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     showMenu(
                       context: context,
                       position: RelativeRect.fromLTRB(
-                        MediaQuery
-                            .of(context)
-                            .size
-                            .width - 48,
-                        // 48 is the size of the FAB plus some margin
-                        MediaQuery
-                            .of(context)
-                            .size
-                            .height - 112, // Position the menu above the FAB
+                        MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
+                        MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
                         16, // Padding from right
                         16, // Padding from bottom
                       ),
@@ -403,12 +353,12 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
               ),
             ),
           ],
-        ),
-      );
-    }
+      ),
+    );
   }
+}
 
-  class ChooseClassDialog extends StatefulWidget {
+class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
   final int subjectId;
 
@@ -416,36 +366,36 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   @override
   _ChooseClassDialogState createState() => _ChooseClassDialogState();
-  }
+}
 
-  class _ChooseClassDialogState extends State<ChooseClassDialog> {
+class _ChooseClassDialogState extends State<ChooseClassDialog> {
   List<Map<String, dynamic>> _classes = [];
   bool _isLoading = true;
   String subjName = "";
 
   @override
   void initState() {
-  super.initState();
-  _fetchClassesBySubjectId();
+    super.initState();
+    _fetchClassesBySubjectId();
   }
 
   Future<void> _fetchClassesBySubjectId() async {
-  final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
-  String? name = await DatabaseHelper().getSubjectName(widget.subjectId);
-  setState(() {
-  _classes = data;
-  _isLoading = false;
-  subjName = name!;
-  });
+    final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
+    String? name = await DatabaseHelper().getSubjectName(widget.subjectId);
+    setState(() {
+      _classes = data;
+      _isLoading = false;
+      subjName = name!;
+    });
   }
 
   void _navigateToTeacherDashboard() {
-  Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-  builder: (context) => const TeacherDashboard(),
-  ),
-  );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TeacherDashboard(),
+      ),
+    );
   }
 
   @override
@@ -499,6 +449,48 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   ],
   );
   }
+    return AlertDialog(
+      title: const Text('Choose Class'),
+      content: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _classes.isEmpty
+          ? Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('No Classes Available For This Subject'),
+          const SizedBox(height: 10),
+          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _navigateToTeacherDashboard,
+            child: const Text('Go to Teacher Dashboard'),
+          ),
+        ],
+      )
+          : SizedBox(
+        width: double.minPositive, // Adjust the width to fit the content
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _classes.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_classes[index]['name']),
+              onTap: () {
+                widget.onClassSelected(_classes[index]['id']);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+        ),
+      ],
+    );
   }
-
+}
 
