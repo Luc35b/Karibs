@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
+import 'package:karibs/screens/tests_screen.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
@@ -214,6 +215,15 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           ),
           ],
         ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+            Navigator.pop(
+              context,
+              MaterialPageRoute(builder: (context) => TestsScreen()),
+            );
+          },
+        ),
         actions: [
           TextButton(
             onPressed: _showChooseClassDialog,
@@ -281,23 +291,6 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                     onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: DeepPurple,
-                      side: const BorderSide(
-                          width: 2, color: DeepPurple),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 55, vertical: 12),
-                      // Button padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: _navigateToAddQuestionScreen,
-                    child: Text('Add Question +',
-                        style: GoogleFonts.raleway(fontSize: 20)),
-                    ),
                     IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
