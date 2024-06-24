@@ -1678,3 +1678,170 @@ class _TestGradeScreenTutorialDialogState
     );
   }
 }
+
+
+
+class EditQuestionScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Edit Question Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery
+              .of(context)
+              .size
+              .width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'The question text, type, category, and answer can be changed here.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: 'To '),
+                    TextSpan(
+                      text: 'save your changes',
+                      style: TextStyle(color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', click the '),
+                    TextSpan(
+                      text: 'SAVE button.',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class ViewTestGradeScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the View Exam Grade Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'You can see the specific questions the student got correct or incorrect here.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(height: 16.0),
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: 'To '),
+                    TextSpan(
+                      text: 'regrade an exam',
+                      style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: ', click the '),
+                    WidgetSpan(
+                      child: Icon(Icons.refresh),
+                    ),
+                    TextSpan(
+                      text: ' icon at the top right corner of the screen.',
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+class RegradeTestScreenTutorialDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Welcome to the Regrade Exam Screen'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                  children: [
+                    TextSpan(text: '1. For each question, you can click the '),
+                    WidgetSpan(
+                      child: Icon(Icons.check,
+                          size: 24.0, color: Colors.green[900], semanticLabel: 'Add Icon'),
+                    ),
+                    TextSpan(text: ' icon if the student got the question correct, or the '),
+                    WidgetSpan(
+                      child: Icon(Icons.clear,
+                          size: 24.0, color: Colors.red[900], semanticLabel: 'Add Icon'),
+                    ),
+                    TextSpan(text: ' icon if the student got the question incorrect. \n \n 2. '
+                        'After finishing grading each question, click the '),
+                    TextSpan(text: ' SAVE GRADE ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: ' at the bottom left of the screen.'),
+                    TextSpan(text: '\n \n 3. To return back to the student’s information screen, click the '),
+                    TextSpan(text: 'RETURN TO STUDENT button', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: ' at the bottom right of the screen.'),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.0),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Got it'),
+        ),
+      ],
+    );
+  }
+}
