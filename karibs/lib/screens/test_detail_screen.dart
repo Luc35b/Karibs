@@ -393,7 +393,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
         children: [
           const Text('No Classes Available For This Subject'),
           const SizedBox(height: 10),
-          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.deepPurple)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _navigateToTeacherDashboard,

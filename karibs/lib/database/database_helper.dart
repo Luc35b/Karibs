@@ -719,9 +719,90 @@ CREATE TABLE questions (
 
   Future<int> deleteQuestion(int questionId) async {
     Database db = await database;
-    await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]); // Delete choices first
-    return await db.delete('questions', where: 'id = ?', whereArgs: [questionId]);
+
+    // Step 1: Get the test_id and category_id associated with the question
+    final questionDetails = await db.query('questions', where: 'id = ?', whereArgs: [questionId], limit: 1);
+    if (questionDetails.isEmpty) return 0; // If question doesn't exist, return 0
+
+    final testId = questionDetails.first['test_id'];
+    final categoryId = questionDetails.first['category_id'];
+
+    // Step 2: Get all student_test_id(s) associated with this test
+    final studentTests = await db.query('student_tests', where: 'test_id = ?', whereArgs: [testId]);
+
+    // Step 3: Delete the student responses to this question
+    await db.delete('student_test_question', where: 'question_id = ?', whereArgs: [questionId]);
+
+    // Step 4: Delete choices first
+    await db.delete('question_choices', where: 'question_id = ?', whereArgs: [questionId]);
+
+    // Step 5: Delete the question
+    final deleteCount = await db.delete('questions', where: 'id = ?', whereArgs: [questionId]);
+
+    // Step 6: Recalculate and update category scores and total scores for each student_test_id
+    for (var studentTest in studentTests) {
+      final studentTestId = studentTest['id'];
+
+      // Calculate the new score for the affected category
+      final correctAnswers = await db.rawQuery('''
+      SELECT COUNT(*) as correct_count 
+      FROM student_test_question 
+      INNER JOIN questions ON student_test_question.question_id = questions.id 
+      WHERE student_test_question.student_test_id = ? 
+      AND questions.category_id = ? 
+      AND student_test_question.got_correct = 1
+    ''', [studentTestId, categoryId]);
+
+      final totalQuestions = await db.rawQuery('''
+      SELECT COUNT(*) as total_count 
+      FROM questions 
+      WHERE test_id = ? 
+      AND category_id = ?
+    ''', [testId, categoryId]);
+
+      final correctCount = correctAnswers.first['correct_count'] as int;
+      final totalCount = totalQuestions.first['total_count'] as int;
+
+      if (totalCount > 0) {
+        double newCategoryScore = (correctCount / totalCount) * 100;
+
+        // Update the student_test_category_scores table
+        await db.update('student_test_category_scores',
+            {'score': newCategoryScore},
+            where: 'student_test_id = ? AND category_id = ?',
+            whereArgs: [studentTestId, categoryId]);
+      } else {
+        // Delete category score if there are no questions left in the category
+        await db.delete('student_test_category_scores',
+            where: 'student_test_id = ? AND category_id = ?',
+            whereArgs: [studentTestId, categoryId]);
+      }
+
+      // Calculate the new total score for the student test
+      final allCategoryScores = await db.rawQuery('''
+      SELECT AVG(score) as average_score 
+      FROM student_test_category_scores 
+      WHERE student_test_id = ?
+    ''', [studentTestId]);
+
+      final totalScore = allCategoryScores.first['average_score'] ?? 0.0;
+
+      await db.update('student_tests',
+          {'total_score': totalScore},
+          where: 'id = ?',
+          whereArgs: [studentTestId]);
+
+      // Step 7: Update the report score
+      await db.update('reports',
+          {'score': totalScore},
+          where: 'student_id = ? AND test_id = ?',
+          whereArgs: [studentTest['student_id'], testId]);
+    }
+
+    return deleteCount;
   }
+
+
 
   Future<int> deleteQuestionChoice(int choiceId) async {
     Database db = await database;
@@ -823,10 +904,16 @@ CREATE TABLE questions (
   }
 
 
-  /*Future<List<Map<String, dynamic>>> queryAllTests() async {
-    Database db = await database;
-    return await db.query('tests');
-  }*/
+  Future<bool> classExists(String className, int subjectId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'classes',
+      where: 'name = ? AND subject_id = ?',
+      whereArgs: [className, subjectId],
+    );
+    return results.isNotEmpty;
+  }
+
 
   Future<List<Map<String, dynamic>>> queryAllQuestions(int testId) async {
     Database db = await database;

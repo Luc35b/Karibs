@@ -22,6 +22,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _tests = [];
   final List<Map<String, dynamic>> _subjects = [];
 
+  AnimationController? _animationController;
+  Animation<Color?>? _animation;
+  int? _newClassId;
+
   List<String> classesList = [
     'Basic 1',
     'Basic 2',
@@ -74,7 +78,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     final cData = await DatabaseHelper().queryAllClassesWithSubjects();
     final tData = await DatabaseHelper().queryAllTests();
     setState(() {
-      _classes = cData;
+      _classes = cData.reversed.toList();
       _tests = tData;
       _isLoading = false;
     });
@@ -110,13 +114,26 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // First, check if the subject already exists in the subjects table
     int subjectId = await _getOrCreateSubjectId(subjectName);
 
+    // Check if a class with the same name and subject already exists
+    bool classExists = await DatabaseHelper().classExists(className, subjectId);
+
+    if (classExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Class $className for subject $subjectName already exists.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     // Now insert the class into the classes table
     await DatabaseHelper().insertClass({
       'name': className,
       'subject_id': subjectId,
     });
 
-    _fetchClasses();// Refresh the UI or list of classes
+    _fetchClasses(); // Refresh the UI or list of classes
     _fetchSubjects();
   }
 

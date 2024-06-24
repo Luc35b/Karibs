@@ -185,7 +185,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       MaterialPageRoute(
         builder: (context) => StudentInfoScreen(studentId: studentId),
       ),
-    );
+    ).then((_) {
+      _fetchStudents();
+    });
 
     if (result == true) {
       _fetchStudents();
@@ -379,12 +381,14 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           foregroundColor: White,
           leading: IconButton(
           icon: const Icon(Icons.arrow_back), // Use the back arrow icon
-          onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
-          );
-        },
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TeacherDashboard(),
+                ),
+              );
+            },
       ),
     ),
     body: _isLoading

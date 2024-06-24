@@ -202,6 +202,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Info'),
@@ -210,7 +211,13 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop(true);
+            // Navigate back to TeacherClassScreen using popUntil
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TeacherClassScreen(classId: _student?['class_id'], refresh: true),
+              ),
+            );
           },
         ),
       ),

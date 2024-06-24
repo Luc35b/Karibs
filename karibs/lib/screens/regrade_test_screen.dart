@@ -7,9 +7,7 @@ import '../providers/student_grading_provider.dart';
 class RegradeTestScreen extends StatefulWidget {
   final int reportId;
 
-
   const RegradeTestScreen({Key? key, required this.reportId}) : super(key: key);
-
 
   @override
   _RegradeTestScreenState createState() => _RegradeTestScreenState();
@@ -23,6 +21,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
+  bool _testDeleted = false;
   Map<int, double?> categoryScores = {}; // Updated to store category scores
   Map<int, int> questionCorrectness = {};
   String? _testTitle;
@@ -37,20 +36,32 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
   Future<void> _fetchReportDetails() async {
     Map<String, dynamic>? report = await DatabaseHelper().getReportById(widget.reportId);
+
     if (report != null) {
       _selectedStudentId = report['student_id'];
       _testId = report['test_id'];
       _testTitle = report['title'];
-      _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
+      _studentTestId =
+      await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
+    }
 
-      // Fetch student and questions details
-      _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
-      _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
-      _className = await DatabaseHelper().getClassName(_student!['class_id']);
-      _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
+    // Fetch student and questions details
+    _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
+    _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
+    _className = await DatabaseHelper().getClassName(_student!['class_id']);
+    _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
 
-      // Initialize categoryScores and questionCorrectness based on saved data
-      await _initializeSavedResults();
+    // Initialize categoryScores and questionCorrectness based on saved data
+    await _initializeSavedResults();
+
+    if(_categories.isEmpty) {
+      setState(() {
+        _testDeleted = true;
+        _isLoading = false;
+      });
+      return;
+
+
     }
 
     setState(() {
@@ -88,7 +99,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     });
 
     print(categoryScores); // Ensure correct initialization
-
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -136,7 +146,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     print('totalScore: $totalScore');
     print(categoryScores);
 
-
     // Ensure total score is not negative
     totalScore = totalScore.clamp(0.0, 100.0);
 
@@ -152,7 +161,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     }
 
     print(categoryScoresPercentage);
-
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -183,7 +191,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         }
       });
 
-
       for (var entry in categoryScoresPercentage.entries) {
         await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
           'student_test_id': studentTestId,
@@ -197,7 +204,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         });
       }
 
-
       // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -210,8 +216,6 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
-
-
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
@@ -233,6 +237,13 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         children: [
           _isLoading
               ? const Center(child: CircularProgressIndicator())
+              : _testDeleted
+              ? const Center(
+            child: Text(
+              'The Test has been Deleted.',
+              style: TextStyle(fontSize: 30),
+            ),
+          )
               : Column(
             children: [
               if (_className != null)
@@ -301,15 +312,17 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButton(
-                      onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
-                          ? () {
-                        _saveRegradingResults(); // Save regrading results
-                      }
-                          : null,
-                      child: const Text('Save Regrade'),
-                    ),
-                    const SizedBox(width: 42), // Add some space between the buttons
+                    if (_testDeleted == false) ...[
+                      ElevatedButton(
+                        onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
+                            ? () {
+                          _saveRegradingResults(); // Save regrading results
+                        }
+                            : null,
+                        child: const Text('Save Regrade'),
+                      ),
+                      const SizedBox(width: 42), // Add some space between the buttons
+                    ],
                     ElevatedButton(
                       onPressed: () {
                         _navigateToStudentInfoScreen(_selectedStudentId!);
@@ -319,7 +332,8 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
                   ],
                 ),
               ),
-            ),
+            )
+            ,
           ),
         ],
       ),
