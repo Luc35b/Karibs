@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
-import 'student_info_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'add_report_screen.dart';
-import 'student_info_screen.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
-
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
 
 class BarGraph extends StatelessWidget {
   final double score;
@@ -237,13 +232,37 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     }
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ReportDetailsScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Report Details'),
-        backgroundColor: DeepPurple,
-        foregroundColor: White,
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Report Details'),
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
@@ -256,7 +275,27 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             ),
           ),
         ],
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        automaticallyImplyLeading: false,
       ),
+      // appBar: AppBar(
+      //   title: Text('Report Details'),
+      //   backgroundColor: DeepPurple,
+      //   foregroundColor: White,
+      //   actions: [
+      //     TextButton(
+      //       onPressed: _navigateToEditReportScreen,
+      //       child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
+      //       style: TextButton.styleFrom(
+      //         side: BorderSide(color: Colors.white, width: 1),
+      //         shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(5),
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

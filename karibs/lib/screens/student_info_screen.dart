@@ -191,15 +191,28 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Info'),
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Use the back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Student Info'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
         backgroundColor: DeepPurple,
         foregroundColor: White,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(true);
-          },
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
