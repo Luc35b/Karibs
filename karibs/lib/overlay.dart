@@ -1349,3 +1349,143 @@ class _AddQuestionScreenTutorialDialogState
     );
   }
 }
+
+class TestGradeScreenTutorialDialog extends StatefulWidget {
+  @override
+  _TestGradeScreenTutorialDialogState createState() =>
+      _TestGradeScreenTutorialDialogState();
+}
+
+class _TestGradeScreenTutorialDialogState
+    extends State<TestGradeScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Test Grading Screen.',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text('This screen allows you to mark questions correct and incorrect to automatically grade the exam for a student.',
+            style: TextStyle(fontSize: 16.0)),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. Choose the student that you are grading the exam for, using the '),
+              TextSpan(
+              text: 'dropdown',
+              style: TextStyle(
+              color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' at the top of the screen. \n \n 2. For each question, you can click the '),
+              WidgetSpan(
+              child: Icon(Icons.check,
+              size: 24.0, color: Colors.green[900], semanticLabel: 'Add Icon'),
+              ),
+              TextSpan(text: ' icon if the student got the question correct, or the '),
+              WidgetSpan(
+              child: Icon(Icons.clear,
+              size: 24.0, color: Colors.red[900], semanticLabel: 'Add Icon'),
+              ),
+              TextSpan(text: ' icon if the student got the question incorrect. \n \n 3. '
+                  'After finishing grading each question, click the '),
+              TextSpan(text: ' SAVE GRADE ', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: ' at the bottom left of the screen.'),
+            ],
+          ),
+        ),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '4. You can grade the exam for a different student by selecting a new student in the drop down.'
+                  '\n \n 5. You can view the class that took the exam by clicking'),
+              TextSpan(text: ' GO TO CLASS ', style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: ' at the bottom of the screen. \n \n 6. Click  the '),
+              WidgetSpan(
+                child: Icon(Icons.print,
+                    size: 24.0, color: Colors.black, semanticLabel: 'Print Icon'),
+              ),
+              TextSpan(text: ' icon at the bottom right of the screen to print a PDF of all of the students\' scores for the exam.'),
+
+            ],
+          ),
+        ),
+      ],
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
