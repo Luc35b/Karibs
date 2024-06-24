@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
-
+import 'package:karibs/overlay.dart';
 class AddQuestionScreen extends StatefulWidget {
   final int testId;
   final Function onQuestionAdded;
@@ -184,15 +184,35 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
     _fetchCategories();
   }
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddQuestionScreenTutorialDialog();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: DeepPurple,
-          foregroundColor: White,
-          title: const Text('Add New Question'),
+      appBar: AppBar(
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        title: Row(
+            children:[
+              Text('Add New Question'),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ]
         ),
+
         body: Stack(
             children: [
         SingleChildScrollView(

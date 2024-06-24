@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
@@ -365,6 +366,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TeacherClassScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StudentGradingProvider>(
@@ -375,8 +385,29 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       }
 
       return Scaffold(
-          appBar: AppBar(
-          title: const Text('Teacher Class Screen'),
+        appBar: AppBar(
+          title: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back), // Use the back arrow icon
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TeacherDashboard()),
+                  );
+                },
+              ),
+              const Text('Class Viewing'),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ],
+          ),
           backgroundColor: DeepPurple,
           foregroundColor: White,
           leading: IconButton(
@@ -389,6 +420,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         },
       ),
     ),
+
     body: _isLoading
     ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(

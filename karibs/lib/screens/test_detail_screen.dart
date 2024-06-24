@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/screens/tests_screen.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
 import 'edit_question_screen.dart';
 import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
+import 'package:karibs/overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
@@ -180,19 +183,51 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     }
   }
 
+
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestDetailScreenTutorialDialog();
+      },
+    );
+
   Future<void> _saveOrderToPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> order = _questions.map((question) => question['id'].toString()).toList();
     await prefs.setStringList('test_${widget.testId}_order', order);
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
-        title: Text(widget.testTitle),
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
+        title: Row(
+            children:[
+              Text(widget.testTitle),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ]
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back), // Use the back arrow icon
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TestsScreen()),
+            );
+          },
+        ),
+
         actions: [
           TextButton(
             onPressed: _showChooseClassDialog,

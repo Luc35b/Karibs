@@ -4,6 +4,7 @@ import 'package:karibs/database/database_helper.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
@@ -183,6 +184,15 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     return '${date.day}/${date.month}';
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditStudentScreenTutorialDialog();
+      },
+    );
+  }
+
   void _updateStudentName(String newName) async{
     await DatabaseHelper().updateStudentName(widget.studentId, newName);
     setState(() {
@@ -255,23 +265,33 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         FocusScope.of(context).unfocus();
       },
       child:Scaffold(
-      appBar: AppBar(
-          backgroundColor: DeepPurple,
-          foregroundColor: White,
-          title: const Text('Edit Student'),
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              }
+        appBar: AppBar(
+          title: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back), // Back arrow icon
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+              const Text('Edit Student'),
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ],
           ),
           actions: [
 
             IconButton(onPressed: _deleteStudent, icon: const Icon(Icons.delete)),
-
-
           ],
-      ),
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
+          automaticallyImplyLeading: false,
+        ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
