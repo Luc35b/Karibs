@@ -410,16 +410,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           ),
           backgroundColor: DeepPurple,
           foregroundColor: White,
-          leading: IconButton(
-          icon: const Icon(Icons.arrow_back), // Use the back arrow icon
-          onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
-          );
-        },
-      ),
-    ),
+          automaticallyImplyLeading: false,
+          ),
 
     body: _isLoading
     ? const Center(child: CircularProgressIndicator())
