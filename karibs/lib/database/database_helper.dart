@@ -433,13 +433,19 @@ CREATE TABLE questions (
         questions.id AS question_id, 
         questions.text AS question_text, 
         questions.type AS question_type, 
-        questions.category_id AS question_category, 
+        categories.name AS question_category, 
         questions.test_id, 
         student_test_question.got_correct
       FROM reports
-      INNER JOIN student_tests ON reports.student_id = student_tests.student_id AND reports.test_id = student_tests.test_id
-      INNER JOIN student_test_question ON student_tests.id = student_test_question.student_test_id
-      INNER JOIN questions ON student_test_question.question_id = questions.id
+      INNER JOIN student_tests 
+        ON reports.student_id = student_tests.student_id 
+        AND reports.test_id = student_tests.test_id
+      INNER JOIN student_test_question 
+        ON student_tests.id = student_test_question.student_test_id
+      INNER JOIN questions 
+        ON student_test_question.question_id = questions.id
+      INNER JOIN categories 
+        ON questions.category_id = categories.id
       WHERE reports.id = ?
     ''', [reportId]);
 

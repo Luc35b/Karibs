@@ -205,14 +205,24 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   void _navigateToViewTestGrades() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
-      ),
-    ).then((_){
-      queryReportInformation();
-    });
+    if (categoryScores.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Associated Test.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
+        ),
+      ).then((_) {
+        queryReportInformation();
+      });
+    }
   }
 
   Color getStatusColorFill(double currStatus) {

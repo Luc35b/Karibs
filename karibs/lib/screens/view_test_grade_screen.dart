@@ -128,7 +128,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text('Category: ${question['question_category']}'),
+                        Text('Category:  ${question['question_category']}'),
                         const Divider(),
                         const Text(
                           'Choices:',
