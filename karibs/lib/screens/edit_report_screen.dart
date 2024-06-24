@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
 
 class EditReportScreen extends StatefulWidget {
@@ -98,18 +99,54 @@ class _EditReportScreenState extends State<EditReportScreen> {
       Navigator.of(context).pop(true);
     }
   }
+
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditReportScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Report'),
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Edit Report'),
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
+        ],
         backgroundColor: DeepPurple,
         foregroundColor: White,
-        actions: [
-
-          IconButton(onPressed: _deleteReport, icon: const Icon(Icons.delete)),
-        ],
+        automaticallyImplyLeading: false,
       ),
+      // appBar: AppBar(
+      //   title: const Text('Edit Report'),
+      //   backgroundColor: DeepPurple,
+      //   foregroundColor: White,
+      //   actions: [
+      //
+      //     IconButton(onPressed: _deleteReport, icon: const Icon(Icons.delete)),
+      //   ],
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

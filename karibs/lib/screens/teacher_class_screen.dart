@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'package:provider/provider.dart';
 import '../pdf_gen.dart';
@@ -185,7 +186,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       MaterialPageRoute(
         builder: (context) => StudentInfoScreen(studentId: studentId),
       ),
-    );
+    ).then((_) {
+      _fetchStudents();
+    });
 
     if (result == true) {
       _fetchStudents();
@@ -281,16 +284,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       _saveSortOption(criteria);
 
       if (criteria == 'Name') {
-        _filteredStudents.sort((a, b) => a['name'].compareTo(b['name']));
+        _filteredStudents.sort((b, a) => a['name'].compareTo(b['name']));
       } else if (criteria == 'Low Score') {
-        _filteredStudents.sort((a, b) {
+        _filteredStudents.sort((b, a) {
           // Handle case where average_score is null or 'No status'
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
           } else if (a['average_score'] == null || a['average_score'] == 'No status') {
-            return 1; // a is considered greater (null or 'No status' is considered greater)
+
+            return -1; // a is considered lesser (null or 'No status' is considered lesser)
           } else if (b['average_score'] == null || b['average_score'] == 'No status') {
-            return -1; // b is considered greater (null or 'No status' is considered greater)
+            return 1; // b is considered lesser (null or 'No status' is considered lesser)
+
           } else {
             // Sort by average_score ascending
             return a['average_score'].compareTo(b['average_score']);
@@ -298,7 +303,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         });
       }
       else if (criteria == 'High Score') {
-        _filteredStudents.sort((b, a) {
+        _filteredStudents.sort((a, b) {
           // Handle case where average_score is null or 'No status'
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
@@ -364,6 +369,15 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TeacherClassScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<StudentGradingProvider>(
@@ -374,20 +388,34 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       }
 
       return Scaffold(
-          appBar: AppBar(
-          title: const Text('Teacher Class Screen'),
+        appBar: AppBar(
+          title: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back), // Use the back arrow icon
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TeacherDashboard()),
+                  );
+                },
+              ),
+              const Text('Class Viewing'),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+
+            ],
+          ),
           backgroundColor: DeepPurple,
           foregroundColor: White,
-          leading: IconButton(
-          icon: const Icon(Icons.arrow_back), // Use the back arrow icon
-          onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
-          );
-        },
+          automaticallyImplyLeading: false,
       ),
-    ),
     body: _isLoading
     ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
@@ -469,7 +497,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ? ListView.builder(
     itemCount: _filteredStudents.length,
     itemBuilder: (context, index) {
+      int reverseIndex = _filteredStudents.length - 1 - index;
     return Container(
+
     decoration: BoxDecoration(
     color: White,
     border: Border.all(
@@ -493,17 +523,17 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
             shape: BoxShape.circle,
             border: Border.all(
                 color: getStatusColor(
-                    _filteredStudents[index]
+                    _filteredStudents[reverseIndex]
                     ['status']),
                 width: 2),
             color:
             getStatusColorFill(
-                _filteredStudents[index]
+                _filteredStudents[reverseIndex]
                 ['status']),
           ),
           child: Center(
             child: Text(
-              '${_filteredStudents[index]['average_score']
+              '${_filteredStudents[reverseIndex]['average_score']
                   ?.round() ?? ''}',
               style: const TextStyle(
                 color: DeepPurple,
@@ -515,7 +545,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
         const SizedBox(height: 5),
         FittedBox(
           child: Text(
-              _filteredStudents[index]['status'] ?? 'No status',
+              _filteredStudents[reverseIndex]['status'] ?? 'No status',
               textAlign: TextAlign.center,
           ),
         ),
@@ -525,7 +555,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       const SizedBox(width: 40),
       Expanded(
         child: Text(
-          '${_filteredStudents[index]['name']}',
+          '${_filteredStudents[reverseIndex]['name']}',
           style: const TextStyle(
             color: Colors.black,
             fontSize: 30,
@@ -537,7 +567,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     ),
       onTap: () {
         _navigateToStudentInfoScreen(
-            _filteredStudents[index]['id']);
+            _filteredStudents[reverseIndex]['id']);
       },
     ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_dashboard.dart';
 import 'student_screens/student_screen.dart';
@@ -25,40 +26,6 @@ void main() async {
   );
 }
 
-class TutorialDialog extends StatelessWidget {
-  const TutorialDialog({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Welcome to KLAS'),
-      content: const Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'This is a tutorial to guide you through the app features.',
-            style: TextStyle(fontSize: 16.0),
-          ),
-          SizedBox(height: 16.0),
-          Text(
-            '1. Choose your user type by tapping on either "I\'m a Teacher" or "I\'m a Student".',
-            style: TextStyle(fontSize: 16.0),
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Got it'),
-        ),
-      ],
-    );
-  }
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -70,6 +37,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MainScreen(),
+      routes: {
+        '/teacherDashboard': (context) => const TeacherDashboard(),
+      },
     );
   }
 }
@@ -91,17 +61,18 @@ class MainScreenState extends State<MainScreen> {
     // Show the tutorial dialog when the screen first loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_showTutorial) {
-        _showTutorialDialog();
+        _showMainTutorialDialog();
         _showTutorial = false; // Set to false to prevent showing again on subsequent launches
       }
     });
   }
 
-  void _showTutorialDialog() {
+  void _showMainTutorialDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return const TutorialDialog();
+        return MainTutorialDialog();
+
       },
     );
   }
@@ -123,20 +94,27 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: Row(
+          children: [
+            const Text('Choose User Type'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showMainTutorialDialog();
+              },
+            ),
+          ],
+        ),
         backgroundColor: DeepPurple,
-        actions: [
-          IconButton(
-            onPressed: () {
-              _showTutorialDialog();
-            },
-            icon: const Icon(Icons.info_outline), // Change the icon as needed
-          ),
-        ],
+        foregroundColor: White,
+
       ),
       body: Stack(
         children: [

@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'edit_report_screen.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
 
 class BarGraph extends StatelessWidget {
@@ -205,14 +206,24 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
   }
 
   void _navigateToViewTestGrades() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
-      ),
-    ).then((_){
-      queryReportInformation();
-    });
+    if (categoryScores.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Associated Test.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+    else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ViewTestGradeScreen(reportId: widget.reportId),
+        ),
+      ).then((_) {
+        queryReportInformation();
+      });
+    }
   }
 
   Color getStatusColorFill(double currStatus) {
@@ -229,13 +240,38 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
     }
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ReportDetailsScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report Details'),
-        backgroundColor: DeepPurple,
-        foregroundColor: White,
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Report Details'),
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
+
         actions: [
           TextButton(
             onPressed: _navigateToEditReportScreen,
@@ -248,7 +284,27 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
           ),
         ],
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        automaticallyImplyLeading: false,
       ),
+      // appBar: AppBar(
+      //   title: Text('Report Details'),
+      //   backgroundColor: DeepPurple,
+      //   foregroundColor: White,
+      //   actions: [
+      //     TextButton(
+      //       onPressed: _navigateToEditReportScreen,
+      //       child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
+      //       style: TextButton.styleFrom(
+      //         side: BorderSide(color: Colors.white, width: 1),
+      //         shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(5),
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

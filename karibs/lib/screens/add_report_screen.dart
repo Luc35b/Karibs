@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
 class AddReportScreen extends StatefulWidget {
   final int studentId;
@@ -52,13 +53,41 @@ class _AddReportScreenState extends State<AddReportScreen> {
     }
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddReportScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Report'),
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Use the back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Add New Report'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

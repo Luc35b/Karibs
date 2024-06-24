@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import 'package:karibs/main.dart';
 import 'package:karibs/screens/regrade_test_screen.dart';
+import 'package:karibs/overlay.dart';
 
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
@@ -55,13 +56,34 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     ).then((_){_fetchQuestionsAndAnswers();});
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ViewTestGradeScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: White,
         backgroundColor: DeepPurple,
-        title: const Text('Exam Grade Details'),
+        title: Row(
+          children: [
+            Text('Exam Grade Details'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -128,7 +150,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text('Category: ${question['question_category']}'),
+                        Text('Category:  ${question['question_category']}'),
                         const Divider(),
                         const Text(
                           'Choices:',

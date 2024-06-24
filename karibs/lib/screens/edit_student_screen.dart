@@ -4,6 +4,7 @@ import 'package:karibs/database/database_helper.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/main.dart';
+import 'package:karibs/overlay.dart';
 
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
@@ -80,77 +81,6 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
   }
 
-  void _addReport(String title, String notes, int? score) async {
-    await DatabaseHelper().insertReport({
-      'date': DateTime.now().toIso8601String(),
-      'title': title,
-      'notes': notes,
-      'score': score,
-      'student_id': widget.studentId,
-    });
-    _fetchStudentData();
-  }
-
-  void _showAddReportDialog() {
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController notesController = TextEditingController();
-    final TextEditingController scoreController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Report'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-              ),
-              TextField(
-                controller: notesController,
-                decoration: const InputDecoration(labelText: 'Notes'),
-              ),
-              TextField(
-                controller: scoreController,
-                decoration: const InputDecoration(labelText: 'Score (optional)'),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _fetchStudentData();
-                Navigator.of(context).pop(true);
-
-              },
-              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-            ),
-            TextButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
-                  _addReport(
-                    titleController.text,
-                    notesController.text,
-                    scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
-                  );
-                  Navigator.of(context).pop(true);
-
-                }
-                _fetchStudentData();
-              },
-
-              child: const Text('Add', style: TextStyle(fontSize: 20)),
-
-
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
@@ -183,11 +113,18 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     return '${date.day}/${date.month}';
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditStudentScreenTutorialDialog();
+      },
+    );
+  }
+
   void _updateStudentName(String newName) async{
     await DatabaseHelper().updateStudentName(widget.studentId, newName);
-    setState(() {
-      _student!['name'] = newName;
-    });
+    _fetchStudentData();
 
   }
   void _showDeleteConfirmationDialog(int reportId) {
@@ -255,23 +192,33 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         FocusScope.of(context).unfocus();
       },
       child:Scaffold(
-      appBar: AppBar(
-          backgroundColor: DeepPurple,
-          foregroundColor: White,
-          title: const Text('Edit Student'),
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              }
+        appBar: AppBar(
+          title: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back), // Back arrow icon
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+              const Text('Edit Student'),
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ],
           ),
           actions: [
 
             IconButton(onPressed: _deleteStudent, icon: const Icon(Icons.delete)),
-
-
           ],
-      ),
+          backgroundColor: DeepPurple,
+          foregroundColor: White,
+          automaticallyImplyLeading: false,
+        ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -462,10 +409,18 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         width: 130,
                         child: Row(
                           children: [
-                            Text(_reports[index]['score']?.toString() ?? '', style: const TextStyle(fontSize: 30)),
-                            IconButton(onPressed: () {_showDeleteConfirmationDialog(_reports[index]['id']);}, icon: Icon(Icons.delete, color: Colors.red[900]),)
-
-                          ]
+                            Text(
+                                _reports[index]['score']?.toString() ?? '',
+                                style: const TextStyle(fontSize: 30)
+                            ),
+                            Spacer(),
+                            IconButton(
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(_reports[index]['id']);
+                              },
+                              icon: Icon(Icons.delete, color: Colors.red[900]),
+                            ),
+                          ],
                         ),
                       ),
                     ),
