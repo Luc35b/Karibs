@@ -7,6 +7,7 @@ import 'package:karibs/screens/edit_student_screen.dart';
 import 'add_report_screen.dart';
 import 'teacher_class_screen.dart';
 import 'report_detail_screen.dart';
+import 'package:karibs/overlay.dart';
 
 class StudentInfoScreen extends StatefulWidget {
   final int studentId;
@@ -162,7 +163,14 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
-
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StudentInfoScreenTutorialDialog();
+      },
+    );
+  }
 
 
   List<FlSpot> _prepareDataForChart() {
@@ -205,7 +213,25 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Info'),
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Use the back arrow icon
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            const Text('Student Info'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
         backgroundColor: DeepPurple,
         foregroundColor: White,
         leading: IconButton(
@@ -220,6 +246,9 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
             );
           },
         ),
+
+        automaticallyImplyLeading: false,
+
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

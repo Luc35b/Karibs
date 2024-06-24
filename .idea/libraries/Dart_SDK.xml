@@ -1,6 +1,7 @@
 <component name="libraryTable">
   <library name="Dart SDK">
     <CLASSES>
+
       <root url="file:///opt/homebrew/opt/dart/libexec/lib/async" />
       <root url="file:///opt/homebrew/opt/dart/libexec/lib/cli" />
       <root url="file:///opt/homebrew/opt/dart/libexec/lib/collection" />

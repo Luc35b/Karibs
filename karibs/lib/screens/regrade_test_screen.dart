@@ -3,6 +3,8 @@ import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
+import 'package:karibs/overlay.dart';
+import 'package:karibs/main.dart';
 
 class RegradeTestScreen extends StatefulWidget {
   final int reportId;
@@ -217,6 +219,16 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     }
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return RegradeTestScreenTutorialDialog();
+      },
+    );
+  }
+
+
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
       context,
@@ -231,7 +243,21 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Regrade Test for $_testTitle'),
+        foregroundColor: White,
+        backgroundColor: DeepPurple,
+        title: Row(
+          children: [
+            Text('Regrade Test for $_testTitle'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
       ),
       body: Stack(
         children: [

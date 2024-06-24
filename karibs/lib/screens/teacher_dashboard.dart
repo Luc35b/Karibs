@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_class_screen.dart';
 import 'package:karibs/screens/tests_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,9 +23,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _tests = [];
   final List<Map<String, dynamic>> _subjects = [];
 
-  AnimationController? _animationController;
-  Animation<Color?>? _animation;
-  int? _newClassId;
+
 
   List<String> classesList = [
     'Basic 1',
@@ -46,6 +45,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   ];
 
   bool _isLoading = true;
+
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TeacherDashboardTutorialDialog();
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -530,7 +538,21 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Dashboard'),
+
+        title: Row(
+          children: [
+            const Text('Teacher Dashboard'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
+        ),
+
         backgroundColor: DeepPurple,
         foregroundColor: White,
         automaticallyImplyLeading: false,
@@ -717,7 +739,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ),
               ),
               child: Text(
-                '  MANAGE TESTS  ',
+                '  MANAGE EXAMS  ',
                 style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
               ),
             ),
