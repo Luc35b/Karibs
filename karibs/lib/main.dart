@@ -37,6 +37,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MainScreen(),
+      routes: {
+        '/teacherDashboard': (context) => const TeacherDashboard(),
+      },
     );
   }
 }

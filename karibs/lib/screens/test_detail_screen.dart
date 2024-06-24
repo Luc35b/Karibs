@@ -451,48 +451,49 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-  return AlertDialog(
-  title: const Text('Choose Class'),
-  content: _isLoading
-  ? const Center(child: CircularProgressIndicator())
-      : _classes.isEmpty
-  ? Column(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-  const Text('No Classes Available For This Subject'),
-  const SizedBox(height: 10),
-  Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
-  const SizedBox(height: 16),
-  ElevatedButton(
-  onPressed: _navigateToTeacherDashboard,
-  child: const Text('Go to Teacher Dashboard'),
-  ),
-  ],
-  )
-      : SizedBox(
-  width: double.minPositive, // Adjust the width to fit the content
-  child: ListView.builder(
-  shrinkWrap: true,
-  itemCount: _classes.length,
-  itemBuilder: (context, index) {
-  return ListTile(
-  title: Text(_classes[index]['name']),
-  onTap: () {
-  widget.onClassSelected(_classes[index]['id']);
-  },
-  );
-  },
-  ),
-  ),
-  actions: [
-  TextButton(
-  onPressed: () {
-  Navigator.of(context).pop();
-  },
-  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-  ),
-  ],
-  );
+    return AlertDialog(
+      title: const Text('Choose Class'),
+      content: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _classes.isEmpty
+          ? Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('No Classes Available For This Subject'),
+          const SizedBox(height: 10),
+          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.deepPurple)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _navigateToTeacherDashboard,
+            child: const Text('Go to Teacher Dashboard'),
+          ),
+        ],
+      )
+          : SizedBox(
+        width: double.minPositive, // Adjust the width to fit the content
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _classes.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_classes[index]['name']),
+              onTap: () {
+                widget.onClassSelected(_classes[index]['id']);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+        ),
+      ],
+    );
+
   }
   }
 
