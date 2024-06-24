@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/screens/student_info_screen.dart';
-import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'package:provider/provider.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
-import 'teacher_class_screen.dart';
 
-class RegradeScreen extends StatefulWidget {
+class RegradeTestScreen extends StatefulWidget {
   final int reportId;
 
-  const RegradeScreen({Key? key, required this.reportId}) : super(key: key);
+
+  const RegradeTestScreen({Key? key, required this.reportId}) : super(key: key);
+
 
   @override
-  _RegradeScreenState createState() => _RegradeScreenState();
+  _RegradeTestScreenState createState() => _RegradeTestScreenState();
 }
 
-class _RegradeScreenState extends State<RegradeScreen> {
+class _RegradeTestScreenState extends State<RegradeTestScreen> {
   String? _className;
   Map<String, dynamic>? _student;
   List<Map<String, dynamic>> _questions = [];
+  List<Map<String, dynamic>> _categories = [];
   Map<int, int> question_answer_map = {};
   int? _selectedStudentId;
   bool _isLoading = true;
-  Map<int, int> categoryScores = {}; // Updated to store category scores
+  Map<int, double?> categoryScores = {}; // Updated to store category scores
   Map<int, int> questionCorrectness = {};
   String? _testTitle;
   int? _testId;
+  int? _studentTestId;
 
   @override
   void initState() {
@@ -39,11 +41,13 @@ class _RegradeScreenState extends State<RegradeScreen> {
       _selectedStudentId = report['student_id'];
       _testId = report['test_id'];
       _testTitle = report['title'];
+      _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
 
       // Fetch student and questions details
       _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
       _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
       _className = await DatabaseHelper().getClassName(_student!['class_id']);
+      _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
 
       // Initialize categoryScores and questionCorrectness based on saved data
       await _initializeSavedResults();
@@ -61,17 +65,30 @@ class _RegradeScreenState extends State<RegradeScreen> {
       // Initialize questionCorrectness based on saved results
       _initializeQuestionCorrectness(savedResults);
       // Initialize categoryScores based on saved results
-      _initializeCategoryScores(savedResults);
+      await _initializeCategoryScores(savedResults);
     }
   }
 
-  void _initializeCategoryScores(Map<String, dynamic> savedResults) {
+  Future<void> _initializeCategoryScores(Map<String, dynamic> savedResults) async {
     categoryScores.clear();
-    for (var question in _questions) {
-      int categoryId = question['category_id'];
-      int correctness = savedResults['question_correctness'][question['id']] ?? 0;
-      categoryScores[categoryId] = (categoryScores[categoryId] ?? 0) + correctness;
+    Map<int, double?> cats = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
+
+    // Convert percentage scores to raw scores based on the number of questions
+    for (var entry in cats.entries) {
+      if (entry.value != null) {
+        int categoryId = entry.key;
+        double? percentageScore = entry.value;
+        int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
+        cats[categoryId] = (percentageScore! / 100.0) * categoryQuestions;
+      }
     }
+
+    setState(() {
+      categoryScores = cats;
+    });
+
+    print(categoryScores); // Ensure correct initialization
+
   }
 
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
@@ -79,6 +96,7 @@ class _RegradeScreenState extends State<RegradeScreen> {
     savedResults['question_correctness'].forEach((questionId, correctness) {
       questionCorrectness[int.parse(questionId)] = correctness;
     });
+    print(questionCorrectness);
   }
 
   void _markCorrect(int questionId, int categoryId) {
@@ -108,12 +126,33 @@ class _RegradeScreenState extends State<RegradeScreen> {
   }
 
   void _saveRegradingResults() async {
+    // Retrieve existing total score and score from the database
+    double? existingTotalScore = await DatabaseHelper().getStudentTestTotalScore(_selectedStudentId!, _testId!);
+    double? existingScore = await DatabaseHelper().getReportScore(widget.reportId);
+
     // Calculate total score and category scores
     int totalQuestions = _questions.length;
-    double totalScore = (categoryScores.values.fold(0, (sum, score) => sum + score) / totalQuestions) * 100;
+    double totalScore = (categoryScores.values.where((score) => score != null).fold(0.0, (sum, score) => sum + score!) / totalQuestions) * 100;
+    print('totalScore: $totalScore');
+    print(categoryScores);
+
 
     // Ensure total score is not negative
-    totalScore = totalScore.clamp(0, 100);
+    totalScore = totalScore.clamp(0.0, 100.0);
+
+    Map<int, double> categoryScoresPercentage = {};
+    for (var category in _categories) {
+      int categoryId = category['id'];
+      int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
+      if (categoryScores[categoryId] != null) {
+        double categoryScore = (categoryScores[categoryId]! / categoryQuestions) * 100;
+        categoryScore = categoryScore.clamp(0, 100);
+        categoryScoresPercentage[categoryId] = categoryScore;
+      }
+    }
+
+    print(categoryScoresPercentage);
+
 
     // Save scores to the database
     if (_selectedStudentId != null) {
@@ -125,21 +164,41 @@ class _RegradeScreenState extends State<RegradeScreen> {
       await DatabaseHelper().updateReport(widget.reportId, {
         'date': DateTime.now().toIso8601String(),
         'title': _testTitle!,
-        'notes': 'Regraded test for student',
-        'score': totalScore,
+        //'notes': 'Regraded test for student',
+        'score': totalScore, // Keep the existing score if available
       });
 
       int? studentTestId = await DatabaseHelper().getStudentTestId(_selectedStudentId!, _testId!);
 
+      // Update database with current values in question_answer_map if they exist,
+      // otherwise keep the existing values from the database
       question_answer_map.forEach((key, value) async {
-        await DatabaseHelper().updateStudentTestQuestion({
-          'student_test_id': studentTestId,
-          'question_id': key,
-          'got_correct': value,
-        });
+        int? existingValue = await DatabaseHelper().getStudentTestQuestionResult(studentTestId!, key);
+        if (existingValue != null) {
+          await DatabaseHelper().updateStudentTestQuestion({
+            'student_test_id': studentTestId,
+            'question_id': key,
+            'got_correct': value,
+          });
+        }
       });
 
-    // Show a confirmation message or navigate back to the previous screen.
+
+      for (var entry in categoryScoresPercentage.entries) {
+        await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
+          'student_test_id': studentTestId,
+          'category_id': entry.key,
+          'score': entry.value,
+        });
+
+        print({
+          'category_id': entry.key,
+          'score': entry.value,
+        });
+      }
+
+
+      // Show a confirmation message or navigate back to the previous screen.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Grades updated successfully'),
@@ -151,6 +210,8 @@ class _RegradeScreenState extends State<RegradeScreen> {
       Provider.of<StudentGradingProvider>(context, listen: false).grade();
     }
   }
+
+
 
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
@@ -196,9 +257,10 @@ class _RegradeScreenState extends State<RegradeScreen> {
                   itemBuilder: (context, index) {
                     int questionId = _questions[index]['id'];
                     int categoryId = _questions[index]['category_id'];
+                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
                     return ListTile(
                       title: Text(_questions[index]['text']),
-                      subtitle: Text('Category: $categoryId'), // Display category instead of subject
+                      subtitle: Text('Category: $categoryName'), // Display category instead of subject
                       tileColor: questionCorrectness[questionId] == 1
                           ? Colors.green.withOpacity(0.2)
                           : questionCorrectness[questionId] == -1

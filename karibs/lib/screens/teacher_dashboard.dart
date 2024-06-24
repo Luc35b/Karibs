@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/teacher_class_screen.dart';
-import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:karibs/screens/tests_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,6 +11,8 @@ const Color NotWhite = Color(0xFFEFEBF1);
 const Color White = Colors.white;
 
 class TeacherDashboard extends StatefulWidget {
+  const TeacherDashboard({super.key});
+
   @override
   _TeacherDashboardState createState() => _TeacherDashboardState();
 }
@@ -19,7 +20,7 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _tests = [];
-  List<Map<String, dynamic>> _subjects = [];
+  final List<Map<String, dynamic>> _subjects = [];
 
   List<String> classesList = [
     'Basic 1',
@@ -77,7 +78,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       _tests = tData;
       _isLoading = false;
     });
-
+    print(_classes);
   }
   void _deleteClass(int classId) async{
     bool confirmDelete = await showDialog(
@@ -88,11 +89,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false), // Cancel
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true), // Confirm
-            child: const Text('Delete'),
+            child: const Text('Delete', style: TextStyle(fontSize: 20)),
           ),
         ],
       ),
@@ -264,29 +265,20 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
                     String classToAdd = selectedClass ?? '';
                     String subjectToAdd = selectedSubject ?? '';
-                    if(subjectToAdd.isEmpty){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select a subject'),
-                          duration: Duration(milliseconds: 1500),
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-                        ),
-                      );
-                    }
+
                     if (classToAdd.isNotEmpty && subjectToAdd.isNotEmpty) {
                       _addClass(classToAdd, subjectToAdd);
                     }
 
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Add'),
+                  child: const Text('Add', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -319,14 +311,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customClassName = customClassController.text.trim();
                 Navigator.of(context).pop(customClassName); // Return custom class name
               },
-              child: const Text('Add'),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -355,14 +347,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog without adding
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 String customSubjectName = customSubjectController.text.trim();
                 Navigator.of(context).pop(customSubjectName); // Return custom subject name
               },
-              child: const Text('Add'),
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
           ],
         );
@@ -477,7 +469,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                 ),
                 TextButton(
                   onPressed: () {
@@ -489,7 +481,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: const Text('Save'),
+                  child: const Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -502,7 +494,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
+    print('Updating class with ID: $classId');
+    print('New class name: $newClassName');
+    print('New subject name: $newSubjectName');
     int? newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+    print('new subject id: $newSubjectId');
     _editClassName(classId, newClassName, newSubjectId!);
 
   }
@@ -559,8 +555,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     decoration: BoxDecoration(
                       color: NotWhite,
                       borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        const BoxShadow(
+                      boxShadow: const [
+                        BoxShadow(
                           color: Colors.black12,
                           blurRadius: 10,
                           offset: Offset(3, 3), // Shadow position

@@ -80,6 +80,78 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
   }
 
+  void _addReport(String title, String notes, int? score) async {
+    await DatabaseHelper().insertReport({
+      'date': DateTime.now().toIso8601String(),
+      'title': title,
+      'notes': notes,
+      'score': score,
+      'student_id': widget.studentId,
+    });
+    _fetchStudentData();
+  }
+
+  void _showAddReportDialog() {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController notesController = TextEditingController();
+    final TextEditingController scoreController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add New Report'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: notesController,
+                decoration: const InputDecoration(labelText: 'Notes'),
+              ),
+              TextField(
+                controller: scoreController,
+                decoration: const InputDecoration(labelText: 'Score (optional)'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _fetchStudentData();
+                Navigator.of(context).pop(true);
+
+              },
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty && notesController.text.isNotEmpty) {
+                  _addReport(
+                    titleController.text,
+                    notesController.text,
+                    scoreController.text.isNotEmpty ? int.parse(scoreController.text) : null,
+                  );
+                  Navigator.of(context).pop(true);
+
+                }
+                _fetchStudentData();
+              },
+
+              child: const Text('Add', style: TextStyle(fontSize: 20)),
+
+
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
     for (var report in _reports) {
@@ -106,6 +178,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     return max.toDouble();
   }
 
+  String _formatDate(double value) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    return '${date.day}/${date.month}';
+  }
+
   void _updateStudentName(String newName) async{
     await DatabaseHelper().updateStudentName(widget.studentId, newName);
     setState(() {
@@ -125,14 +202,14 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
               onPressed: () {
                 _deleteReport(reportId);
                 Navigator.of(context).pop();
               },
-              child: const Text('Delete'),
+              child: const Text('Delete', style: TextStyle(fontSize: 20)),
             ),
           ],
         );

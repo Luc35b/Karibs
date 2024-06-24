@@ -7,15 +7,14 @@ import 'add_question_screen.dart';
 import 'question_detail_screen.dart';
 import 'package:karibs/pdf_gen.dart';
 import 'test_grade_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TestDetailScreen extends StatefulWidget {
   final int testId;
   final String testTitle;
   final int subjectId;
 
-  //const TestDetailScreen({super.key, required this.testId, required this.testTitle});
-
-  TestDetailScreen({required this.testId, required this.testTitle, required this.subjectId});
+  const TestDetailScreen({super.key, required this.testId, required this.testTitle, required this.subjectId});
 
   @override
   _TestDetailScreenState createState() => _TestDetailScreenState();
@@ -33,8 +32,22 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   Future<void> _fetchQuestions() async {
     final data = await DatabaseHelper().queryAllQuestions(widget.testId);
+    List<Map<String, dynamic>> questions = List<Map<String, dynamic>>.from(data);
+
+    // Load order from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? savedOrder = prefs.getStringList('test_${widget.testId}_order');
+
+    if (savedOrder != null) {
+      questions.sort((a, b) {
+        int aIndex = savedOrder.indexOf(a['id'].toString());
+        int bIndex = savedOrder.indexOf(b['id'].toString());
+        return aIndex.compareTo(bIndex);
+      });
+    }
+
     setState(() {
-      _questions = List<Map<String, dynamic>>.from(data);
+      _questions = questions;
       _isLoading = false;
     });
   }
@@ -56,10 +69,10 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => QuestionDetailScreen(
-            questionId: questionId,
-            subjectId: widget.subjectId,
-          )
+        builder: (context) => QuestionDetailScreen(
+          questionId: questionId,
+          subjectId: widget.subjectId,
+        ),
       ),
     );
   }
@@ -155,8 +168,9 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       final item = _questions.removeAt(oldIndex);
       _questions.insert(newIndex, item);
 
-      // Update the order in the database
+      // Update the order in the database and SharedPreferences
       _updateOrderInDatabase();
+      _saveOrderToPreferences();
     });
   }
 
@@ -166,12 +180,18 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     }
   }
 
+  Future<void> _saveOrderToPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> order = _questions.map((question) => question['id'].toString()).toList();
+    await prefs.setStringList('test_${widget.testId}_order', order);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: White,
-        backgroundColor: DeepPurple,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.deepPurple,
         title: Text(widget.testTitle),
         actions: [
           TextButton(
@@ -192,141 +212,140 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
+          children: [
+      SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
+      child: _questions.isEmpty
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.deepPurple,
+                side: const BorderSide(width: 2, color: Colors.deepPurple),
+                padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              onPressed: _navigateToAddQuestionScreen,
+              child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+            ),
+          ],
+        ),
+      )
+          : Column(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 80.0), // Padding to avoid overlap with buttons
-            child: _questions.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        ReorderableListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
+        onReorder: _updateQuestionOrder,
+        children: [
+          for (int index = 0; index < _questions.length; index++)
+            ListTile(
+              key: ValueKey(_questions[index]['id']),
+              title: Text(_questions[index]['text']),
+              subtitle: Text('Type: ${_questions[index]['type']}'),
+              onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 20),
-                  Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: White,
-                      foregroundColor: DeepPurple,
-                      side: const BorderSide(width: 2, color: DeepPurple),
-                      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: _navigateToAddQuestionScreen,
-                    child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
                   ),
                 ],
               ),
-            )
-                : Column(
-              children: [
-                ReorderableListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
-                  onReorder: _updateQuestionOrder,
-                  children: [
-                    for (int index = 0; index < _questions.length; index++)
-                      ListTile(
-                        key: ValueKey(_questions[index]['id']),
-                        title: Text(_questions[index]['text']),
-                        subtitle: Text('Type: ${_questions[index]['type']}'),
-                        onTap: () => _navigateToQuestionDetailScreen(_questions[index]['id']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _navigateToEditQuestionScreen(_questions[index]['id']),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => _showDeleteConfirmationDialog(_questions[index]['id']),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: White,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(width: 2, color: DeepPurple),
-                    padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  onPressed: _navigateToAddQuestionScreen,
-                  child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
-                )
-              ],
             ),
-          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+      style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.deepPurple,
+      side: const BorderSide(width: 2, color: Colors.deepPurple),
+      padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+    ),
+    onPressed: _navigateToAddQuestionScreen,
+    child: Text('Add Question +', style:                   GoogleFonts.raleway(fontSize: 20)),
+      ),
+        ],
+      ),
+      ),
 
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: FloatingActionButton(
-                onPressed: () {
-                  showMenu(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
-                      MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
-                      16, // Padding from right
-                      16, // Padding from bottom
-                    ),
-                    items: [
-                      PopupMenuItem<int>(
-                        value: 0,
-                        child: TextButton(
-                          onPressed: _generateAndPrintQuestionsPdf,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.print),
-                              SizedBox(width: 8),
-                              Text('Print Questions'),
-                            ],
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    showMenu(
+                      context: context,
+                      position: RelativeRect.fromLTRB(
+                        MediaQuery.of(context).size.width - 48, // 48 is the size of the FAB plus some margin
+                        MediaQuery.of(context).size.height - 112, // Position the menu above the FAB
+                        16, // Padding from right
+                        16, // Padding from bottom
+                      ),
+                      items: [
+                        PopupMenuItem<int>(
+                          value: 0,
+                          child: TextButton(
+                            onPressed: _generateAndPrintQuestionsPdf,
+                            child: const Row(
+                              children: [
+                                Icon(Icons.print),
+                                SizedBox(width: 8),
+                                Text('Print Questions'),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      PopupMenuItem<int>(
-                        value: 1,
-                        child: TextButton(
-                          onPressed: _generateAndPrintAnswerKeyPdf,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.print),
-                              SizedBox(width: 8),
-                              Text('Print Answer Key'),
-                            ],
+                        PopupMenuItem<int>(
+                          value: 1,
+                          child: TextButton(
+                            onPressed: _generateAndPrintAnswerKeyPdf,
+                            child: const Row(
+                              children: [
+                                Icon(Icons.print),
+                                SizedBox(width: 8),
+                                Text('Print Answer Key'),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                    elevation: 8.0,
-                  );
-                },
-                child: const Icon(Icons.print),
+                      ],
+                      elevation: 8.0,
+                    );
+                  },
+                  child: const Icon(Icons.print),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
       ),
     );
   }
 }
 
-
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
   final int subjectId;
 
-  ChooseClassDialog({required this.onClassSelected, required this.subjectId});
+  const ChooseClassDialog({super.key, required this.onClassSelected, required this.subjectId});
 
   @override
   _ChooseClassDialogState createState() => _ChooseClassDialogState();
@@ -357,7 +376,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => TeacherDashboard(),
+        builder: (context) => const TeacherDashboard(),
       ),
     );
   }
@@ -373,9 +392,8 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text('No Classes Available For This Subject'),
-          const SizedBox(height:10),
-          Text(subjName,
-              style: const TextStyle(fontSize: 24, color: Colors.blue)),
+          const SizedBox(height: 10),
+          Text(subjName, style: const TextStyle(fontSize: 24, color: Colors.blue)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _navigateToTeacherDashboard,
@@ -409,3 +427,4 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     );
   }
 }
+

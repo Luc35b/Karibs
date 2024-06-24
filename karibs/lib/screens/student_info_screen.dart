@@ -86,6 +86,16 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  void _addReport(String title, String notes, int? score) async {
+    await DatabaseHelper().insertReport({
+      'date': DateTime.now().toIso8601String(),
+      'title': title,
+      'notes': notes,
+      'score': score,
+      'student_id': widget.studentId,
+    });
+    _fetchStudentData();
+  }
 
   void _generatePdfAllReports() async {
     if (_student != null && _reports.isNotEmpty) {
@@ -161,6 +171,11 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
     int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
     return max.toDouble();
+  }
+
+  String _formatDate(double value) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    return '${date.day}/${date.month}';
   }
 
   @override

@@ -287,9 +287,11 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
           } else if (a['average_score'] == null || a['average_score'] == 'No status') {
+
             return -1; // a is considered lesser (null or 'No status' is considered lesser)
           } else if (b['average_score'] == null || b['average_score'] == 'No status') {
             return 1; // b is considered lesser (null or 'No status' is considered lesser)
+
           } else {
             // Sort by average_score ascending
             return a['average_score'].compareTo(b['average_score']);
@@ -302,9 +304,9 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           if (a['average_score'] == null && b['average_score'] == null) {
             return 0;
           } else if (a['average_score'] == null || a['average_score'] == 'No status') {
-            return 1; // a is considered lesser (null or 'No status' is considered lesser)
+            return -1; // a is considered lesser (null or 'No status' is considered lesser)
           } else if (b['average_score'] == null || b['average_score'] == 'No status') {
-            return -1; // b is considered lesser (null or 'No status' is considered lesser)
+            return 1; // b is considered lesser (null or 'No status' is considered lesser)
           } else {
             // Sort by average_score ascending
             return a['average_score'].compareTo(b['average_score']);
@@ -382,7 +384,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TeacherDashboard()),
+            MaterialPageRoute(builder: (context) => const TeacherDashboard()),
           );
         },
       ),
@@ -420,9 +422,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     children: [
     IconButton(
     icon: const Icon(
-    Icons.filter_alt,
+    Icons.filter_list,
     color: White,
-      size: 40,
     ),
     onPressed: _showStatusFilterDialog,
     ),
@@ -443,9 +444,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     const SizedBox(width: 8),
       IconButton(
         icon: const Icon(
-          Icons.settings,
+          Icons.build_rounded,
           color: White,
-          size: 40,
         ),
         onPressed: _showSortOptionsDialog,
       ),

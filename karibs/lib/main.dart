@@ -26,6 +26,8 @@ void main() async {
 }
 
 class TutorialDialog extends StatelessWidget {
+  const TutorialDialog({super.key});
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -87,7 +89,7 @@ class MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     // Show the tutorial dialog when the screen first loads
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_showTutorial) {
         _showTutorialDialog();
         _showTutorial = false; // Set to false to prevent showing again on subsequent launches
@@ -99,7 +101,7 @@ class MainScreenState extends State<MainScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return TutorialDialog();
+        return const TutorialDialog();
       },
     );
   }
@@ -197,7 +199,7 @@ class MainScreenState extends State<MainScreen> {
                             Column(
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => _navigateToScreen(TeacherDashboard()),
+                                  onPressed: () => _navigateToScreen(const TeacherDashboard()),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: White,
                                     foregroundColor: Colors.white,

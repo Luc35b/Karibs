@@ -5,7 +5,6 @@ import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../overlay.dart';
 
 
 class TestsScreen extends StatefulWidget {
@@ -35,7 +34,7 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllTests();
     setState(() {
       _tests = List<Map<String, dynamic>>.from(data);
-
+      _isLoading = false;
     });
   }
 
@@ -44,7 +43,6 @@ class _TestsScreenState extends State<TestsScreen> {
     final data = await dbHelper.queryAllSubjects();
     setState(() {
       _subjects = List<Map<String, dynamic>>.from(data);
-      _isLoading = false;
     });
   }
 
@@ -263,7 +261,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: const Text('Save'),
+                  child: const Text('Save', style: TextStyle(fontSize: 20)),
                 ),
               ],
             );
@@ -413,8 +411,8 @@ class _TestsScreenState extends State<TestsScreen> {
                   decoration: BoxDecoration(
                     color: NotWhite,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      const BoxShadow(
+                    boxShadow: const [
+                      BoxShadow(
                         color: Colors.black12,
                         blurRadius: 10,
                         offset: Offset(3, 3), // Shadow position
@@ -467,7 +465,7 @@ class _TestsScreenState extends State<TestsScreen> {
                                   onPressed: () => _showEditTestDialog(_tests[index]['id'], _tests[index]['title'], _tests[index]['subject_id']),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red[900]),
+                                  icon: const Icon(Icons.delete),
                                   onPressed: () => _showDeleteConfirmationDialog(_tests[index]['id']),
                                 ),
                               ],
