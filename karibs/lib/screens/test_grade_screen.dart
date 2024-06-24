@@ -1,16 +1,23 @@
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
 import 'teacher_class_screen.dart';
 import 'package:karibs/overlay.dart';
+import 'package:karibs/pdf_gen.dart';
 
 class TestGradeScreen extends StatefulWidget {
   final int classId;
   final String testTitle;
   final int testId;
 
-  TestGradeScreen({
+  const TestGradeScreen({
+    super.key,
     required this.classId,
     required this.testTitle,
     required this.testId,
@@ -57,10 +64,20 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   }
 
   Future<void> _fetchQuestions() async {
-    List<Map<String, dynamic>> questions = await DatabaseHelper().getQuestionsByTestId(widget.testId);
+    final data = await DatabaseHelper().queryAllQuestionsWithChoices(widget.testId);
+    final prefs = await SharedPreferences.getInstance();
+    final orderList = prefs.getStringList('test_${widget.testId}_order'); // Corrected method
+
+    List<Map<String, dynamic>> orderedQuestions = data;
+
+    if (orderList != null) {
+      final orderIntList = orderList.map((e) => int.parse(e)).toList();
+      orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
+    }
+
     List<Map<String, dynamic>> categories = await DatabaseHelper().getCategoriesByTestId(widget.testId);
     setState(() {
-      _questions = questions;
+      _questions = orderedQuestions;
       _categories = categories;
       _initializeCategoryScores();
       _initializeQuestionCorrectness();
@@ -166,7 +183,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Grades saved successfully'),
           duration: Duration(milliseconds: 1500),
           behavior: SnackBarBehavior.floating,
@@ -196,6 +213,10 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     );
   }
 
+  void _generateAndPrintPdf() {
+    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -215,7 +236,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
           ),
         ),
         body: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Column(
             children: [
             if (_className != null)
@@ -223,13 +244,13 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
         padding: const EdgeInsets.all(8.0),
     child: Text(
     'Grading details for class: $_className and exam: ${widget.testTitle}',
-    style: TextStyle(fontSize: 20),
+    style: const TextStyle(fontSize: 20),
     ),
     ),
     Padding(
     padding: const EdgeInsets.all(8.0),
     child: DropdownButton<int>(
-    hint: Text("Select Student"),
+    hint: const Text("Select Student"),
     value: _selectedStudentId,
     onChanged: (int? newValue) {
     setState(() {
@@ -258,52 +279,52 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     padding: const EdgeInsets.all(8.0),
     child: Text(
     'Selected Student: ${_students.firstWhere((student) => student['id'] == _selectedStudentId)['name']}',
-    style: TextStyle(fontSize: 18),
+    style: const TextStyle(fontSize: 18),
     ),
     ),
-    if (_selectedStudentId != null)
-    Expanded(
-    child: ListView.builder(
-    itemCount: _questions.length,
-    itemBuilder: (context, index) {
-    int questionId = _questions[index]['id'];
-    int categoryId = _questions[index]['category_id'];
-    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
-    return ListTile(
-    title: Text(_questions[index]['text']),
-    subtitle: Text(categoryName),
-    tileColor: questionCorrectness[questionId] == 1
-    ? Colors.green.withOpacity(0.2)
-        : questionCorrectness[questionId] == -1
-    ? Colors.red.withOpacity(0.2)
-        : questionCorrectness[questionId] == 0
-    ? Colors.grey.withOpacity(0.2)
-        : null,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(Icons.check, color: Colors.green),
-            onPressed: () {
-              _markCorrect(questionId, categoryId);
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.clear, color: Colors.red),
-            onPressed: () {
-              _markIncorrect(questionId, categoryId);
-            },
-          ),
-        ],
-      ),
-    );
-    },
-    ),
-    ),
+              if (_selectedStudentId != null)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _questions.length,
+                    itemBuilder: (context, index) {
+                      int questionId = _questions[index]['id'];
+                      int categoryId = _questions[index]['category_id'];
+                      String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                      return ListTile(
+                        title: Text(_questions[index]['text']),
+                        subtitle: Text(categoryName),
+                        tileColor: questionCorrectness[questionId] == 1
+                            ? Colors.green.withOpacity(0.2)
+                            : questionCorrectness[questionId] == -1
+                            ? Colors.red.withOpacity(0.2)
+                            : questionCorrectness[questionId] == 0
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.check, color: Colors.green),
+                              onPressed: () {
+                                _markCorrect(questionId, categoryId);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.red),
+                              onPressed: () {
+                                _markIncorrect(questionId, categoryId);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
               if (_gradedStudentIds.length == _students.length)
-                Center(
+                const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       "View student report to edit their score.",
                       style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -313,29 +334,36 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
             ],
         ),
       bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: (_selectedStudentId != null &&
-                    _questions.isNotEmpty &&
-                    !_gradedStudentIds.contains(_selectedStudentId) &&
-                    !_questions.any((question) => questionCorrectness[question['id']] == 0))
-                    ? () {
-                  _saveGradingResults();
-                }
-                    : null,
-                child: Text('Save Grade'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _goToTeacherDashboard(widget.classId);
-                },
-                child: Text('Go to Class'),
-              ),
-            ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  onPressed: (_selectedStudentId != null &&
+                      _questions.isNotEmpty &&
+                      !_gradedStudentIds.contains(_selectedStudentId) &&
+                      !_questions.any((question) => questionCorrectness[question['id']] == 0))
+                      ? () {
+                    _saveGradingResults();
+                  }
+                      : null,
+                  child: const Text('Save Grade'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _goToTeacherDashboard(widget.classId);
+                  },
+                  child: const Text('Go to Class'),
+                ),
+                ElevatedButton(
+                  onPressed: _generateAndPrintPdf,
+                  child: const Text('Scores'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

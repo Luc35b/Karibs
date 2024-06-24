@@ -6,7 +6,7 @@ import 'package:karibs/screens/regrade_test_screen.dart';
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
 
-  ViewTestGradeScreen({required this.reportId});
+  const ViewTestGradeScreen({super.key, required this.reportId});
 
   @override
   _ViewTestGradeScreenState createState() => _ViewTestGradeScreenState();
@@ -48,14 +48,12 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RegradeScreen(
+        builder: (context) => RegradeTestScreen(
           reportId: widget.reportId,
         ),
       ),
     ).then((_){_fetchQuestionsAndAnswers();});
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +61,10 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
       appBar: AppBar(
         foregroundColor: White,
         backgroundColor: DeepPurple,
-        title: Text('Exam Grade Details'),
+        title: const Text('Exam Grade Details'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               _navigateToRegradeScreen(context); // Navigate to RegradeScreen
             },
@@ -74,21 +72,39 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           Container(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             color: Colors.grey[200],
+
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
               children: [
-                Icon(Icons.check, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Green tile means the student got it correct.'),
-                SizedBox(width: 16),
-                Icon(Icons.close, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Red tile means the student got it incorrect.'),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      color: Colors.green[100],
+                    ),
+                    SizedBox(width: 8),
+                    Text('Correct', style: TextStyle(color: Colors.green)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      color: Colors.red[100],
+                    ),
+                    SizedBox(width: 8),
+                    Text('Incorrect', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
               ],
             ),
           ),
@@ -98,7 +114,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
               itemBuilder: (context, index) {
                 final question = _questions[index];
                 return Card(
-                  margin: EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.all(10.0),
                   color: question['got_correct'] == 1 ? Colors.green[100] : Colors.red[100],
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -107,14 +123,14 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                       children: [
                         Text(
                           question['question_text'],
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text('Category: ${question['question_category']}'),
-                        Divider(),
-                        Text(
+                        const Divider(),
+                        const Text(
                           'Choices:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -126,7 +142,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
                               color: choice['is_correct'] == 1 ? Colors.green : Colors.red,
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),

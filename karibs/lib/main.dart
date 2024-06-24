@@ -56,7 +56,7 @@ class MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     // Show the tutorial dialog when the screen first loads
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_showTutorial) {
         _showMainTutorialDialog();
         _showTutorial = false; // Set to false to prevent showing again on subsequent launches
@@ -69,6 +69,7 @@ class MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return MainTutorialDialog();
+
       },
     );
   }
@@ -110,6 +111,7 @@ class MainScreenState extends State<MainScreen> {
         ),
         backgroundColor: DeepPurple,
         foregroundColor: White,
+
       ),
       body: Stack(
         children: [
@@ -172,7 +174,7 @@ class MainScreenState extends State<MainScreen> {
                             Column(
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => _navigateToScreen(TeacherDashboard()),
+                                  onPressed: () => _navigateToScreen(const TeacherDashboard()),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: White,
                                     foregroundColor: Colors.white,

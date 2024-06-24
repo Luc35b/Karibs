@@ -8,7 +8,7 @@ class QuestionDetailScreen extends StatefulWidget {
   final int subjectId; // Added subjectId to pass to EditQuestionScreen
 
   //const QuestionDetailScreen({super.key, required this.questionId});
-  QuestionDetailScreen({required this.questionId, required this.subjectId});
+  const QuestionDetailScreen({super.key, required this.questionId, required this.subjectId});
 
   @override
   _QuestionDetailScreenState createState() => _QuestionDetailScreenState();
@@ -66,10 +66,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
       appBar: AppBar(
         foregroundColor: White,
         backgroundColor: DeepPurple,
-        title: Text('Question Details'),
+        title: const Text('Question Details'),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: _navigateToEditQuestionScreen,
           ),
         ],
@@ -92,8 +92,8 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                   ),
                 ),
                 Text(
-                  '${category}',
-                  style: TextStyle(fontSize: 16),
+                  '$category',
+                  style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),
