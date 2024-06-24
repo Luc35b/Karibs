@@ -264,11 +264,12 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
 
     final pdfGenerator = PdfGenerator();
     double averageGrade = 0;
-    if (_students.isNotEmpty) {
-      averageGrade = _students
-          .map((student) => student['average_score'])
-          .reduce((a, b) => a + b) /
-          _students.length;
+    final scores = _students
+        .map<double?>((student) => student['average_score'])
+        .where((score) => score != null && score is num) // Filter out null and non-numerical scores
+        .cast<double>();
+    if (scores.isNotEmpty) {
+      averageGrade = scores.reduce((a, b) => a + b) / scores.length;
     }
     await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
   }

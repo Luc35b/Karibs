@@ -190,8 +190,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
         title: Text(widget.testTitle),
         actions: [
           TextButton(
@@ -225,8 +225,8 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.deepPurple,
+                backgroundColor: White,
+                foregroundColor: DeepPurple,
                 side: const BorderSide(width: 2, color: Colors.deepPurple),
                 padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 12), // Button padding
                 shape: RoundedRectangleBorder(

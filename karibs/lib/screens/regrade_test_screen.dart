@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
 import '../providers/student_grading_provider.dart';
 
@@ -43,19 +44,33 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _testTitle = report['title'];
       _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
 
-      // Fetch student and questions details
+      // Fetch student details
       _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
-      _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
       _className = await DatabaseHelper().getClassName(_student!['class_id']);
+
+      // Fetch questions details in the correct order
+      final data = await DatabaseHelper().queryAllQuestionsWithChoices(_testId!);
+      final prefs = await SharedPreferences.getInstance();
+      final orderList = prefs.getStringList('test_${_testId!}_order'); // Corrected method
+
+      List<Map<String, dynamic>> orderedQuestions = data;
+
+      if (orderList != null) {
+        final orderIntList = orderList.map((e) => int.parse(e)).toList();
+        orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
+      }
+
+      // Fetch categories details
       _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
 
       // Initialize categoryScores and questionCorrectness based on saved data
       await _initializeSavedResults();
-    }
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _questions = orderedQuestions;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _initializeSavedResults() async {
@@ -229,96 +244,92 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       appBar: AppBar(
         title: Text('Regrade Test for $_testTitle'),
       ),
-      body: Stack(
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-            children: [
-              if (_className != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Regrading details for class $_className and test $_testTitle',
-                    style: const TextStyle(fontSize: 20),
-                  ),
+          if (_className != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center( // Center the text widget
+                child: Text(
+                  'Regrading Exam: $_testTitle for "$_className" ',
+                  style: const TextStyle(fontSize: 20),
+                  textAlign: TextAlign.center,
                 ),
-              if (_student != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Regrading Student: ${_student!['name']}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
+              ),
+            ),
+          if (_student != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center( // Center the text widget
+                child: Text(
+                  'Regrading Student: ${_student!['name']}',
+                  style: const TextStyle(fontSize: 18),
+                  textAlign: TextAlign.center,
                 ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _questions.length,
-                  itemBuilder: (context, index) {
-                    int questionId = _questions[index]['id'];
-                    int categoryId = _questions[index]['category_id'];
-                    String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
-                    return ListTile(
-                      title: Text(_questions[index]['text']),
-                      subtitle: Text('Category: $categoryName'), // Display category instead of subject
-                      tileColor: questionCorrectness[questionId] == 1
-                          ? Colors.green.withOpacity(0.2)
-                          : questionCorrectness[questionId] == -1
-                          ? Colors.red.withOpacity(0.2)
-                          : questionCorrectness[questionId] == 0
-                          ? Colors.grey.withOpacity(0.2)
-                          : null,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.check, color: Colors.green),
-                            onPressed: () {
-                              _markCorrect(questionId, categoryId);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.red),
-                            onPressed: () {
-                              _markIncorrect(questionId, categoryId);
-                            },
-                          ),
-                        ],
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _questions.length,
+              itemBuilder: (context, index) {
+                int questionId = _questions[index]['id'];
+                int categoryId = _questions[index]['category_id'];
+                String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                return ListTile(
+                  title: Text(_questions[index]['text']),
+                  subtitle: Text('Category: $categoryName'),
+                  tileColor: questionCorrectness[questionId] == 1
+                      ? Colors.green.withOpacity(0.2)
+                      : questionCorrectness[questionId] == -1
+                      ? Colors.red.withOpacity(0.2)
+                      : questionCorrectness[questionId] == 0
+                      ? Colors.grey.withOpacity(0.2)
+                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.check, color: Colors.green),
+                        onPressed: () {
+                          _markCorrect(questionId, categoryId);
+                        },
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                      IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.red),
+                        onPressed: () {
+                          _markIncorrect(questionId, categoryId);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
-                          ? () {
-                        _saveRegradingResults(); // Save regrading results
-                      }
-                          : null,
-                      child: const Text('Save Regrade'),
-                    ),
-                    const SizedBox(width: 42), // Add some space between the buttons
-                    ElevatedButton(
-                      onPressed: () {
-                        _navigateToStudentInfoScreen(_selectedStudentId!);
-                      },
-                      child: const Text('Return to Student'),
-                    ),
-                  ],
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: (_selectedStudentId != null && _questions.isNotEmpty)
+                      ? () {
+                    _saveRegradingResults(); // Save regrading results
+                  }
+                      : null,
+                  child: const Text('Save Regrade'),
                 ),
-              ),
+                const SizedBox(width: 42),
+                ElevatedButton(
+                  onPressed: () {
+                    _navigateToStudentInfoScreen(_selectedStudentId!);
+                  },
+                  child: const Text('Return to Student'),
+                ),
+              ],
             ),
           ),
         ],

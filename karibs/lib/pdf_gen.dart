@@ -225,11 +225,11 @@ class PdfGenerator {
                 pw.SizedBox(height: 10),
                 ...sortedStudents.map((student) {
                   final averageScore = student['average_score'];
-                  final scoreText = (averageScore != null) ? averageScore.toStringAsFixed(2) : '—'; // Check if averageScore is null
+                  final scoreText = (averageScore != null && averageScore is num) ? averageScore.toStringAsFixed(2) : '--'; // Check if averageScore is null and of type num
                   return pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text(student['name'], style: const pw.TextStyle(fontSize: 16)),
+                      pw.Text(student['name'] ?? '', style: const pw.TextStyle(fontSize: 16)), // Add a null check for student name
                       pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
                     ],
                   );
@@ -290,8 +290,11 @@ class PdfGenerator {
   Future<void> generateTestScoresPdf(int testId, String testTitle, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
 
-    // Fetch scores for each student from the student_test table
     List<Map<String, dynamic>> studentScores = await DatabaseHelper().getStudentScoresByTestId(testId);
+
+    List<Map<String, dynamic>> mutableStudents = List.from(students);
+
+    mutableStudents.sort((a, b) => a['name'].compareTo(b['name']));
 
     pdf.addPage(
       pw.MultiPage(
@@ -304,13 +307,24 @@ class PdfGenerator {
                 pw.SizedBox(height: 20),
                 pw.Text('Students:', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
-                for (var student in students)
-                  pw.Column(
+                for (var student in mutableStudents)
+                  pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('${student['name']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Score: ${studentScores.firstWhere((score) => score['student_id'] == student['id'])['total_score']}', style: const pw.TextStyle(fontSize: 16)),
-                      pw.SizedBox(height: 10),
+                      pw.Expanded(
+                        child: pw.Text(
+                          '${student['name']}',
+                          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Text(
+                        generateFillerString('${student['name']}', '${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '--'}'),
+                        style: const pw.TextStyle(fontSize: 16),
+                      ),
+                      pw.Text(
+                        '   ${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '  --'}', // Check for null and display '--'
+                        style: const pw.TextStyle(fontSize: 16),
+                      ),
                     ],
                   ),
               ],
@@ -324,8 +338,13 @@ class PdfGenerator {
     final file = File('${output.path}/$testTitle - Scores.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
     Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Scores.pdf');
   }
 
+  String generateFillerString(String name, String score) {
+    // Calculate the remaining length after name and score
+    final maxLength = 94;
+    final remainingLength = maxLength - name.length - score.length - 9;
+    return '.' * remainingLength;
+  }
 }
