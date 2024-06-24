@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
+import 'package:karibs/overlay.dart';
+import 'package:karibs/main.dart';
 
 class EditQuestionScreen extends StatefulWidget {
   final int questionId;
@@ -184,12 +186,45 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     _fetchCategories();
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditQuestionScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Edit Question'),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back), // Use the back arrow icon
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            const Text('Class Viewing'),
+            SizedBox(width: 8), // Adjust spacing between title and icon
+            IconButton(
+              icon: Icon(Icons.help_outline),
+              onPressed: () {
+                // Show tutorial dialog
+                _showTutorialDialog();
+              },
+            ),
+          ],
         ),
+        backgroundColor: DeepPurple,
+        foregroundColor: White,
+        automaticallyImplyLeading: false,
+      ),
+        // appBar: AppBar(
+        //   title: const Text('Edit Question'),
+        // ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Stack(
