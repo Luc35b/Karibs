@@ -202,7 +202,7 @@ class PdfGenerator {
   }
 
 
-  Future<void> generateClassReportPdf(String className, double averageGrade, List<Map<String, dynamic>> students) async {
+  Future<void> generateClassReportPdf(String className, double? averageGrade, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
 
     // Create a copy of the students list before sorting
@@ -219,7 +219,7 @@ class PdfGenerator {
               children: [
                 pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
-                pw.Text('Class Grade Average: ${averageGrade.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
+                pw.Text('Class Grade Average: ${(averageGrade ?? 0).toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)), // Check if averageGrade is null
                 pw.SizedBox(height: 10),
                 pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
