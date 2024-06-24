@@ -4,8 +4,7 @@ import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'teacher_dashboard.dart';
-
-import '../overlay.dart';
+import 'package:karibs/overlay.dart';
 
 
 class TestsScreen extends StatefulWidget {
@@ -365,6 +364,15 @@ class _TestsScreenState extends State<TestsScreen> {
     }
   }
 
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return TestsScreenTutorialDialog();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -373,7 +381,19 @@ class _TestsScreenState extends State<TestsScreen> {
         appBar: AppBar(
           backgroundColor: DeepPurple,
           foregroundColor: White,
-          title: Text('Exams'),
+          title: Row(
+            children:[
+              Text('Exams'),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ]
+          ),
           leading: IconButton(
             icon: Icon(Icons.arrow_back), // Use the back arrow icon
             onPressed: () {

@@ -878,96 +878,472 @@ class EditReportScreenTutorialDialog extends StatelessWidget {
   }
 }
 
-class TestsScreenTutorialDialog extends StatelessWidget {
+class TestsScreenTutorialDialog extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Welcome to the Exam Viewing Screen'),
-      content: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9, // 80% of screen width
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'This screen allows you to view all of your exams created within '
-                    'the app. You can create, edit, and delete exams here.',
-                style: TextStyle(fontSize: 16.0),
+  _TestsScreenTutorialDialogState createState() =>
+      _TestsScreenTutorialDialogState();
+}
+
+class _TestsScreenTutorialDialogState
+    extends State<TestsScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Tests Screen.',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text(
+          'This screen allows you to view all of your exams created within the app. You can create, edit, and delete exams here.',
+          style: TextStyle(fontSize: 16.0),
+        ),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. '),
+              TextSpan(
+                text: 'Add an exam',
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 16.0),
-              Text(
-                '1. To add a new exam, click on the Add Exam button at the bottom of the screen.',
-                style: TextStyle(fontSize: 16.0),
+              TextSpan(text: ' by clicking on the \n ADD EXAM + button at the bottom of the screen.\n'),
+              TextSpan(text: '  \n a. To name your exam, start typing in the Exam Title box. \n '
+                              '\n b. To select a subject for the exam, select from the dropdown menu or'
+                              'create a custom subject name by clicking on the '),
+              WidgetSpan(
+                child: Icon(Icons.add,
+                    size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\n a. To name your exam, start typing in the Exam Title box.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                    Text(
-                      '\n b. To select a subject for the exam, select from the dropdown '
-                          'menu or create a custom subject name by clicking on the '
-                          '+ icon next to the subject dropdown.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                    Text(
-                      '\n c. Click the Add button to successfully create the new exam.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '2. To view an exam and add questions, click inside the rectangle '
-                    'with the desired exam name.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '3. To edit the name or subject of an already created exam, click '
-                    'on the pencil icon to the right side of the desired exam.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '\n a. Here you can rename your exam, select a different '
-                          'subject from the dropdown, or create a new subject name for your exam.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                    Text(
-                      '\n b. Click on the Save button to save your new changes.',
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.0),
-              Text(
-                '4. To delete an exam, click on the trash bin icon on the right side of the desired exam. '
-                    'You will see a confirmation message asking if you want to delete the exam.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              SizedBox(height: 16.0),
+              TextSpan(text:'icon next to the subject dropdown.\n \n c. Click the Add button to successfully create the new exam.'),
             ],
           ),
         ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. To '),
+          TextSpan(
+            text: 'view an exam',
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' and '),
+          TextSpan(
+            text: 'add questions',
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', click inside the rectangle with the exam name.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'edit your exam',
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.deepPurple),
+          ),
+          TextSpan(text: ' name or subject, click on the '),
+          WidgetSpan(
+            child: Icon(Icons.edit,
+                size: 24.0, color: Colors.black, semanticLabel: 'Edit Icon'),
+          ),
+          TextSpan(text: ' icon to the right of the exam.'
+          '\n \n a. Here you can rename your exam, select a different subject from the dropdown,'
+              'or create a new subject name for your exam. \n'
+              '\n b. Click on the Save button to save your new changes.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '4. To '),
+          TextSpan(
+            text: 'delete an exam',
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.deepPurple),
+          ),
+          TextSpan(text: ', click on the '),
+          WidgetSpan(
+            child: Icon(Icons.delete,
+                size: 24.0, color: Colors.black, semanticLabel: 'Delete Icon'),
+          ),
+          TextSpan(
+            text: ' icon next to the exam. '
+                'You will see a confirmation message asking if you want to delete the exam.',
+          ),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
       ),
       actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Got it'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class TestDetailScreenTutorialDialog extends StatefulWidget {
+  @override
+  _TestDetailScreenTutorialDialogState createState() =>
+      _TestDetailScreenTutorialDialogState();
+}
+
+class _TestDetailScreenTutorialDialogState
+    extends State<TestDetailScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Test Detail Screen.',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text('This screen allows you to add questions to your exam. '
+            'You can grade the exam, print out the questions, and print out the answer key. ',
+            style: TextStyle(fontSize: 16.0)),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. '),
+              TextSpan(
+                text: 'Add a new question',
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: ' by clicking on the \n ADD QUESTION + button in the center of the screen.\n'),
+              ],
+          ),
+        ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '2. '),
+          TextSpan(
+            text: 'Grade an exam',
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ' by clicking on the GRADE button in the top right of the screen.'
+                    '\n \n a. Choose and click on the class you would like to grade the exam for.'),
+        ],
+      ),
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '3. To '),
+          TextSpan(
+            text: 'print the exam',
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.deepPurple),
+          ),
+          TextSpan(text: ' name or subject, click on the '),
+          WidgetSpan(
+            child: Icon(Icons.print,
+                size: 24.0, color: Colors.black, semanticLabel: 'Print Icon'),
+          ),
+          TextSpan(text: ' icon at the bottom right of the screen. '
+              'You will have the option to print out the questions or the answer key.'
+              '\n \n a. Click Print Questions to hand out blank exams to students to fill out. \n'
+              '\n b. Click Print Answer Key to print out the questions along with the correct answer for easy grading.'),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class AddQuestionScreenTutorialDialog extends StatefulWidget {
+  @override
+  _AddQuestionScreenTutorialDialogState createState() =>
+      _AddQuestionScreenTutorialDialogState();
+}
+
+class _AddQuestionScreenTutorialDialogState
+    extends State<AddQuestionScreenTutorialDialog> {
+  int _currentIndex = 0;
+
+  final List<Widget> _instructions = [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome to the Add Question Screen.',
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10.0),
+        Text('This screen allows you to input questions to your exam. ',
+            style: TextStyle(fontSize: 16.0)),
+      ],
+    ),
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: TextStyle(fontSize: 16.0, color: Colors.black87),
+            children: [
+              TextSpan(text: '1. The question you are adding goes in the '),
+              TextSpan(
+                text: 'Question Text ',
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: 'box. \n \n 2. Select the type of question (multiple choice, fill in the blank, etc.) using the '),
+              TextSpan(
+                text: 'middle dropdown ',
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: 'box. \n \n 3. Select the  question category using the '),
+              TextSpan(
+                text: 'bottom dropdown.',
+                style: TextStyle(
+                    color: Colors.deepPurple, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(text: '\n \n If you do not have any categories created, you can add one using the '),
+              WidgetSpan(
+                child: Icon(Icons.add,
+                    size: 24.0, color: Colors.black, semanticLabel: 'Add Icon'),
+              ),
+              TextSpan(text: ' icon to the right of the dropdown. This will allow you to break down your students’ scores'
+                'by categories such as vocabulary, grammar, and comprehension.  '),
+            ],
+          ),
+        ),
+      ],
+    ),
+    RichText(
+      text: TextSpan(
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        children: [
+          TextSpan(text: '4. If you create a '),
+          TextSpan(
+            text: 'multiple choice question',
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', add the multiple answers by clicking the Add Choice button. Mark the correct answer by '
+            'selecting the checkbox next to the answer. You can delete a choice by clicking the'),
+          WidgetSpan(
+            child: Icon(Icons.delete,
+                size: 24.0, color: Colors.black, semanticLabel: 'Delete Icon'),
+          ),
+          TextSpan(text: ' icon to the right. \n \n 5. If you create a '),
+          TextSpan(
+            text: 'fill in the blank question',
+            style: TextStyle(
+                color: Colors.deepPurple, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: ', type in the correct answer in the Correct Answer box at the bottom. \n '
+            '\n 6. Finish adding the question by clicking the Save button at the bottom.'),
+        ],
+      ),
+    ),
+  ];
+
+  void _nextInstruction() {
+    if (_currentIndex < _instructions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousInstruction() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  void _goToNextScreen() {
+    // Simulate navigation to the next screen
+    print('Navigating to the next screen');
+    // Replace with actual navigation logic as needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tutorial'),
+      content: SingleChildScrollView(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: _instructions[_currentIndex],
+        ),
+      ),
+      actions: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                onPressed: _previousInstruction,
+                icon: Icon(Icons.arrow_back),
+              ),
+            if (_currentIndex < _instructions.length - 1)
+              IconButton(
+                onPressed: _nextInstruction,
+                icon: Icon(Icons.arrow_forward),
+              ),
+            if (_currentIndex == _instructions.length - 1)
+              TextButton(
+                onPressed: () {
+                  _goToNextScreen(); // Navigate to the next screen
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('Got it'),
+              ),
+          ],
         ),
       ],
     );
