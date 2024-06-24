@@ -171,7 +171,12 @@ class _EditReportScreenState extends State<EditReportScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: DeepPurple,
+                side: const BorderSide(
+                    width: 2, color: DeepPurple),
+              ),
               onPressed: _saveChanges,
               child: const Text('Save Changes'),
             ),

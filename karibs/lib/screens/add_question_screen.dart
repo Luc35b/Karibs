@@ -313,13 +313,22 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete),
+                          color: Colors.red[900],
                           onPressed: () => _removeChoiceField(i),
                         ),
                       ],
                     ),
-                  ElevatedButton(
-                    onPressed: _addChoiceField,
-                    child: const Text('Add Choice'),
+                  Padding(padding: EdgeInsets.only(top: 10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: DeepPurple,
+                        side: const BorderSide(
+                            width: 2, color: DeepPurple),
+                      ),
+                      onPressed: _addChoiceField,
+                      child: const Text('Add Choice'),
+                    ),
                   ),
                 ],
               ),
@@ -337,6 +346,12 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: DeepPurple,
+                      side: const BorderSide(
+                          width: 2, color: DeepPurple),
+                    ),
                     onPressed: _addQuestion,
                     child: const Text('Save'),
                   ),

@@ -347,12 +347,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 child: ElevatedButton(
                   onPressed: _navigateToViewTestGrades,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
                   ),
                   child: const Text(
                     'View Test Grade',

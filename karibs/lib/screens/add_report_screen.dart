@@ -118,6 +118,12 @@ class _AddReportScreenState extends State<AddReportScreen> {
             Row(
               children: [
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop(false); // Cancel action
                   },
@@ -125,6 +131,12 @@ class _AddReportScreenState extends State<AddReportScreen> {
                 ),
                 const SizedBox(width: 16),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
+                  ),
                   onPressed: _addReport,
                   child: const Text('Add', style: TextStyle(fontSize: 20)),
                 ),
