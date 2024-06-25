@@ -175,39 +175,28 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
-    for (var report in _reports) {
-      int id = report['id'];
-      if(report['score'] != null){
+    for (int i = 0; i < _reports.length; i++) {
+      var report = _reports[i];
+      if (report['score'] != null) {
         double score = report['score'];
-        spots.add(FlSpot(id.toDouble(), score));
+        spots.add(FlSpot(i.toDouble(), score)); // Use the index as the X value
       }
-      //double score = report['score'] != null ? report['score'].toDouble(): 0.0;
-
     }
     return spots;
   }
 
-  double _getMinX() {
-    if (_reports.isEmpty) {
-      return 0.0;
+  String _getReportTitle(int index) {
+    if (index >= 0 && index < _reports.length) {
+      return _reports[index]['title'] ?? '';
     }
-    //int min = _reports.first['id'];
-    int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
-    return min.toDouble();
+    return '';
   }
 
   double _getMaxX() {
     if (_reports.isEmpty) {
       return 0.0;
     }
-    //int max = _reports.last['id'];
-    int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
-    return max.toDouble();
-  }
-
-  String _formatDate(double value) {
-    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    return '${date.day}/${date.month}';
+    return (_reports.length - 1).toDouble(); // Maximum X is the last index
   }
 
   @override
@@ -233,17 +222,31 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigate back to TeacherClassScreen using popUntil
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TeacherClassScreen(classId: _student?['class_id'], refresh: true),
+            // Navigate back to TeacherClassScreen with a custom zoom-out transition
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return TeacherClassScreen(classId: _student?['class_id'], refresh: true);
+                },
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  // Define the zoom out animation
+                  var begin = 1.1; // Start with 1.5 times the normal size
+                  var end = 1.0; // End with the normal size
+                  var curve = Curves.easeInOut;
+
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var scaleAnimation = animation.drive(tween);
+
+                  return ScaleTransition(
+                    scale: scaleAnimation,
+                    child: child,
+                  );
+                },
               ),
             );
           },
         ),
         automaticallyImplyLeading: false,
-
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -328,7 +331,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
               )
                   : LineChart(
                 LineChartData(
-                  minX: _getMinX(),
+                  minX: 0.0,
                   maxX: _getMaxX(),
                   minY: 0,
                   maxY: 100,
@@ -337,12 +340,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     bottomTitles: SideTitles(
                       showTitles: true,
                       getTitles: (value) {
-                        value-=1;
-                        int index = value.toInt();
-                        if(value >=0 && value< _reports.length){
-                          return _reports[index]['title'] ?? '';
-                        }
-                        return '';
+                        return _getReportTitle(value.toInt());
                       },
                       reservedSize: 22,
                       margin: 10,

@@ -222,9 +222,6 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-        // appBar: AppBar(
-        //   title: const Text('Edit Question'),
-        // ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Stack(

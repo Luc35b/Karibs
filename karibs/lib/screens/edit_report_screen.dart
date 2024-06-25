@@ -138,15 +138,6 @@ class _EditReportScreenState extends State<EditReportScreen> {
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-      // appBar: AppBar(
-      //   title: const Text('Edit Report'),
-      //   backgroundColor: DeepPurple,
-      //   foregroundColor: White,
-      //   actions: [
-      //
-      //     IconButton(onPressed: _deleteReport, icon: const Icon(Icons.delete)),
-      //   ],
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
