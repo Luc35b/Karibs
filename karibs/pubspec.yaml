@@ -37,7 +37,6 @@ dependencies:
   fl_chart: ^0.35.0
   pdf: ^3.3.0
   printing: ^5.5.0
-  google_fonts: ^6.2.1
   syncfusion_flutter_charts: ^20.2.49
   shared_preferences: ^2.0.9
 

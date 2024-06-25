@@ -3,7 +3,6 @@ import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_class_screen.dart';
 import 'package:karibs/screens/tests_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const Color DeepPurple = Color(0xFF250A4E);
 const Color MidPurple = Color(0xFF7c6c94);
@@ -585,7 +584,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
                     child: Text(
                       'MY CLASSES',
-                      style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
+                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold,color: White),
                     ),
                   ),
                   Container(
@@ -607,7 +606,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         ? Center(
                       child: Text(
                         'No classes available. \n Please add a class.',
-                        style: GoogleFonts.raleway(fontSize: 24),
+                        style: TextStyle(fontSize: 28),
                       ),
                     ) :SingleChildScrollView(
                       child: Column(
@@ -689,7 +688,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                     child: Text(
                       'ADD CLASS +',
-                      style: GoogleFonts.raleway(fontSize: 25),
+                      style: TextStyle(fontSize: 25),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -740,7 +739,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               ),
               child: Text(
                 '  MANAGE EXAMS  ',
-                style: GoogleFonts.raleway(fontSize: 25, color: DeepPurple),
+                style: TextStyle(fontSize: 25, color: DeepPurple),
               ),
             ),
             const SizedBox(height: 15),

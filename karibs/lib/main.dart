@@ -5,7 +5,6 @@ import 'screens/teacher_dashboard.dart';
 import 'student_screens/student_screen.dart';
 import 'database/database_helper.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const Color DeepPurple = Color(0xFF250A4E);
 const Color MidPurple = Color(0xFF7c6c94);
@@ -131,16 +130,16 @@ class MainScreenState extends State<MainScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 45),
                       Image.asset('images/logo.jpg'),
                       Text(
                         'WELCOME TO',
-                        style: GoogleFonts.raleway(fontSize: 34, color: DeepPurple),
+                        style: TextStyle(fontSize: 34, color: DeepPurple),
                       ),
                       Expanded(
                         child: Text(
                           'KLAS',
-                          style: GoogleFonts.raleway(fontSize: 50, fontWeight: FontWeight.bold, color: DeepPurple),
+                          style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: DeepPurple),
                         ),
                       ),
                       Container(
@@ -164,10 +163,11 @@ class MainScreenState extends State<MainScreen> {
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               'CHOOSE USER TYPE',
-                              style: GoogleFonts.raleway(
+                              style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                                 color: White,
@@ -189,7 +189,7 @@ class MainScreenState extends State<MainScreen> {
                                   ),
                                   child: Text(
                                     'I\'m a Teacher',
-                                    style: GoogleFonts.raleway(fontSize: 28, color: DeepPurple),
+                                    style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
                                   ),
                                 ),
                                 const SizedBox(height: 25),
@@ -206,7 +206,7 @@ class MainScreenState extends State<MainScreen> {
                                   ),
                                   child: Text(
                                     'I\'m a Student',
-                                    style: GoogleFonts.raleway(fontSize: 28, color: DeepPurple),
+                                    style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
                                   ),
                                 ),
                               ],
@@ -214,7 +214,7 @@ class MainScreenState extends State<MainScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
