@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/overlay.dart';
 import 'package:karibs/screens/teacher_dashboard.dart';
@@ -248,7 +247,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
             ),
             child: Text(
               'GRADE',
-              style: GoogleFonts.raleway(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -265,7 +264,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
-            Text('No questions available. Please add!', style: GoogleFonts.raleway(fontSize: 20)),
+            Text('No questions available. Please add!', style: TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -278,7 +277,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
                 ),
               ),
               onPressed: _navigateToAddQuestionScreen,
-              child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+              child: Text('Add Question +', style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
@@ -326,7 +325,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       ),
     ),
       onPressed: _navigateToAddQuestionScreen,
-      child: Text('Add Question +', style: GoogleFonts.raleway(fontSize: 20)),
+      child: Text('Add Question +', style: TextStyle(fontSize: 20)),
     ),
     ],
     ),

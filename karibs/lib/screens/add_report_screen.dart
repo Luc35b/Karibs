@@ -101,7 +101,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
+              decoration: const InputDecoration(labelText: 'Notes (optional)'),
               keyboardType: TextInputType.multiline,
               maxLines: 5,
             ),
