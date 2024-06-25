@@ -5,13 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb179107-f59b-4078-82fe-f0ba007ec993" name="Changes" comment="workspace commit">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_6_18_2024_8_05_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_6_18_2024_8_05_AM__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_6_18_2024_9_40_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_6_18_2024_9_40_AM__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/add_question_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/add_question_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/add_report_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/add_report_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/add_test_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/add_test_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/edit_question_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/edit_question_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/edit_report_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/edit_report_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/edit_student_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/edit_student_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/question_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/question_detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/regrade_test_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/regrade_test_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/report_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/report_detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/student_info_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/student_info_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/teacher_class_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/teacher_class_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/test_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/test_detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/test_grade_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/test_grade_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/karibs/lib/screens/tests_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/karibs/lib/screens/tests_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,8 +68,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "tutorials",
-
+    "git-widget-placeholder": "graph__and__animations",
     "kotlin-language-version-configured": "true",
     "show.migrate.to.gradle.popup": "false"
   }

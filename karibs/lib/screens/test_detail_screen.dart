@@ -32,6 +32,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     _fetchQuestions();
   }
 
+  //fetch questions for the current test from the database
   Future<void> _fetchQuestions() async {
     final data = await DatabaseHelper().queryAllQuestions(widget.testId);
     List<Map<String, dynamic>> questions = List<Map<String, dynamic>>.from(data);
@@ -40,6 +41,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? savedOrder = prefs.getStringList('test_${widget.testId}_order');
 
+    //sort questions based on custom order if available
     if (savedOrder != null) {
       questions.sort((a, b) {
         int aIndex = savedOrder.indexOf(a['id'].toString());
@@ -54,6 +56,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     });
   }
 
+  //navigation to add a new question
   void _navigateToAddQuestionScreen() {
     Navigator.push(
       context,
@@ -67,6 +70,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  //navigation method to view details of a question
   void _navigateToQuestionDetailScreen(int questionId) {
     Navigator.push(
       context,
@@ -79,6 +83,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  // Navigation method to edit a question
   void _navigateToEditQuestionScreen(int questionId) {
     Navigator.push(
       context,
@@ -92,6 +97,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  // Method to show a confirmation dialog before deleting a question
   void _showDeleteConfirmationDialog(int questionId) {
     showDialog(
       context: context,
@@ -119,21 +125,25 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  // Method to delete a question from the database
   void _deleteQuestion(int questionId) async {
     await DatabaseHelper().deleteQuestion(questionId);
     _fetchQuestions();
   }
 
+  // Method to generate and print a PDF of all question
   void _generateAndPrintQuestionsPdf() async {
     await _fetchQuestions();
     await PdfGenerator().generateTestQuestionsPdf(widget.testId, widget.testTitle);
   }
 
+  // Method to generate and print a PDF of the answer key
   void _generateAndPrintAnswerKeyPdf() async {
     await _fetchQuestions();
     await PdfGenerator().generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
   }
 
+  // Navigation method to grade the test for a specific class
   void _navigateToGradeTestScreen(int classId) {
     Navigator.push(
       context,
@@ -147,6 +157,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  // Method to show a dialog to choose a class for grading
   void _showChooseClassDialog() {
     showDialog(
       context: context,
@@ -162,6 +173,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     );
   }
 
+  // Method to update the order of questions
   void _updateQuestionOrder(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {
@@ -176,18 +188,21 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
     });
   }
 
+  // Method to update question order in the database
   Future<void> _updateOrderInDatabase() async {
     for (int i = 0; i < _questions.length; i++) {
       await DatabaseHelper().updateQuestionOrder(_questions[i]['id'], i);
     }
   }
 
+  // Method to save question order to SharedPreferences
   Future<void> _saveOrderToPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> order = _questions.map((question) => question['id'].toString()).toList();
     await prefs.setStringList('test_${widget.testId}_order', order);
   }
 
+  // show tutorial dialog for test detail screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -272,6 +287,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
       )
           : Column(
         children: [
+          //displays questions in a list
         ReorderableListView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(), // Disable scrolling for ReorderableListView
@@ -374,6 +390,7 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
   }
 }
 
+
 class ChooseClassDialog extends StatefulWidget {
   final Function(int) onClassSelected;
   final int subjectId;
@@ -395,6 +412,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     _fetchClassesBySubjectId();
   }
 
+  //fetch classes from database based on subject id
   Future<void> _fetchClassesBySubjectId() async {
     final data = await DatabaseHelper().getClassesBySubjectId(widget.subjectId);
     String? name = await DatabaseHelper().getSubjectName(widget.subjectId);
@@ -405,6 +423,7 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     });
   }
 
+  //navigate to teacher dashboard
   void _navigateToTeacherDashboard() {
     Navigator.pushReplacement(
       context,

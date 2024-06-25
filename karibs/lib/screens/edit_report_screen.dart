@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
-
 
 class EditReportScreen extends StatefulWidget {
   final int reportId;
 
-  const EditReportScreen({super.key, required this.reportId});
+  const EditReportScreen({Key? key, required this.reportId}) : super(key: key);
 
   @override
   _EditReportScreenState createState() => _EditReportScreenState();
 }
 
 class _EditReportScreenState extends State<EditReportScreen> {
-
-  Map<String, dynamic> report = {};
-  int studentId = 0;
+  late Map<String, dynamic> report = {};
+  late int studentId = 0;
 
   late TextEditingController _titleController;
   late TextEditingController _notesController;
@@ -33,19 +30,17 @@ class _EditReportScreenState extends State<EditReportScreen> {
     _fetchReport();
   }
 
+  // Fetches the report data from the database and updates the state
   void _fetchReport() async {
-    var x = await _databaseHelper.queryReport(widget.reportId);
+    var fetchedReport = await _databaseHelper.queryReport(widget.reportId);
 
-    if (x != null) {
-
+    if (fetchedReport != null) {
       setState(() {
-
-        report = x;
-
+        report = fetchedReport;
         _titleController.text = report['title'];
         _notesController.text = report['notes'];
         _scoreController.text = report['score'].toString();
-        studentId = x['student_id'];
+        studentId = report['student_id'];
       });
     }
   }
@@ -58,21 +53,22 @@ class _EditReportScreenState extends State<EditReportScreen> {
     super.dispose();
   }
 
+  // Saves the changes made to the report
   void _saveChanges() async {
     String newTitle = _titleController.text;
     String newNotes = _notesController.text;
     double newScore = double.tryParse(_scoreController.text) ?? report['score'];
 
-
+    // Updates the report details in the database
     await _databaseHelper.updateReportTitle(widget.reportId, newTitle);
     await _databaseHelper.updateReportNotes(widget.reportId, newNotes);
     await _databaseHelper.updateReportScore(widget.reportId, newScore);
 
-
-
+    // Navigate back with result
     Navigator.of(context).pop(true);
   }
 
+  // Deletes the report after confirmation
   void _deleteReport() async {
     bool confirmDelete = await showDialog(
       context: context,
@@ -93,13 +89,14 @@ class _EditReportScreenState extends State<EditReportScreen> {
     );
 
     if (confirmDelete == true) {
+      // Delete report from database and navigate back with result
       await _databaseHelper.deleteReport(widget.reportId);
-
       Navigator.of(context).pop(true);
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true); // Pop twice to go back to previous screen
     }
   }
 
+  // Shows the tutorial dialog for the edit report screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -118,12 +115,12 @@ class _EditReportScreenState extends State<EditReportScreen> {
             IconButton(
               icon: Icon(Icons.arrow_back), // Back arrow icon
               onPressed: () {
-                Navigator.of(context).pop(true);
+                Navigator.of(context).pop(true); // Pop with result true
               },
             ),
-            const Text('Edit Report'),
+            const Text('Edit Report'), // Title of the app bar
             IconButton(
-              icon: Icon(Icons.help_outline),
+              icon: Icon(Icons.help_outline), // Help icon
               onPressed: () {
                 // Show tutorial dialog
                 _showTutorialDialog();
@@ -132,11 +129,14 @@ class _EditReportScreenState extends State<EditReportScreen> {
           ],
         ),
         actions: [
-          IconButton(onPressed: _deleteReport, icon: Icon(Icons.delete)),
+          IconButton(
+            onPressed: _deleteReport,
+            icon: Icon(Icons.delete), // Delete icon
+          ),
         ],
-        backgroundColor: DeepPurple,
-        foregroundColor: White,
-        automaticallyImplyLeading: false,
+        backgroundColor: Colors.deepPurple, // App bar background color
+        foregroundColor: Colors.white, // App bar text color
+        automaticallyImplyLeading: false, // Disable back button
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -145,26 +145,25 @@ class _EditReportScreenState extends State<EditReportScreen> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'), // Title input field
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Spacer
             TextField(
               controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
+              decoration: const InputDecoration(labelText: 'Notes'), // Notes input field
               keyboardType: TextInputType.multiline,
               maxLines: 5,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Spacer
             TextField(
               controller: _scoreController,
-              decoration: const InputDecoration(labelText: 'Score'),
+              decoration: const InputDecoration(labelText: 'Score'), // Score input field
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Spacer
             ElevatedButton(
-
               onPressed: _saveChanges,
-              child: const Text('Save Changes'),
+              child: const Text('Save Changes'), // Save changes button
             ),
           ],
         ),

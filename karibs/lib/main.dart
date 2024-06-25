@@ -7,12 +7,14 @@ import 'database/database_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+//color scheme across the app
 const Color DeepPurple = Color(0xFF250A4E);
 const Color MidPurple = Color(0xFF7c6c94);
 const Color LightPurple = Color(0xFFD3BEFA);
 const Color NotWhite = Color(0xFFEFEBF1);
 const Color White = Colors.white;
 
+//runs the app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database, remove when done testing
@@ -67,6 +69,7 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+  //displays the tutorial dialog for the main screen
   void _showMainTutorialDialog() {
     showDialog(
       context: context,
@@ -77,6 +80,7 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
+  //navigate to a given screen
   void _navigateToScreen(Widget screen) {
     setState(() {
       _isAnimating = true;
@@ -94,7 +98,7 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
-
+  //chooses user type and navigates to teacher dashboard or student dashboard
   @override
   Widget build(BuildContext context) {
     return Scaffold(

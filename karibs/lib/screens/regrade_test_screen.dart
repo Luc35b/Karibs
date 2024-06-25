@@ -36,9 +36,10 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchReportDetails();
+    _fetchReportDetails(); //fetch report details when screen initializes
   }
 
+  //fetch report details based on report id
   Future<void> _fetchReportDetails() async {
     Map<String, dynamic>? report = await DatabaseHelper().getReportById(widget.reportId);
     if (report != null) {
@@ -48,19 +49,20 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _studentTestId =
       await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
     }
-      // Fetch student details
+      // Fetch student details, questions, class name, and categories
     _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
     _questions = await DatabaseHelper().getQuestionsByTestId(_testId!);
     _className = await DatabaseHelper().getClassName(_student!['class_id']);
     _categories = await DatabaseHelper().getCategoriesByTestId(_testId!);
 
-      // Fetch questions details in the correct order
+      // Fetch questions details in the correct order based on stored preferences
       final data = await DatabaseHelper().queryAllQuestionsWithChoices(_testId!);
       final prefs = await SharedPreferences.getInstance();
       final orderList = prefs.getStringList('test_${_testId!}_order'); // Corrected method
 
       List<Map<String, dynamic>> orderedQuestions = data;
 
+    // Sort questions based on the retrieved order list
       if (orderList != null) {
         final orderIntList = orderList.map((e) => int.parse(e)).toList();
         orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
@@ -70,6 +72,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       // Initialize categoryScores and questionCorrectness based on saved data
       await _initializeSavedResults();
 
+    // If no categories are found, indicate that the test has been deleted
     if(_categories.isEmpty) {
       setState(() {
         _testDeleted = true;
@@ -118,6 +121,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
   }
 
+  //saves correct answers
   void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
     questionCorrectness.clear();
     savedResults['question_correctness'].forEach((questionId, correctness) {
@@ -126,6 +130,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     print(questionCorrectness);
   }
 
+  //marks a question correct by the teacher
   void _markCorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == -1) {
@@ -139,6 +144,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     });
   }
 
+  //marks a question incorrect by the teacher
   void _markIncorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == 1) {
@@ -210,7 +216,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
         }
       });
 
-
+      // Update category scores in the database
       for (var entry in categoryScoresPercentage.entries) {
         await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
           'student_test_id': studentTestId,
@@ -238,6 +244,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     }
   }
 
+  //displays the tutorial dialog for the regrade test screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -248,7 +255,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
   }
 
 
-
+//navigates to the student info screen
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
       context,
@@ -281,6 +288,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       ),
       body: Stack(
         children: [
+          //checks if test has been deleted
           _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _testDeleted
@@ -316,6 +324,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
               ),
             ),
           Expanded(
+            //changes colors and category score when test is marked correct or incorrect
             child: ListView.builder(
               itemCount: _questions.length,
               itemBuilder: (context, index) {
@@ -355,6 +364,8 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
           ),
           ],
           ),
+
+          //saves the regrade and allows navigation back to the student info screen
           Positioned(
             bottom: 0,
             left: 0,

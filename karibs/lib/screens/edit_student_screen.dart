@@ -6,6 +6,7 @@ import 'teacher_class_screen.dart';
 import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
 
+//returns report color based on score
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
     return const Color(0xFFBBFABB);
@@ -45,6 +46,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     _nameController.dispose();
     super.dispose();
   }
+
+  //goes to add report screen then automatically fetches the data on return
   void _navigateToAddReportScreen() {
     Navigator.push(
       context,
@@ -53,25 +56,28 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       ),
     ).then((result) {
       if (result != null && result == true) {
-        // Refresh the screen or perform any other action after adding a report
         _fetchStudentData();
       }
     });
   }
 
-
+  // Fetches student data from the database
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
     final averageScore = await DatabaseHelper().queryAverageScore(widget.studentId);
+
+    // Update student status based on average score
     if(averageScore != null){
       String newStatus = changeStatus(averageScore);
       final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
     }
+
     // Convert the read-only list to a mutable list before sorting
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
 
+    // Update state with fetched data
     setState(() {
       _student = student;
       _reports = mutableReports;
@@ -81,38 +87,36 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     });
   }
 
-
+// Prepares data for chart plotting
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
-    for (var report in _reports) {
-      int id = report['id'];
-      double score = report['score'] != null ? report['score'].toDouble(): 0.0;
-      spots.add(FlSpot(id.toDouble(), score));
+    for (int i = 0; i < _reports.length; i++) {
+      var report = _reports[i];
+      if (report['score'] != null) {
+        double score = report['score'];
+        spots.add(FlSpot(i.toDouble(), score)); // Use the index as the X value
+      }
     }
     return spots;
   }
 
-  double _getMinX() {
-    if(_reports.isEmpty){
-      return 0.0;
+  //returns the report title to be displayed on graph
+  String _getReportTitle(int index) {
+    if (index >= 0 && index < _reports.length) {
+      return _reports[index]['title'] ?? '';
     }
-    int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
-    return min.toDouble();
+    return '';
   }
 
+  //gets the end x value from the graph
   double _getMaxX() {
-    if(_reports.isEmpty){
+    if (_reports.isEmpty) {
       return 0.0;
     }
-    int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
-    return max.toDouble();
+    return (_reports.length - 1).toDouble(); // Maximum X is the last index
   }
 
-  String _formatDate(double value) {
-    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    return '${date.day}/${date.month}';
-  }
-
+  // Shows tutorial dialog for the Edit Student Screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -122,11 +126,14 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     );
   }
 
+  // Updates student name in the database
   void _updateStudentName(String newName) async{
     await DatabaseHelper().updateStudentName(widget.studentId, newName);
     _fetchStudentData();
 
   }
+
+  // Shows delete confirmation dialog for reports
   void _showDeleteConfirmationDialog(int reportId) {
     showDialog(
       context: context,
@@ -154,6 +161,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     );
   }
 
+  // Deletes the student from the database
   void _deleteStudent() async {
     // Show a confirmation dialog
     bool confirmDelete = await showDialog(
@@ -181,6 +189,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     }
   }
 
+  // Deletes a specific report from the database
   void _deleteReport(int reportId) async{
     await DatabaseHelper().deleteReport(reportId);
     _fetchStudentData(); //refresh screen after delete
@@ -276,7 +285,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Average Score: ${_averageScore!.toStringAsFixed(2)}',
+                'Average Score: ${_averageScore!.toStringAsFixed(2)}', //displays the average score
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
@@ -287,6 +296,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               child: _reports.isEmpty
                   ? Center(
                 child: Column(
+                  //no reports available dialog
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
@@ -316,9 +326,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   ],
                 ),
               )
+
+              //displays graph on center of the screen
                   : LineChart(
                 LineChartData(
-                  minX: _getMinX(),
+                  minX: 0.0,
                   maxX: _getMaxX(),
                   minY: 0,
                   maxY: 100,
@@ -327,11 +339,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     bottomTitles: SideTitles(
                       showTitles: true,
                       getTitles: (value) {
-                        int index = value.toInt();
-                        if(value >=0 && value< _reports.length){
-                          return _reports[index]['title'] ?? '';
-                        }
-                        return '';
+                        return _getReportTitle(value.toInt());
                       },
                       reservedSize: 22,
                       margin: 10,
@@ -376,6 +384,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             ),
           ),
 
+          //displays reports section
           Expanded(
             child:Padding(
               padding: const EdgeInsets.all(8),
