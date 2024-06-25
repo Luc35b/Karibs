@@ -369,7 +369,7 @@ class _TestsScreenState extends State<TestsScreen> {
           backgroundColor: DeepPurple,
           foregroundColor: White,
           title: Row(
-            children:[
+            children: [
               Text('Exams'),
               SizedBox(width: 8), // Adjust spacing between title and icon
               IconButton(
@@ -379,19 +379,37 @@ class _TestsScreenState extends State<TestsScreen> {
                   _showTutorialDialog();
                 },
               ),
-            ]
+            ],
           ),
           leading: IconButton(
             icon: Icon(Icons.arrow_back), // Use the back arrow icon
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TeacherDashboard()),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    return TeacherDashboard();
+                  },
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    // Define the zoom-out animation
+                    var begin = 1.1; // Start with 1.5 times the normal size
+                    var end = 1.0; // End with the normal size
+                    var curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var scaleAnimation = animation.drive(tween);
+
+                    return ScaleTransition(
+                      scale: scaleAnimation,
+                      child: child,
+                    );
+                  },
+                ),
               );
             },
           ),
         ),
-        body: _isLoading
+          body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
           child:Column(

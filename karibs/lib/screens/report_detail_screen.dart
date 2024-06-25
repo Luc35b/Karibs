@@ -288,23 +288,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-      // appBar: AppBar(
-      //   title: Text('Report Details'),
-      //   backgroundColor: DeepPurple,
-      //   foregroundColor: White,
-      //   actions: [
-      //     TextButton(
-      //       onPressed: _navigateToEditReportScreen,
-      //       child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
-      //       style: TextButton.styleFrom(
-      //         side: BorderSide(color: Colors.white, width: 1),
-      //         shape: RoundedRectangleBorder(
-      //           borderRadius: BorderRadius.circular(5),
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
