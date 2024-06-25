@@ -89,60 +89,61 @@ class _AddReportScreenState extends State<AddReportScreen> {
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(labelText: 'Notes (optional)'),
-              keyboardType: TextInputType.multiline,
-              maxLines: 5,
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: scoreController,
-              decoration: const InputDecoration(labelText: 'Score (optional)'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(
-                        width: 2, color: DeepPurple),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: notesController,
+                decoration: const InputDecoration(labelText: 'Notes (optional)'),
+                keyboardType: TextInputType.multiline,
+                maxLines: 5,
+              ),
+              const SizedBox(height: 32),
+              TextField(
+                controller: scoreController,
+                decoration: const InputDecoration(labelText: 'Score (optional)'),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.deepPurple,
+                      side: const BorderSide(width: 2, color: Colors.deepPurple),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(false); // Cancel action
+                    },
+                    child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(false); // Cancel action
-                  },
-                  child: const Text('Cancel', style: TextStyle(fontSize: 20)),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(
-                        width: 2, color: DeepPurple),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.deepPurple,
+                      side: const BorderSide(width: 2, color: Colors.deepPurple),
+                    ),
+                    onPressed: _addReport,
+                    child: const Text('Add', style: TextStyle(fontSize: 20)),
                   ),
-                  onPressed: _addReport,
-                  child: const Text('Add', style: TextStyle(fontSize: 20)),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
