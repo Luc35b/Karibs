@@ -1,6 +1,6 @@
-# Karibs Foundation
- This is an educational application created to aid teachers with tracking and assessing students.
+# Karibs Foundation 
 
+This is an educational application created to aid teachers with tracking and assessing students.
 
 ## Team Members’ Contributions
 
