@@ -577,6 +577,12 @@ CREATE TABLE questions (
     );
   }
 
+  // Update subject
+  Future<void> updateSubject(int id, String newName) async {
+    final db = await database;
+    await db.update('subjects', {'name': newName}, where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<void> updateStudentTestCategoryScore(int studentTestId, int categoryId, Map<String,dynamic> updatedSTCategoryScore) async {
     final db = await database;
     await db.update(
@@ -835,6 +841,50 @@ CREATE TABLE questions (
     Database db = await database;
     return await db.delete('students', where: 'id = ?', whereArgs: [id]);
   }
+  // Delete subject
+  Future<void> deleteSubject(int subjectId) async {
+    final db = await DatabaseHelper().database;
+    int defaultSubjectId = await getDefaultSubjectId();
+
+    // Update classes and tests to set their subject to "None"
+    await db.update(
+      'classes',
+      {'subject_id': defaultSubjectId},
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    await db.update(
+      'tests',
+      {'subject_id': defaultSubjectId},
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
+    // Now delete the subject
+    await db.delete(
+      'subjects',
+      where: 'id = ?',
+      whereArgs: [subjectId],
+    );
+  }
+
+  Future<int> getDefaultSubjectId() async {
+    final db = await DatabaseHelper().database;
+    List<Map<String, dynamic>> result = await db.query(
+      'subjects',
+      columns: ['id'],
+      where: 'name = ?',
+      whereArgs: ['None'],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['id'];
+    } else {
+      throw Exception('Default subject "None" does not exist.');
+    }
+  }
+
 
   Future<int> deleteReport(int id) async {
     Database db = await database;

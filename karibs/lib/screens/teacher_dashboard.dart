@@ -21,7 +21,7 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   List<Map<String, dynamic>> _classes = [];
   List<Map<String, dynamic>> _tests = [];
-  final List<Map<String, dynamic>> _subjects = [];
+  List<Map<String, dynamic>> _subjects = [];
 
 
 
@@ -42,6 +42,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     'Science',
     'History',
     'English',
+    'None'
   ];
 
   bool _isLoading = true;
@@ -64,6 +65,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _getOrCreateSubjectId('Science');
     _getOrCreateSubjectId('History');
     _getOrCreateSubjectId('English');
+    _getOrCreateSubjectId('None');
   }
 
   Future<void> _fetchSubjects() async {
@@ -76,6 +78,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
 
     setState(() {
+      _subjects = sData;
       subjectsList.clear(); // Clear existing subjectsList
       subjectsList.addAll(fetchedSubjects); // Add fetched subject names to subjectsList
     });
@@ -92,6 +95,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     });
     print(_classes);
   }
+
   void _deleteClass(int classId) async{
     bool confirmDelete = await showDialog(
       context: context,
@@ -281,6 +285,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         },
                         icon: const Icon(Icons.add),
                       ),
+                      IconButton(
+                        onPressed: () async {
+                          await _showManageSubjectsDialog();
+                          _fetchSubjects();
+                        },
+                        icon: const Icon(Icons.remove),
+                      ),
                     ],
                   ),
                 ],
@@ -394,6 +405,129 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // });
   }
 
+  Future<void> _showManageSubjectsDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Manage Subjects'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: subjectsList.length,
+                  itemBuilder: (context, index) {
+                    bool isNoneSubject = subjectsList[index] == 'None';
+                    return ListTile(
+                      title: Text(subjectsList[index]),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: isNoneSubject ? null : () async {
+                              await _showEditSubjectDialog(index, subjectsList[index]);
+                            },
+                            color: isNoneSubject ? Colors.grey : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: isNoneSubject ? null : () async {
+                              await _showConfirmDeleteDialog(index);
+                            },
+                            color: isNoneSubject ? Colors.grey : Colors.red,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    _showAddClassDialog();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+
+
+  Future<String?> _showEditSubjectDialog(int index, String currentName) async {
+    TextEditingController _nameController = TextEditingController(text: currentName);
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Subject'),
+          content: TextField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: 'Subject Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await DatabaseHelper().updateSubject(_subjects[index]['id'], _nameController.text);
+                Navigator.of(context).pop(_nameController.text.trim());
+                await _fetchSubjects(); // Refresh the subjects list
+                Navigator.of(context).pop(); // Close the manage dialog
+                _showManageSubjectsDialog(); // Reopen the manage dialog
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<bool?> _showConfirmDeleteDialog(int index) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Subject'),
+          content: const Text('Are you sure you want to delete this subject?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                    await DatabaseHelper().deleteSubject(_subjects[index]['id']);
+                    Navigator.of(context).pop(true);
+                    await _fetchSubjects(); // Refresh the subjects list
+                    Navigator.of(context).pop(); // Close the manage dialog
+                    _showManageSubjectsDialog();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   void _showEditClassDialog(int classId, String currentClassName, String currentSubjectName) {
     final TextEditingController classNameController = TextEditingController(text: currentClassName);
     String selectedClass = currentClassName; // Track selected class
@@ -484,6 +618,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           }
                         },
                         icon: const Icon(Icons.add),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          await _showManageSubjectsDialog();
+                          _fetchSubjects();
+                        },
+                        icon: const Icon(Icons.remove),
                       ),
                     ],
                   ),
