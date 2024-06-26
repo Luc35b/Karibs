@@ -389,7 +389,6 @@ class PdfGenerator {
     }
   }
 
-
   String generateFillerString(String name, String score) { // Filler string for between name and score
     final maxLength = 90;
     int remainingLength = 0;

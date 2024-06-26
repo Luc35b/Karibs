@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/add_question_screen.dart';
@@ -360,6 +364,167 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  Future<void> _importPDF() async {
+    // Use a file picker to choose a PDF file
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      String filePath = result.files.single.path!;
+      // Call the import and validation method
+      await parsePDFAndInsertIntoDatabase(filePath);
+    }
+  }
+
+// Function to parse PDF content and format data for database insertion
+  Future<void> parsePDFAndInsertIntoDatabase(String filePath) async {
+    final File file = File(filePath);
+    final data = await file.readAsBytes();
+
+    // Parse PDF content using pdf package
+    final pdf = pw.Document();
+    pdf.addPage(pw.Page(build: (pw.Context context) {
+      return pw.Center(
+        child: pw.Text('Parsing...'),
+      );
+    }));
+
+    // Write the parsed content to a temporary file
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/parsed.pdf');
+    await tempFile.writeAsBytes(await pdf.save());
+
+    // Read the text content from the temporary file
+    final content = await tempFile.readAsString();
+
+    // Initialize variables to store parsed data
+    String testTitle = '';
+    int subjectId = 0;
+    List<Map<String, dynamic>> questionsData = [];
+
+    // Validate the import format
+    if (!content.startsWith('_Import Format_')) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('PDF format does not match the required structure.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      throw Exception('Invalid PDF format');
+    }
+
+    // Split the content into lines
+    final lines = content.split('\n');
+
+    // Example parsing logic (replace with your actual PDF parsing logic)
+    for (var line in lines) {
+      // Example: Parse test title and subject ID
+      if (line.startsWith('')) {
+        var header = line.split(',').map((e) => e.trim()).toList();
+        testTitle = header[0].split(':')[1].trim();
+        subjectId = int.tryParse(header[1].split(':')[1].trim()) ?? 0;
+      }
+
+      // Example: Parse questions and choices
+      if (line.startsWith('Q. ')) {
+        var questionParts = line.split(',').map((e) => e.trim()).toList();
+        if (questionParts.length >= 4) {
+          var questionText = questionParts[1];
+          var type = questionParts[2];
+          var categoryId = int.tryParse(questionParts[3]) ?? 0;
+          var essaySpaces = int.tryParse(questionParts[4]) ?? null;
+
+          // Collect choices for the question
+          List<Map<String, dynamic>> choices = [];
+          for (var j = lines.indexOf(line) + 1; j < lines.length; j++) {
+            var choiceLine = lines[j].trim();
+            if (choiceLine.startsWith('A.')) {
+              var choiceParts = choiceLine.split(',').map((e) => e.trim()).toList();
+              if (choiceParts.length >= 3) {
+                var choiceText = choiceParts[1];
+                var isCorrect = choiceParts[2].toLowerCase() == 'true';
+                choices.add({
+                  'choice_text': choiceText,
+                  'is_correct': isCorrect ? 1 : 0,
+                });
+              }
+            } else {
+              break; // End of choices
+            }
+          }
+
+          // Store question data
+          questionsData.add({
+            'text': questionText,
+            'type': type,
+            'category_id': categoryId,
+            'essay_spaces': essaySpaces,
+            'choices': choices,
+          });
+        }
+      }
+    }
+
+    await insertTestData(testTitle, subjectId, questionsData);
+  }
+
+  Future<void> insertTestData(String testTitle, int subjectId, List<Map<String, dynamic>> questionsData) async {
+    // Replace with your actual database insertion logic
+    int tId = await DatabaseHelper().insertTest({'title': testTitle, 'subject_id': subjectId});
+
+    for (var questionData in questionsData) {
+      await insertQuestion(tId, questionData);
+    }
+  }
+
+// Example function to insert question into questions table
+  Future<void> insertQuestion(int testId, Map<String, dynamic> questionData) async {
+    int questionId = await DatabaseHelper().insertQuestion({
+      'text': questionData['text'],
+      'type': questionData['type'],
+      'category_id': questionData['category_id'],
+      'test_id': testId,
+      'essay_spaces': questionData['essay_spaces'],
+    });
+
+    await insertQuestionChoices(questionId, questionData['choices']);
+  }
+
+// Example function to insert question choices into question_choices table
+  Future<void> insertQuestionChoices(int questionId, List<Map<String, dynamic>> choices) async {
+    for (var choice in choices) {
+      await DatabaseHelper().insertQuestionChoice({
+        'question_id': questionId,
+        'choice_text': choice['choice_text'],
+        'is_correct': choice['is_correct'],
+      });
+    }
+  }
+
+
+
+
+
+  /*Future<void> importAndValidatePDF(String filePath) async {
+    File file = File(filePath);
+
+    if () {
+
+    } else {
+      // Show error Snackbar indicating incorrect format
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('PDF format does not match the required structure.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+    }
+  }*/
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -371,7 +536,7 @@ class _TestsScreenState extends State<TestsScreen> {
           title: Row(
             children:[
               Text('Exams'),
-              SizedBox(width: 8), // Adjust spacing between title and icon
+              SizedBox(width: 8),
               IconButton(
                 icon: Icon(Icons.help_outline),
                 onPressed: () {
@@ -382,7 +547,7 @@ class _TestsScreenState extends State<TestsScreen> {
             ]
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back), // Use the back arrow icon
+            icon: Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.push(
                 context,
@@ -390,6 +555,16 @@ class _TestsScreenState extends State<TestsScreen> {
               );
             },
           ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.file_download),
+              onPressed: _importPDF,
+            ),
+            IconButton(
+              icon: Icon(Icons.file_upload),
+              onPressed: _importPDF,
+            ),
+          ],
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
