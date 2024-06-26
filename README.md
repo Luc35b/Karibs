@@ -1,11 +1,14 @@
-# Karibs - Educational application specifically for beginner Ghanaian English learners.
+# Karibs - Educational application to aid teachers with tracking and assessing students.
 
 
 ## Team Members’ Contributions
 | Team Member     | Main Contribution                                                                                      |
 |-----------------|--------------------------------------------------------------------------------------------------------|
 | Lucas Baraya    |  |
-| Kate Schwitz    |  |
+| Kate Schwitz    | Class Screen: Filter/Search/Sort/Add/Delete
+Home Screen & Formatting
+Page Routing
+|
 | Sophie Shah     |  |
 | Aryaan Verma    |  |
 
@@ -15,4 +18,4 @@
 
 
 ## Demo Video
-
+https://youtu.be/YfTSlheaBkc
