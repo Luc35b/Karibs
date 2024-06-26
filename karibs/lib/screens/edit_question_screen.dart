@@ -98,7 +98,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         }
       }
 
-      // Update question details in the database
+      /// Update question details in the database
       await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,

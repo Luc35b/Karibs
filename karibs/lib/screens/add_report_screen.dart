@@ -18,11 +18,15 @@ class _AddReportScreenState extends State<AddReportScreen> {
   final TextEditingController notesController = TextEditingController();
   final TextEditingController scoreController = TextEditingController();
 
+  /// Function to add a new report to the database.
+  /// Validates input and shows appropriate error messages if conditions are not met.
   void _addReport() async {
     String scoreText = scoreController.text;
     double? score = scoreText.isNotEmpty ? double.tryParse(scoreText) : null;
+    // Validate title is not empty
     if (titleController.text.isNotEmpty) {
       if( score != null && (score < 0 || score > 100)){
+        // Validate score is within the valid range
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Score must be a number between 0 and 100'),
@@ -31,6 +35,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
         );
         return;
       }
+      // Validate that either notes or score is provided
       if(notesController.text.isEmpty && scoreController.text.isEmpty){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -41,6 +46,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
         return;
       }
 
+      // Insert report into the database
       await DatabaseHelper().insertReport({
         'date': DateTime.now().toIso8601String(),
         'title': titleController.text,
@@ -53,6 +59,7 @@ class _AddReportScreenState extends State<AddReportScreen> {
     }
   }
 
+  /// Function to show a tutorial dialog when the help icon is pressed.
   void _showTutorialDialog() {
     showDialog(
       context: context,

@@ -34,6 +34,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     _fetchReport();
   }
 
+  /// Fetches the report data from the database and updates the state
   void _fetchReport() async {
     var x = await _databaseHelper.queryReport(widget.reportId);
 
@@ -59,12 +60,13 @@ class _EditReportScreenState extends State<EditReportScreen> {
     super.dispose();
   }
 
+  /// Saves the changes made to the report
   void _saveChanges() async {
     String newTitle = _titleController.text;
     String newNotes = _notesController.text;
     double newScore = double.tryParse(_scoreController.text) ?? report['score'];
 
-
+    /// Updates the report details in the database
     await _databaseHelper.updateReportTitle(widget.reportId, newTitle);
     await _databaseHelper.updateReportNotes(widget.reportId, newNotes);
     if( newScore != null && (newScore < 0 || newScore > 100)){
@@ -83,6 +85,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     Navigator.of(context).pop(true);
   }
 
+  /// Deletes the report after confirmation
   void _deleteReport() async {
     bool confirmDelete = await showDialog(
       context: context,
@@ -110,6 +113,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     }
   }
 
+  /// Shows the tutorial dialog for the edit report screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
