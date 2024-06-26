@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
@@ -286,7 +285,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
-            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
+            child: Text('EDIT', style: TextStyle(color: White, fontWeight: FontWeight.bold)),
           ),
         ],
         backgroundColor: DeepPurple,
@@ -335,12 +334,10 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 child: ElevatedButton(
                   onPressed: _navigateToViewTestGrades,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(
+                        width: 2, color: DeepPurple),
                   ),
                   child: const Text(
                     'View Test Grade',

@@ -215,7 +215,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
 
   // Generates and prints a PDF with test scores
   void _generateAndPrintPdf() {
-    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
+    PdfGenerator(context).generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
 
   // Shows a tutorial dialog for grading
@@ -374,62 +374,64 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(
-                        width: 2, color: DeepPurple),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 12),
-                    // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: ElevatedButton(
+                    onPressed: (_selectedStudentId != null &&
+                        _questions.isNotEmpty &&
+                        !_gradedStudentIds.contains(_selectedStudentId) &&
+                        !_questions.any((question) => questionCorrectness[question['id']] == 0))
+                        ? () {
+                      _saveGradingResults();
+                    }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
+                    child: const Text('Save Grade'),
                   ),
-                  onPressed: (_selectedStudentId != null &&
-                      _questions.isNotEmpty &&
-                      !_gradedStudentIds.contains(_selectedStudentId) &&
-                      !_questions.any((question) => questionCorrectness[question['id']] == 0))
-                      ? () {
-                    _saveGradingResults();
-                  }
-                      : null,
-                  child: const Text('Save Grade'),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(
-                        width: 2, color: DeepPurple),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 12),
-                    // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _goToTeacherDashboard(widget.classId);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
+                    child: const Text('Go to Class'),
                   ),
-                  onPressed: () {
-                    _goToTeacherDashboard(widget.classId);
-                  },
-                  child: const Text('Go to Class'),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: DeepPurple,
-                    side: const BorderSide(
-                        width: 2, color: DeepPurple),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 12),
-                    // Button padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: IconButton(
+                    onPressed: _generateAndPrintPdf,
+                    icon: Icon(Icons.print),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: White,
+                      foregroundColor: DeepPurple,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      side: const BorderSide(width: 1, color: DeepPurple),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
+                    color: DeepPurple,
+                    iconSize: 24,
                   ),
-                  onPressed: _generateAndPrintPdf,
-                  child: Icon(Icons.print),
                 ),
               ],
             ),

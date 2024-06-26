@@ -280,7 +280,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       return;
     }
 
-    final pdfGenerator = PdfGenerator();
+    final pdfGenerator = PdfGenerator(context);
     double averageGrade = 0;
     final scores = _students
         .map<double?>((student) => student['average_score'])

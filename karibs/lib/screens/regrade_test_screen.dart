@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karibs/main.dart';
 import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -383,6 +384,16 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
                           _saveRegradingResults(); // Save regrading results
                         }
                             : null,
+                        style: ElevatedButton.styleFrom(
+                    backgroundColor: White,
+                    foregroundColor: DeepPurple,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    side: const BorderSide(width: 1, color: DeepPurple),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                         child: const Text('Save Regrade'),
                       ),
                       const SizedBox(width: 42), // Add some space between the buttons
@@ -391,6 +402,16 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
                       onPressed: () {
                         _navigateToStudentInfoScreen(_selectedStudentId!);
                       },
+                      style: ElevatedButton.styleFrom(
+                    backgroundColor: White,
+                    foregroundColor: DeepPurple,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    side: const BorderSide(width: 1, color: DeepPurple),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                       child: const Text('Return to Student'),
                     ),
                   ],

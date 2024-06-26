@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'teacher_dashboard.dart';
 import 'package:karibs/overlay.dart';
 
@@ -450,7 +448,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
                   child: Text(
                     'MY EXAMS',
-                    style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold,color: White),
                   ),
                 ),
                 Container(
@@ -472,8 +470,8 @@ class _TestsScreenState extends State<TestsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('No exams available.', style: GoogleFonts.raleway(fontSize: 32)),
-                        Text('Please add!', style: GoogleFonts.raleway(fontSize: 32)),
+                        Text('No exams available.', style: TextStyle(fontSize: 32)),
+                        Text('Please add!', style: TextStyle(fontSize: 32)),
                         const SizedBox(height: 20),
 
                       ],
@@ -547,7 +545,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
+                          Text('ADD EXAM', style: TextStyle(fontSize: 28)),
                           const SizedBox(width: 8),
                           const Icon(Icons.add),
                         ],

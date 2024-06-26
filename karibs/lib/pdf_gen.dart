@@ -1,13 +1,18 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:karibs/preview_pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:printing/printing.dart';
-//import 'package:screenshot/screenshot.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:karibs/preview_pdf.dart';
 
 class PdfGenerator {
+  final BuildContext context;
+
+  PdfGenerator(this.context);
 
   Future<List<Map<String, dynamic>>> _getOrderedQuestions(int testId) async {
     final data = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
@@ -20,6 +25,7 @@ class PdfGenerator {
 
     return data;
   }
+
   Future<void> generateTestQuestionsPdf(int testId, String testTitle) async {
     final pdf = pw.Document();
     final questions = await _getOrderedQuestions(testId);
@@ -57,27 +63,27 @@ class PdfGenerator {
                         pw.Column(
                           children: List.generate(question['essay_spaces'] ?? 1, (_) {
                             return pw.Container(
-                              margin: const pw.EdgeInsets.only(top: 15), // Increase top margin for more spacing
+                              margin: const pw.EdgeInsets.only(top: 15),
                               padding: const pw.EdgeInsets.only(bottom: 1),
                               decoration: const pw.BoxDecoration(
                                 border: pw.Border(
                                   bottom: pw.BorderSide(width: 0.5),
                                 ),
                               ),
-                              height: 20, // Add a height to make the line more visible
+                              height: 20,
                             );
                           }),
                         ),
                       if (question['type'] == 'Fill in the Blank')
                         pw.Container(
-                          margin: const pw.EdgeInsets.only(top: 10, bottom: 10), // Add margins for spacing
+                          margin: const pw.EdgeInsets.only(top: 10, bottom: 10),
                           padding: const pw.EdgeInsets.only(bottom: 1),
                           decoration: const pw.BoxDecoration(
                             border: pw.Border(
                               bottom: pw.BorderSide(width: 0.5),
                             ),
                           ),
-                          height: 20, // Add a height to make the line more visible
+                          height: 20,
                         ),
                       pw.SizedBox(height: 20),
                     ],
@@ -91,11 +97,16 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/$testTitle - Questions.pdf');
+    final filePath = '${output.path}/$testTitle - Questions.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Questions.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Questions.pdf'),
+      ),
+    );
   }
 
   Future<void> generateTestAnswerKeyPdf(int testId, String testTitle) async {
@@ -148,12 +159,18 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/$testTitle - Answer Key.pdf');
+    final filePath = '${output.path}/$testTitle - Answer Key.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Answer Key.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Answer Key.pdf'),
+      ),
+    );
   }
+
 
   Future<void> generateStudentReportPdf(Map<String, dynamic> student, List<Map<String, dynamic>> reports) async {
     final pdf = pw.Document();
@@ -177,7 +194,7 @@ class PdfGenerator {
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                          pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                          pw.Text('Score: ${report['score']?.toStringAsFixed(2) ?? 'N/A'}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
                         ],
                       ),
                       pw.SizedBox(height: 5),
@@ -194,21 +211,23 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/${student['name']} - Report.pdf');
+    final filePath = '${output.path}/${student['name']} - Report.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '${student['name']} - Report.pdf'),
+      ),
+    );
   }
-
 
   Future<void> generateClassReportPdf(String className, double? averageGrade, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
 
-    // Create a copy of the students list before sorting
     final List<Map<String, dynamic>> sortedStudents = List.from(students);
 
-    // Sort students by name alphabetically
     sortedStudents.sort((a, b) => a['name'].compareTo(b['name']));
 
     pdf.addPage(
@@ -219,17 +238,21 @@ class PdfGenerator {
               children: [
                 pw.Text('Class Name: $className', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
-                pw.Text('Class Grade Average: ${(averageGrade ?? 0).toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)), // Check if averageGrade is null
+                pw.Text('Class Grade Average: ${(averageGrade ?? 0).toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 18)),
                 pw.SizedBox(height: 10),
                 pw.Text('Students:', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 10),
                 ...sortedStudents.map((student) {
                   final averageScore = student['average_score'];
-                  final scoreText = (averageScore != null && averageScore is num) ? averageScore.toStringAsFixed(2) : '--'; // Check if averageScore is null and of type num
+                  final scoreText = (averageScore != null && averageScore is num) ? averageScore.toStringAsFixed(2) : '--';
                   return pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text(student['name'] ?? '', style: const pw.TextStyle(fontSize: 16)), // Add a null check for student name
+                      pw.Text(student['name'] ?? '', style: const pw.TextStyle(fontSize: 16)),
+                      pw.Text(
+                        '.' * ((80 - (student['name'] ?? '').length).round()),
+                        style: const pw.TextStyle(fontSize: 16),
+                      ),
                       pw.Text(scoreText, style: const pw.TextStyle(fontSize: 16)),
                     ],
                   );
@@ -245,8 +268,12 @@ class PdfGenerator {
     final file = File('${output.path}/$className - Report.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    await Printing.sharePdf(bytes: await pdf.save(), filename: '$className - Report.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '$className - Report.pdf'),
+      ),
+    );
   }
 
   Future<void> generateIndividualReportPdf(Map<String, dynamic> student, Map<String, dynamic> report) async {
@@ -267,7 +294,7 @@ class PdfGenerator {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text('Title: ${report['title']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Score: ${report['score']}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Score: ${report['score']?.toStringAsFixed(2) ?? 'N/A'}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
                 pw.SizedBox(height: 5),
@@ -283,8 +310,12 @@ class PdfGenerator {
     final file = File('${output.path}/${student['name']} - ${report['title']} Report.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - ${report['title']} Report.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '${student['name']} - ${report['title']} Report.pdf'),
+      ),
+    );
   }
 
   Future<void> generateTestScoresPdf(int testId, String testTitle, List<Map<String, dynamic>> students) async {
@@ -313,16 +344,19 @@ class PdfGenerator {
                     children: [
                       pw.Expanded(
                         child: pw.Text(
-                          '${student['name']}',
+                          '${student['name']}  ',
                           style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
                       pw.Text(
-                        generateFillerString('${student['name']}', '${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '--'}'),
+                        generateFillerString(
+                          '${student['name']}  ',
+                          '   ${_formatScore(studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'])}',
+                        ),
                         style: const pw.TextStyle(fontSize: 16),
                       ),
                       pw.Text(
-                        '   ${studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'] ?? '  --'}', // Check for null and display '--'
+                        '   ${_formatScore(studentScores.firstWhere((score) => score['student_id'] == student['id'], orElse: () => {'total_score': null})['total_score'])}', // Check for null and display '--'
                         style: const pw.TextStyle(fontSize: 16),
                       ),
                     ],
@@ -338,13 +372,32 @@ class PdfGenerator {
     final file = File('${output.path}/$testTitle - Scores.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Scores.pdf');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '$testTitle - Scores.pdf'),
+      ),
+    );
   }
 
-  String generateFillerString(String name, String score) {
-    // Calculate the remaining length after name and score
-    final maxLength = 94;
-    final remainingLength = maxLength - name.length - score.length - 9;
+
+  String _formatScore(dynamic score) {
+    if (score == null) {
+      return '   --   ';
+    } else {
+      return double.tryParse(score.toString())?.toStringAsFixed(2) ?? '   --   ';
+    }
+  }
+
+
+  String generateFillerString(String name, String score) { // Filler string for between name and score
+    final maxLength = 90;
+    int remainingLength = 0;
+    if(score == '   --   '){
+      remainingLength = maxLength - name.length - score.length + 10;
+    }else {
+      remainingLength = maxLength - name.length - score.length;
+    }
     return '.' * remainingLength;
   }
 }
