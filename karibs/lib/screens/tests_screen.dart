@@ -27,6 +27,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchSubjects();
   }
 
+  //fetch tests data from the database
   Future<void> _fetchTests() async {
     final dbHelper = DatabaseHelper();
     final data = await dbHelper.queryAllTests();
@@ -35,6 +36,7 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //fetch subjects data from the database
   Future<void> _fetchSubjects() async {
     final dbHelper = DatabaseHelper();
     final data = await dbHelper.queryAllSubjects();
@@ -44,6 +46,7 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //adds a new test to the database
   void _addTest(String testName, int subjectId) async {
     if (_tests.any((test) => test['title'] == testName)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
@@ -60,7 +63,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchTests();
   }
 
-
+  //show dialog for adding a new test
   void _showAddTestDialog({String? testName, int? subjectId}) {
 
     final TextEditingController testNameController = TextEditingController(text: testName);
@@ -137,6 +140,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //show dialog for adding a new subject
   void _showAddSubjectDialog([int? testId, String? testName]) {
     final TextEditingController subjectNameController = TextEditingController();
 
@@ -196,6 +200,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  // Method to show dialog for editing test name or subject
   void _showEditTestDialog(int testId, String currentTitle, int currentSubjectId) {
     final TextEditingController testNameController = TextEditingController(text: currentTitle);
 
@@ -269,6 +274,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  // Method to edit test name in the database
   void _editTestName(int testId, String newTitle, int subjectId) async {
     if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
@@ -285,6 +291,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchTests();
   }
 
+  //show confirmation dialog
   void _showDeleteConfirmationDialog(int testId) {
     showDialog(
       context: context,
@@ -312,11 +319,13 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //deletes test from database
   void _deleteTest(int testId) async {
     await DatabaseHelper().deleteTest(testId);
     _fetchTests();
   }
 
+  //navigates to test detail screen
   void _navigateToTestDetailScreen(int testId, String testTitle, int subjId) {
     Navigator.push(
       context,
@@ -330,6 +339,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //change the order of tests displayed
   void _updateTestOrder(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {
@@ -343,12 +353,14 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //change the test order in the database
   Future<void> _updateOrderInDatabase() async {
     for (int i = 0; i < _tests.length; i++) {
       await DatabaseHelper().updateTestOrder(_tests[i]['id'], i);
     }
   }
 
+  //show tutorial dialog for tests screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -384,6 +396,7 @@ class _TestsScreenState extends State<TestsScreen> {
             onPressed: () {
               Navigator.push(
                 context,
+                //zoom out page animation
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) {
                     return TeacherDashboard();
@@ -485,6 +498,7 @@ class _TestsScreenState extends State<TestsScreen> {
                               ),
                             ],
                           ),
+                          //displays exams in the test dashboard
                           child: ListTile(
                             key: ValueKey(_tests[index]['id']),
                             title: Text(_tests[index]['title']),

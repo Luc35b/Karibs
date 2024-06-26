@@ -19,6 +19,7 @@ class StudentInfoScreen extends StatefulWidget {
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
 }
 
+///returns color based on student score
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
     return const Color(0xFFBBFABB);
@@ -43,6 +44,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
+  ///navigates to add report screen
   void _navigateToAddReportScreen() {
     Navigator.push(
       context,
@@ -56,6 +58,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///navigates to edit student screen
   void _navigateToEditStudentScreen() {
     Navigator.push(
       context,
@@ -69,6 +72,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///fetches the student information from the database
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
@@ -77,6 +81,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       String newStatus = changeStatus(averageScore);
       final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
     }
+    //sort reports by date
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
     setState(() {
@@ -87,6 +92,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///adds report to database
   void _addReport(String title, String notes, int? score) async {
     await DatabaseHelper().insertReport({
       'date': DateTime.now().toIso8601String(),
@@ -98,6 +104,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
+  ///generates pdf of all reports under a student
   void _generatePdfAllReports() async {
     if (_student != null && _reports.isNotEmpty) {
       await PdfGenerator(context).generateStudentReportPdf(_student!, _reports);
@@ -112,6 +119,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///lets users select an individual report to be saved
   void _selectIndividualReport() {
     if(_reports.isNotEmpty) {
       showDialog(
@@ -149,6 +157,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///generates a pdf of the selected individual report
   void _generatePdfIndividualReport(Map<String, dynamic> report) async {
     if (_student != null && report.isNotEmpty) {
       await PdfGenerator(context).generateIndividualReportPdf(_student!, report);
@@ -163,6 +172,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///displays tutorial dialog for the student info screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -172,7 +182,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     );
   }
 
-
+  ///adds report data to the graph
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
     for (int i = 0; i < _reports.length; i++) {
@@ -185,6 +195,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     return spots;
   }
 
+  ///returns the report title to be displayed on the x-axis of the graph
   String _getReportTitle(int index) {
     if (index >= 0 && index < _reports.length) {
       return _reports[index]['title'] ?? '';
@@ -192,6 +203,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     return '';
   }
 
+  ///returns the maximum x-value
   double _getMaxX() {
     if (_reports.isEmpty) {
       return 0.0;

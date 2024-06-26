@@ -33,6 +33,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     _fetchCategories();
   }
 
+  /// Fetches question categories for the subject from the database.
   Future<void> _fetchCategories() async {
     var cats = await DatabaseHelper().getCategoriesForSubject(widget.subjectId);
     setState(() {
@@ -40,6 +41,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     });
   }
 
+  /// Loads the question details from the database based on [widget.questionId].
   void _loadQuestion() async {
     var question = await DatabaseHelper().queryQuestion(widget.questionId);
     var choices = await DatabaseHelper().queryQuestionChoices(widget.questionId);
@@ -63,6 +65,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     });
   }
 
+  /// Updates the question in the database based on user input.
   void _updateQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null) {
       if (_selectedType == 'Multiple Choice') {
@@ -95,6 +98,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         }
       }
 
+      /// Update question details in the database
       await DatabaseHelper().updateQuestion(widget.questionId, {
         'text': _textController.text,
         'type': _selectedType,
@@ -102,8 +106,8 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         'essay_spaces': _selectedType == 'Essay' ? _essaySpaces : null, // Save essay spaces if type is 'Essay'
       });
 
+      // Delete existing question choices and insert new ones based on question type
       await DatabaseHelper().deleteQuestionChoices(widget.questionId);
-
       if (_selectedType == 'Multiple Choice') {
         for (int i = 0; i < _choiceControllers.length; i++) {
           await DatabaseHelper().insertQuestionChoice({
@@ -120,9 +124,11 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
         });
       }
 
+      // Notify parent widget that question has been updated and close the screen
       widget.onQuestionUpdated();
       Navigator.of(context).pop();
     } else {
+      // Show error message if any required field is empty
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill out all fields'),
@@ -133,6 +139,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     }
   }
 
+  /// Adds a new choice field for multiple-choice questions.
   void _addChoiceField() {
     setState(() {
       _choiceControllers.add(TextEditingController());
@@ -140,6 +147,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     });
   }
 
+  /// Removes a choice field for multiple-choice questions at the given [index].
   void _removeChoiceField(int index) {
     setState(() {
       _choiceControllers.removeAt(index);
@@ -147,6 +155,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     });
   }
 
+  /// Displays a dialog to add a new category for the question.
   void _showAddCategoryDialog() {
     final TextEditingController categoryNameController = TextEditingController();
 
@@ -181,11 +190,13 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     );
   }
 
+  /// Adds a new category with the provided [categoryName] to the database.
   void _addCategory(String categoryName) async {
     await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
     _fetchCategories();
   }
 
+  /// Displays a tutorial dialog to guide users on editing questions.
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -198,171 +209,150 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back), // Use the back arrow icon
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Text('Edit Question'),
-            SizedBox(width: 8), // Adjust spacing between title and icon
-            IconButton(
-              icon: Icon(Icons.help_outline),
-              onPressed: () {
-                // Show tutorial dialog
-                _showTutorialDialog();
-              },
-            ),
-          ],
-        ),
-        backgroundColor: DeepPurple,
-        foregroundColor: White,
-        automaticallyImplyLeading: false,
-      ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Stack(
+        appBar: AppBar(
+          title: Row(
             children: [
-        SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 80.0),
-        child: Padding(
-        padding: const EdgeInsets.all(16.0),
-    child: Column(
-    children: [
-    TextField(
-    controller: _textController,
-    decoration: const InputDecoration(labelText: 'Question Text', hintText: 'The sky is ____'),
-    ),
-    DropdownButtonFormField<String>(
-    value: _selectedType,
-    items: _questionTypes.map((type) {
-    return DropdownMenuItem<String>(
-    value: type,
-    child: Text(type),
-    );
-    }).toList(),
-    onChanged: (value) {
-    setState(() {
-    _selectedType = value;
-    });
-    },
-    decoration: const InputDecoration(labelText: 'Question Type'),
-    ),
-      Row(
-        children: [
-          Expanded(
-            child: DropdownButtonFormField<int>(
-              value: _selectedCategoryId,
-              items: _questionCategories.map((category) {
-                return DropdownMenuItem<int>(
-                  value: category['id'],
-                  child: Text(category['name']),
+              IconButton(
+                icon: Icon(Icons.arrow_back), // Use the back arrow icon
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const Text('Edit Question'),
+              SizedBox(width: 8), // Adjust spacing between title and icon
+              IconButton(
+                icon: Icon(Icons.help_outline),
+                onPressed: () {
+                  // Show tutorial dialog
+                  _showTutorialDialog();
+                },
+              ),
+            ],
+          ),
+          backgroundColor: Colors.deepPurple, // Set app bar background color
+          foregroundColor: Colors.white, // Set app bar foreground color
+          automaticallyImplyLeading: false, // Disable automatic back button
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator()) // Show loading indicator while fetching data
+            : SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+              TextField(
+              controller: _textController,
+              decoration: const InputDecoration(labelText: 'Question Text'),
+            ),
+            const SizedBox(height: 16.0),
+            DropdownButtonFormField<String>(
+              value: _selectedType,
+              items: _questionTypes.map((type) {
+                return DropdownMenuItem<String>(
+                  value: type,
+                  child: Text(type),
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedCategoryId = value;
+                  _selectedType = value;
+                  if (_selectedType == 'Multiple Choice') {
+                    _choiceControllers = [_choiceControllers.isNotEmpty ? _choiceControllers[0] : TextEditingController()];
+                    _correctChoices = [_correctChoices.isNotEmpty ? _correctChoices[0] : false];
+                  }
                 });
               },
-              decoration: const InputDecoration(labelText: 'Question Category'),
+              decoration: const InputDecoration(labelText: 'Question Type'),
             ),
+            const SizedBox(height: 16.0),
+            if (_selectedType == 'Multiple Choice')
+        Column(
+    children: [
+    for (int i = 0; i < _choiceControllers.length; i++)
+    Row(
+        children: [
+        Expanded(
+        child: TextField(
+        controller: _choiceControllers[i],
+        decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
+
+          ),
+        ),
+          Checkbox(
+            value: _correctChoices[i],
+            onChanged: (value) {
+              setState(() {
+                _correctChoices[i] = value!;
+              });
+            },
           ),
           IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddCategoryDialog,
+            icon: Icon(Icons.delete),
+            onPressed: () => _removeChoiceField(i),
           ),
         ],
+    ),
+      ElevatedButton(
+        onPressed: _addChoiceField,
+        child: const Text('Add Choice'),
       ),
-      if (_selectedType == 'Multiple Choice')
-        Column(
-          children: [
-            for (int i = 0; i < _choiceControllers.length; i++)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _choiceControllers[i],
-                      decoration: InputDecoration(labelText: 'Choice ${i + 1}'),
-                    ),
+    ],
+        ),
+                if (_selectedType == 'Fill in the Blank')
+                  TextField(
+                    controller: _correctAnswerController,
+                    decoration: const InputDecoration(labelText: 'Correct Answer'),
                   ),
-                  Checkbox(
-                    value: _correctChoices[i],
+                if (_selectedType == 'Essay')
+                  DropdownButtonFormField<int>(
+                    value: _essaySpaces,
+                    items: List.generate(10, (index) => index + 1).map((num) {
+                      return DropdownMenuItem<int>(
+                        value: num,
+                        child: Text('$num lines'),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        if (_choiceControllers[i].text.isNotEmpty) {
-                          _correctChoices[i] = value!;
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Correct choice cannot be blank.'),
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-                            ),
-                          );
-                        }
+                        _essaySpaces = value!;
                       });
                     },
+                    decoration: const InputDecoration(labelText: 'Number of lines for Essay'),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => _removeChoiceField(i),
-                  ),
-                ],
-              ),
-            ElevatedButton(
-              onPressed: _addChoiceField,
-              child: const Text('Add Choice'),
-            ),
-          ],
-        ),
-      if (_selectedType == 'Fill in the Blank')
-        TextField(
-          controller: _correctAnswerController,
-          decoration: const InputDecoration(labelText: 'Correct Answer'),
-        ),
-      if (_selectedType == 'Essay')
-        DropdownButtonFormField<int>(
-          value: _essaySpaces,
-          items: List.generate(10, (index) => index + 1).map((num) {
-            return DropdownMenuItem<int>(
-              value: num,
-              child: Text('$num lines'),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _essaySpaces = value!;
-            });
-          },
-          decoration: const InputDecoration(labelText: 'Number of lines for Essay'),
-        ),
-      const SizedBox(height: 16),
-    ],
-    ),
-        ),
-        ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: DeepPurple,
-                      side: const BorderSide(
-                          width: 2, color: DeepPurple),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        value: _selectedCategoryId,
+                        items: _questionCategories.map((category) {
+                          return DropdownMenuItem<int>(
+                            value: category['id'],
+                            child: Text(category['name']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategoryId = value;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Question Category'),
+                      ),
                     ),
-                    onPressed: _updateQuestion,
-                    child: const Text('Save'),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: _showAddCategoryDialog,
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _updateQuestion,
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
         ),
     );
   }
 }
-

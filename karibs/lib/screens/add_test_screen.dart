@@ -13,14 +13,22 @@ class AddTestScreen extends StatefulWidget {
 class _AddTestScreenState extends State<AddTestScreen> {
   final TextEditingController _titleController = TextEditingController();
 
+  /// Function to add a new test/exam to the database.
+  /// Validates input and shows appropriate error messages if conditions are not met.
   void _addTest() async {
     if (_titleController.text.isNotEmpty) {
+      // Insert test into the database
       await DatabaseHelper().insertTest({
         'title': _titleController.text,
       });
+
+      // Call the callback function provided by the parent widget
       widget.onTestAdded();
+
+      // Close the current screen and navigate back
       Navigator.of(context).pop();
     } else {
+      // Show error message if title field is empty
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill out all fields')),
       );
@@ -31,7 +39,7 @@ class _AddTestScreenState extends State<AddTestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Exam'),
+        title: const Text('Add New Exam'), // Set app bar title
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,12 +47,12 @@ class _AddTestScreenState extends State<AddTestScreen> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'), // Input field for exam title
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), // Add spacing between text field and button
             ElevatedButton(
               onPressed: _addTest,
-              child: const Text('Add Exam'),
+              child: const Text('Add Exam'), // Button to add the exam/test
             ),
           ],
         ),
