@@ -1,4 +1,5 @@
-# Karibs - Educational application to aid teachers with tracking and assessing students.
+# Karibs Foundation
+ This is an educational application created to aid teachers with tracking and assessing students.
 
 
 ## Team Members’ Contributions
@@ -13,11 +14,15 @@
 
 
 ## How to run the Project
-- Ensure Flutter SDK and Dart are installed: flutter doctor
-- Navigate to the project directory: cd project-directory
-- Run flutter pub get to install dependencies.
-- Connect a mobile device or start an emulator through Android Studio.
-- Execute flutter run to launch the application.
+1. Ensure Flutter SDK and Dart are installed: ```flutter doctor```
+  
+2. Navigate to the project directory: ```cd project-directory```
+  
+3. Run ```flutter pub get``` to install dependencies.
+   
+4. Connect a mobile device or start an emulator through Android Studio.
+   
+5. Execute ```flutter run``` to launch the application.
 
 
 ## Demo Video
