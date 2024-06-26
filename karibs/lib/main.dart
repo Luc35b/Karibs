@@ -125,97 +125,103 @@ class MainScreenState extends State<MainScreen> {
               opacity: _isAnimating ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 500),
               child: Container(
-                decoration: const BoxDecoration(color: White),
+                decoration: const BoxDecoration(color: Colors.white),
                 child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 45),
-                      Image.asset('images/logo.jpg'),
-                      Text(
-                        'WELCOME TO',
-                        style: TextStyle(fontSize: 34, color: DeepPurple),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'KLAS',
-                          style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: DeepPurple),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
-                        decoration: BoxDecoration(
-                          color: DeepPurple,
-                          border: Border.all(width: 2, color: DeepPurple),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(5),
-                            bottomLeft: Radius.circular(5),
-                            bottomRight: Radius.circular(30),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 45),
+                          Image.asset('images/logo.jpg'),
+                          Text(
+                            'WELCOME TO',
+                            style: TextStyle(fontSize: 34, color: DeepPurple),
                           ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(3, 3), // Shadow position
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'CHOOSE USER TYPE',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: White,
+                          Text(
+                            'KLAS',
+                            style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: DeepPurple),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 20.0),
+                            padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35),
+                            decoration: BoxDecoration(
+                              color: DeepPurple,
+                              border: Border.all(width: 2, color: DeepPurple),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(30),
+                                topRight: Radius.circular(5),
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(30),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            Column(
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () => _navigateToScreen(const TeacherDashboard()),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: White,
-                                    foregroundColor: Colors.white,
-                                    side: const BorderSide(width: 2, color: MidPurple),
-                                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'I\'m a Teacher',
-                                    style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
-                                  ),
-                                ),
-                                const SizedBox(height: 25),
-                                ElevatedButton(
-                                  onPressed: () => _navigateToScreen(const StudentScreen()),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: White,
-                                    foregroundColor: Colors.white,
-                                    side: const BorderSide(width: 2, color: MidPurple),
-                                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18), // Button padding
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'I\'m a Student',
-                                    style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
-                                  ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(3, 3),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'CHOOSE USER TYPE',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Column(
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () => _navigateToScreen(const TeacherDashboard()),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.white,
+                                        side: const BorderSide(width: 2, color: DeepPurple),
+                                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'I\'m a Teacher',
+                                        style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 25),
+                                    ElevatedButton(
+                                      onPressed: () => _navigateToScreen(const StudentScreen()),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.white,
+                                        side: const BorderSide(width: 2, color: DeepPurple),
+                                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 18),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'I\'m a Student',
+                                        style: TextStyle(fontSize: 28, color: DeepPurple, fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                        ],
                       ),
-                      const SizedBox(height: 30),
-                    ],
+                    ),
                   ),
                 ),
               ),

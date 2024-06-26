@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
@@ -66,6 +67,15 @@ class _EditReportScreenState extends State<EditReportScreen> {
 
     await _databaseHelper.updateReportTitle(widget.reportId, newTitle);
     await _databaseHelper.updateReportNotes(widget.reportId, newNotes);
+    if( newScore != null && (newScore < 0 || newScore > 100)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Score must be a number between 0 and 100'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
     await _databaseHelper.updateReportScore(widget.reportId, newScore);
 
 
@@ -158,7 +168,10 @@ class _EditReportScreenState extends State<EditReportScreen> {
             TextField(
               controller: _scoreController,
               decoration: const InputDecoration(labelText: 'Score'),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
+              ],
             ),
             const SizedBox(height: 16),
             ElevatedButton(

@@ -221,149 +221,147 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          const SizedBox(height: 15),
-          if(_student != null)
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Student Name',
-                        border: OutlineInputBorder(),
+          : SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 15),
+            if (_student != null)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Student Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        onEditingComplete: () {
+                          // Save the updated name when editing is complete
+                          //_updateStudentName(_nameController.text);
+                          // Dismiss the keyboard
+                          FocusScope.of(context).unfocus();
+                        },
                       ),
-                      onEditingComplete: () {
-                        // Save the updated name when editing is complete
-                        //_updateStudentName(_nameController.text);
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        // Save the updated name when the user clicks the save button.
+                        _updateStudentName(_nameController.text);
                         // Dismiss the keyboard
                         FocusScope.of(context).unfocus();
+                        // Optionally navigate back or show a confirmation message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Student name saved')),
+                        );
                       },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () {
-                      // Save the updated name when the user clicks the save button.
-                      _updateStudentName(_nameController.text);
-                      // Dismiss the keyboard
-                      FocusScope.of(context).unfocus();
-                      // Optionally navigate back or show a confirmation message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Student name saved')),
-                      );
-                    },
                       style: TextButton.styleFrom(
-                        backgroundColor: White,
-                        side: const BorderSide(color: DeepPurple, width: 1),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.deepPurple, width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
                       child: const Text(
                         'SAVE',
-                        style: TextStyle(color: DeepPurple, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
                       ),
-                  ),
-                ],
-
+                    ),
+                  ],
+                ),
               ),
-            ),
-          if (_averageScore != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Average Score: ${_averageScore!.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            if (_averageScore != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Average Score: ${_averageScore!.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-          SizedBox(
-            height: 300, // Provide a fixed height for the chart
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _reports.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
-                      decoration: BoxDecoration(
-                        color: DeepPurple,
-                        border: Border.all(width: 2, color: DeepPurple),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(5),
-                          bottomLeft: Radius.circular(5),
-                          bottomRight: Radius.circular(30),
-                        ),
-
-                        //borderRadius: BorderRadius.circular(30), // Rounded corners for all
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(3, 3), // Shadow position
+            SizedBox(
+              height: 300, // Provide a fixed height for the chart
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _reports.isEmpty
+                    ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple,
+                          border: Border.all(width: 2, color: Colors.deepPurple),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(5),
+                            bottomLeft: Radius.circular(5),
+                            bottomRight: Radius.circular(30),
                           ),
-                        ],
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(3, 3), // Shadow position
+                            ),
+                          ],
+                        ),
+                        child: const Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: Colors.white)),
                       ),
-                      child:const Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              )
-                  : LineChart(
-                LineChartData(
-                  minX: _getMinX(),
-                  maxX: _getMaxX(),
-                  minY: 0,
-                  maxY: 100,
-                  gridData: FlGridData(show: _reports.isNotEmpty),
-                  titlesData: FlTitlesData(
-                    bottomTitles: SideTitles(
-                      showTitles: true,
-                      getTitles: (value) {
-                        int index = value.toInt();
-                        if(value >=0 && value< _reports.length){
-                          return _reports[index]['title'] ?? '';
-                        }
-                        return '';
-                      },
-                      reservedSize: 22,
-                      margin: 10,
-                    ),
-                    leftTitles: SideTitles(showTitles: true),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _prepareDataForChart(),
-                      isCurved: false,
-                      colors: [const Color(0xFF245209)],
-                      barWidth: 2,
+                )
+                    : LineChart(
+                  LineChartData(
+                    minX: _getMinX(),
+                    maxX: _getMaxX(),
+                    minY: 0,
+                    maxY: 100,
+                    gridData: FlGridData(show: _reports.isNotEmpty),
+                    titlesData: FlTitlesData(
+                      bottomTitles: SideTitles(
+                        showTitles: true,
+                        getTitles: (value) {
+                          int index = value.toInt();
+                          if (value >= 0 && value < _reports.length) {
+                            return _reports[index]['title'] ?? '';
+                          }
+                          return '';
+                        },
+                        reservedSize: 22,
+                        margin: 10,
+                      ),
+                      leftTitles: SideTitles(showTitles: true),
                     ),
-                  ],
+                    borderData: FlBorderData(show: true),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: _prepareDataForChart(),
+                        isCurved: false,
+                        colors: [const Color(0xFF245209)],
+                        barWidth: 2,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 children: [
                   const Expanded(
-                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   ),
                   ElevatedButton(
                     onPressed: _navigateToAddReportScreen,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: White,
-                      foregroundColor: DeepPurple,
-                      side: const BorderSide(width: 1, color: DeepPurple),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.deepPurple,
+                      side: const BorderSide(width: 1, color: Colors.deepPurple),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
@@ -371,18 +369,15 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     ),
                     child: const Text('Add Report', style: TextStyle(fontSize: 20)),
                   ),
-                ]
-
+                ],
+              ),
             ),
-          ),
-
-          Expanded(
-            child:Padding(
+            Padding(
               padding: const EdgeInsets.all(8),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[200], // Shaded background color
-                  border: Border.all(color: DeepPurple, width: 1),
+                  border: Border.all(color: Colors.deepPurple, width: 1),
                   borderRadius: BorderRadius.circular(10), // Rounded corners for the box
                   boxShadow: [
                     BoxShadow(
@@ -392,47 +387,50 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                       offset: const Offset(0, 3), // Shadow position
                     ),
                   ],
-              ),
-              child: ListView.builder(
-                itemCount: _reports.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: getReportColor(_reports[index]['score']).withOpacity(0.5), // Background color of the box
-                      borderRadius: BorderRadius.circular(8), // Rounded corners for the box
-                    ),
-                    margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
-                    child: ListTile(
-                      title: Text(_reports[index]['title'], style: const TextStyle(fontSize: 24)),
-                      subtitle: Text(_reports[index]['notes']),
-                      trailing: SizedBox(
-                        width: 130,
-                        child: Row(
-                          children: [
-                            Text(
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: _reports.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: getReportColor(_reports[index]['score']).withOpacity(0.5), // Background color of the box
+                        borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                      ),
+                      margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
+                      child: ListTile(
+                        title: Text(_reports[index]['title'], style: const TextStyle(fontSize: 24)),
+                        subtitle: Text(_reports[index]['notes']),
+                        trailing: SizedBox(
+                          width: 130,
+                          child: Row(
+                            children: [
+                              Text(
                                 _reports[index]['score']?.toString() ?? '',
-                                style: const TextStyle(fontSize: 30)
-                            ),
-                            Spacer(),
-                            IconButton(
-                              onPressed: () {
-                                _showDeleteConfirmationDialog(_reports[index]['id']);
-                              },
-                              icon: Icon(Icons.delete, color: Colors.red[900]),
-                            ),
-                          ],
+                                style: const TextStyle(fontSize: 30),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                onPressed: () {
+                                  _showDeleteConfirmationDialog(_reports[index]['id']);
+                                },
+                                icon: Icon(Icons.delete, color: Colors.red[900]),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+
+
       ),
     );
   }
