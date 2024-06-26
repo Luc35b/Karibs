@@ -204,7 +204,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   }
 
   void _generateAndPrintPdf() {
-    PdfGenerator().generateTestScoresPdf(widget.testId, widget.testTitle, _students);
+    PdfGenerator(context).generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
   void _showTutorialDialog() {
     showDialog(

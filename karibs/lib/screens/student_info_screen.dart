@@ -100,7 +100,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
   void _generatePdfAllReports() async {
     if (_student != null && _reports.isNotEmpty) {
-      await PdfGenerator().generateStudentReportPdf(_student!, _reports);
+      await PdfGenerator(context).generateStudentReportPdf(_student!, _reports);
     } else {
       // Show a snackbar or dialog indicating no reports available
       ScaffoldMessenger.of(context).showSnackBar(
@@ -151,7 +151,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
 
   void _generatePdfIndividualReport(Map<String, dynamic> report) async {
     if (_student != null && report.isNotEmpty) {
-      await PdfGenerator().generateIndividualReportPdf(_student!, report);
+      await PdfGenerator(context).generateIndividualReportPdf(_student!, report);
     } else {
       // Show a snackbar or dialog indicating report not available
       ScaffoldMessenger.of(context).showSnackBar(

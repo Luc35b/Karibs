@@ -1,13 +1,18 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:karibs/preview_pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:printing/printing.dart';
-//import 'package:screenshot/screenshot.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:karibs/preview_pdf.dart';
 
 class PdfGenerator {
+  final BuildContext context;
+
+  PdfGenerator(this.context);
 
   Future<List<Map<String, dynamic>>> _getOrderedQuestions(int testId) async {
     final data = await DatabaseHelper().queryAllQuestionsWithChoices(testId);
@@ -20,6 +25,7 @@ class PdfGenerator {
 
     return data;
   }
+
   Future<void> generateTestQuestionsPdf(int testId, String testTitle) async {
     final pdf = pw.Document();
     final questions = await _getOrderedQuestions(testId);
@@ -91,11 +97,17 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/$testTitle - Questions.pdf');
+    final filePath = '${output.path}/$testTitle - Questions.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Questions.pdf');
+    // Navigate to pdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Questions.pdf'),
+      ),
+    );
   }
 
   Future<void> generateTestAnswerKeyPdf(int testId, String testTitle) async {
@@ -148,12 +160,19 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/$testTitle - Answer Key.pdf');
+    final filePath = '${output.path}/$testTitle - Answer Key.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Answer Key.pdf');
+    // Navigate to pdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Answer Key.pdf'),
+      ),
+    );
   }
+
 
   Future<void> generateStudentReportPdf(Map<String, dynamic> student, List<Map<String, dynamic>> reports) async {
     final pdf = pw.Document();
@@ -194,13 +213,18 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/${student['name']} - Report.pdf');
+    final filePath = '${output.path}/${student['name']} - Report.pdf';
+    final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - Report.pdf');
+    // Navigate to pdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '${student['name']} - Report.pdf'),
+      ),
+    );
   }
-
 
   Future<void> generateClassReportPdf(String className, double? averageGrade, List<Map<String, dynamic>> students) async {
     final pdf = pw.Document();
@@ -249,10 +273,14 @@ class PdfGenerator {
     final file = File('${output.path}/$className - Report.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    await Printing.sharePdf(bytes: await pdf.save(), filename: '$className - Report.pdf');
+    // Navigate to PdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '$className - Report.pdf'),
+      ),
+    );
   }
-
 
   Future<void> generateIndividualReportPdf(Map<String, dynamic> student, Map<String, dynamic> report) async {
     final pdf = pw.Document();
@@ -288,8 +316,13 @@ class PdfGenerator {
     final file = File('${output.path}/${student['name']} - ${report['title']} Report.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    // Print the PDF
-    Printing.sharePdf(bytes: await pdf.save(), filename: '${student['name']} - ${report['title']} Report.pdf');
+    // Navigate to PdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '${student['name']} - ${report['title']} Report.pdf'),
+      ),
+    );
   }
 
   Future<void> generateTestScoresPdf(int testId, String testTitle, List<Map<String, dynamic>> students) async {
@@ -346,8 +379,15 @@ class PdfGenerator {
     final file = File('${output.path}/$testTitle - Scores.pdf');
     await file.writeAsBytes(await pdf.save());
 
-    Printing.sharePdf(bytes: await pdf.save(), filename: '$testTitle - Scores.pdf');
+    // Navigate to PdfPreviewScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: file.path, title: '$testTitle - Scores.pdf'),
+      ),
+    );
   }
+
 
   String _formatScore(dynamic score) {
     if (score == null) {

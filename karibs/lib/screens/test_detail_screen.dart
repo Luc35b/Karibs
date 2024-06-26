@@ -139,12 +139,12 @@ class _TestDetailScreenState extends State<TestDetailScreen> {
 
   void _generateAndPrintQuestionsPdf() async {
     await _fetchQuestions();
-    await PdfGenerator().generateTestQuestionsPdf(widget.testId, widget.testTitle);
+    await PdfGenerator(context).generateTestQuestionsPdf(widget.testId, widget.testTitle);
   }
 
   void _generateAndPrintAnswerKeyPdf() async {
     await _fetchQuestions();
-    await PdfGenerator().generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
+    await PdfGenerator(context).generateTestAnswerKeyPdf(widget.testId, widget.testTitle);
   }
 
   void _navigateToGradeTestScreen(int classId) {
@@ -479,4 +479,3 @@ class _ChooseClassDialogState extends State<ChooseClassDialog> {
     );
   }
 }
-
