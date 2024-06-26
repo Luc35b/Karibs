@@ -7,7 +7,7 @@ class PdfPreviewScreen extends StatefulWidget {
   final String path;
   final String title;
 
-  PdfPreviewScreen({required this.path, required this.title});
+  PdfPreviewScreen({required this.path, required this.title}); // Pass file path and name
 
   @override
   _PdfPreviewScreenState createState() => _PdfPreviewScreenState();
@@ -24,19 +24,19 @@ class _PdfPreviewScreenState extends State<PdfPreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title), // Use the provided title for the AppBar
+        title: Text(widget.title),
         actions: [
           IconButton(
             icon: Icon(Icons.print),
             onPressed: () async {
-              // Print the PDF
+              // PDF print
               await Printing.layoutPdf(onLayout: (format) async => File(widget.path).readAsBytesSync(),);
             },
           ),
           IconButton(
             icon: Icon(Icons.share),
             onPressed: () async {
-              // Share the PDF
+              // PDF share
               final bytes = File(widget.path).readAsBytesSync();
               await Printing.sharePdf(bytes: bytes, filename: widget.title);
             },
@@ -44,6 +44,7 @@ class _PdfPreviewScreenState extends State<PdfPreviewScreen> {
           IconButton(
             icon: Icon(Icons.chevron_left),
             onPressed: () {
+              // Multi page navigation
               if (_currentPage > 0) {
                 _pdfViewController.setPage(_currentPage - 1);
               }
