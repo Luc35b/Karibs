@@ -1,3 +1,5 @@
+//fix _generateTestImportPdf method and the export button to create generateTestImportPdf from pdf gen
+
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -378,7 +380,6 @@ class _TestsScreenState extends State<TestsScreen> {
     }
   }
 
-// Function to parse PDF content and format data for database insertion
   Future<void> parsePDFAndInsertIntoDatabase(String filePath) async {
     final File file = File(filePath);
     final data = await file.readAsBytes();
@@ -469,10 +470,10 @@ class _TestsScreenState extends State<TestsScreen> {
     }
 
     await insertTestData(testTitle, subjectId, questionsData);
+    _fetchTests();
   }
 
   Future<void> insertTestData(String testTitle, int subjectId, List<Map<String, dynamic>> questionsData) async {
-    // Replace with your actual database insertion logic
     int tId = await DatabaseHelper().insertTest({'title': testTitle, 'subject_id': subjectId});
 
     for (var questionData in questionsData) {
@@ -504,26 +505,10 @@ class _TestsScreenState extends State<TestsScreen> {
     }
   }
 
-
-
-
-
-  /*Future<void> importAndValidatePDF(String filePath) async {
-    File file = File(filePath);
-
-    if () {
-
-    } else {
-      // Show error Snackbar indicating incorrect format
-      _scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(
-          content: Text('PDF format does not match the required structure.'),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
-        ),
-      );
-    }
-  }*/
+  void _generateTestImportPdf() async {
+    await _fetchQuestions();
+    await PdfGenerator(context).generateTestImportPdf(int testId, String testTitle, int subjectId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -560,9 +545,9 @@ class _TestsScreenState extends State<TestsScreen> {
               icon: Icon(Icons.file_download),
               onPressed: _importPDF,
             ),
-            IconButton(
+            IconButton( //export button
               icon: Icon(Icons.file_upload),
-              onPressed: _importPDF,
+              onPressed: _generateTestImportPdf(),
             ),
           ],
         ),

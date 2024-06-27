@@ -399,4 +399,62 @@ class PdfGenerator {
     }
     return '.' * remainingLength;
   }
+
+  Future<void> generateTestImportPdf(int testId, String testTitle, int subjectId) async {
+    final pdf = pw.Document();
+    final questions = await _getOrderedQuestions(testId); // Replace with actual method to get questions
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) {
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('_Import Format_', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('title, subject_id', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.Text('$testTitle, $subjectId', style: pw.TextStyle(fontSize: 14)),
+                pw.SizedBox(height: 20),
+                ...questions.asMap().entries.map((entry) {
+                  int index = entry.key + 1;
+                  var question = entry.value;
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('Q. text, type, category_id, essay_spaces', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('${question['text']}, ${question['type']}, ${question['category_id']}, ${question['essay_spaces'] ?? ''}', style: pw.TextStyle(fontSize: 14)),
+                      pw.SizedBox(height: 10),
+                      if (question['choices'] != null)
+                        ...question['choices'].asMap().entries.map<pw.Widget>((choiceEntry) {
+                          int choiceIndex = choiceEntry.key;
+                          var choice = choiceEntry.value;
+                          return pw.Text(
+                            'A. question_choices, choice_text, is_correct\nA. $choiceIndex, ${choice['choice_text']}, ${choice['is_correct'] == 1 ? 'true' : 'false'}',
+                            style: pw.TextStyle(fontSize: 14),
+                          );
+                        }).toList(),
+                      pw.SizedBox(height: 20),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final filePath = '${output.path}/$testTitle - Import Format.pdf';
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Import Format.pdf'),
+      ),
+    );
+  }
 }
