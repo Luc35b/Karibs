@@ -46,6 +46,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     _fetchGradedStudents();
   }
 
+  //fetches class name from the database
   Future<void> _fetchClassName() async {
     String? className = await DatabaseHelper().getClassName(widget.classId);
     setState(() {
@@ -53,6 +54,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  //fetches students in the class from the database
   Future<void> _fetchStudents() async {
     List<Map<String, dynamic>> students = await DatabaseHelper().queryAllStudents(widget.classId);
     setState(() {
@@ -61,6 +63,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  //fetches questions relating to the test from the database
   Future<void> _fetchQuestions() async {
     final data = await DatabaseHelper().queryAllQuestionsWithChoices(widget.testId);
     final prefs = await SharedPreferences.getInstance();
@@ -82,6 +85,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  // Fetches students who have already been graded
   Future<void> _fetchGradedStudents() async {
     List<int> gradedStudentIds = await DatabaseHelper().getGradedStudents(widget.testId);
     setState(() {
@@ -89,6 +93,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  // Initializes category scores to zero
   void _initializeCategoryScores() {
     categoryScores.clear();
     for (var category in _categories) {
@@ -96,6 +101,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
+  // Initializes question correctness status to zero
   void _initializeQuestionCorrectness() {
     questionCorrectness.clear();
     for (var question in _questions) {
@@ -103,6 +109,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
+  // Marks a question as correct
   void _markCorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == -1) {
@@ -116,6 +123,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  // Marks a question as incorrect
   void _markIncorrect(int questionId, int categoryId) {
     setState(() {
       if (questionCorrectness[questionId] == 1) {
@@ -129,6 +137,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  // Saves grading results to the database
   void _saveGradingResults() async {
     int totalQuestions = _questions.length;
     int totalCorrect = categoryScores.values.fold(0, (sum, score) => sum + score);
@@ -193,6 +202,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     }
   }
 
+  // Navigates to the teacher class screen for the specified class
   void _goToTeacherDashboard(int classId) {
     Navigator.push(
       context,
@@ -203,9 +213,12 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     });
   }
 
+  // Generates and prints a PDF with test scores
   void _generateAndPrintPdf() {
     PdfGenerator(context).generateTestScoresPdf(widget.testId, widget.testTitle, _students);
   }
+
+  // Shows a tutorial dialog for grading
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -261,6 +274,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
                 ),
               )
             else...[
+              //selects a student and grades the exam
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButton<int>(
@@ -298,6 +312,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
               ),
             if (_selectedStudentId != null)
               Expanded(
+                //changes category and question correctness based on teacher grades
                 child: ListView.builder(
                   itemCount: _questions.length,
                   itemBuilder: (context, index) {

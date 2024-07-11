@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
@@ -33,6 +34,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     _fetchReport();
   }
 
+  /// Fetches the report data from the database and updates the state
   void _fetchReport() async {
     var x = await _databaseHelper.queryReport(widget.reportId);
 
@@ -58,14 +60,24 @@ class _EditReportScreenState extends State<EditReportScreen> {
     super.dispose();
   }
 
+  /// Saves the changes made to the report
   void _saveChanges() async {
     String newTitle = _titleController.text;
     String newNotes = _notesController.text;
     double newScore = double.tryParse(_scoreController.text) ?? report['score'];
 
-
+    /// Updates the report details in the database
     await _databaseHelper.updateReportTitle(widget.reportId, newTitle);
     await _databaseHelper.updateReportNotes(widget.reportId, newNotes);
+    if( newScore != null && (newScore < 0 || newScore > 100)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Score must be a number between 0 and 100'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
     await _databaseHelper.updateReportScore(widget.reportId, newScore);
 
 
@@ -73,6 +85,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     Navigator.of(context).pop(true);
   }
 
+  /// Deletes the report after confirmation
   void _deleteReport() async {
     bool confirmDelete = await showDialog(
       context: context,
@@ -100,6 +113,7 @@ class _EditReportScreenState extends State<EditReportScreen> {
     }
   }
 
+  /// Shows the tutorial dialog for the edit report screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -138,15 +152,6 @@ class _EditReportScreenState extends State<EditReportScreen> {
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-      // appBar: AppBar(
-      //   title: const Text('Edit Report'),
-      //   backgroundColor: DeepPurple,
-      //   foregroundColor: White,
-      //   actions: [
-      //
-      //     IconButton(onPressed: _deleteReport, icon: const Icon(Icons.delete)),
-      //   ],
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -167,7 +172,10 @@ class _EditReportScreenState extends State<EditReportScreen> {
             TextField(
               controller: _scoreController,
               decoration: const InputDecoration(labelText: 'Score'),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,3}(\.\d{0,2})?')),
+              ],
             ),
             const SizedBox(height: 16),
             ElevatedButton(

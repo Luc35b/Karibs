@@ -1,5 +1,3 @@
-//fix _generateTestImportPdf method and the export button to create generateTestImportPdf from pdf gen
-
 import 'dart:io';
 import 'package:karibs/pdf_gen.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,9 +5,7 @@ import 'package:pdf/pdf.dart' as pw;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:karibs/screens/add_question_screen.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'teacher_dashboard.dart';
@@ -41,6 +37,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchSubjects();
   }
 
+  //fetch tests data from the database
   Future<void> _fetchTests() async {
     final dbHelper = DatabaseHelper();
     final data = await dbHelper.queryAllTests();
@@ -49,6 +46,7 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //fetch subjects data from the database
   Future<void> _fetchSubjects() async {
     final dbHelper = DatabaseHelper();
     final data = await dbHelper.queryAllSubjects();
@@ -58,6 +56,7 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //adds a new test to the database
   void _addTest(String testName, int subjectId) async {
     if (_tests.any((test) => test['title'] == testName)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
@@ -74,7 +73,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchTests();
   }
 
-
+  //show dialog for adding a new test
   void _showAddTestDialog({String? testName, int? subjectId}) {
 
     final TextEditingController testNameController = TextEditingController(text: testName);
@@ -151,6 +150,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //show dialog for adding a new subject
   void _showAddSubjectDialog([int? testId, String? testName]) {
     final TextEditingController subjectNameController = TextEditingController();
 
@@ -210,6 +210,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  // Method to show dialog for editing test name or subject
   void _showEditTestDialog(int testId, String currentTitle, int currentSubjectId) {
     final TextEditingController testNameController = TextEditingController(text: currentTitle);
 
@@ -283,6 +284,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  // Method to edit test name in the database
   void _editTestName(int testId, String newTitle, int subjectId) async {
     if (_tests.any((test) => test['title'] == newTitle && test['id'] != testId)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
@@ -299,6 +301,7 @@ class _TestsScreenState extends State<TestsScreen> {
     _fetchTests();
   }
 
+  //show confirmation dialog
   void _showDeleteConfirmationDialog(int testId) {
     showDialog(
       context: context,
@@ -326,11 +329,13 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //deletes test from database
   void _deleteTest(int testId) async {
     await DatabaseHelper().deleteTest(testId);
     _fetchTests();
   }
 
+  //navigates to test detail screen
   void _navigateToTestDetailScreen(int testId, String testTitle, int subjId) {
     Navigator.push(
       context,
@@ -344,6 +349,7 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  //change the order of tests displayed
   void _updateTestOrder(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) {
@@ -357,12 +363,14 @@ class _TestsScreenState extends State<TestsScreen> {
     });
   }
 
+  //change the test order in the database
   Future<void> _updateOrderInDatabase() async {
     for (int i = 0; i < _tests.length; i++) {
       await DatabaseHelper().updateTestOrder(_tests[i]['id'], i);
     }
   }
 
+  //show tutorial dialog for tests screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -582,9 +590,9 @@ class _TestsScreenState extends State<TestsScreen> {
           backgroundColor: DeepPurple,
           foregroundColor: White,
           title: Row(
-            children:[
+            children: [
               Text('Exams'),
-              SizedBox(width: 8),
+              SizedBox(width: 8), // Adjust spacing between title and icon
               IconButton(
                 icon: Icon(Icons.help_outline),
                 onPressed: () {
@@ -595,11 +603,30 @@ class _TestsScreenState extends State<TestsScreen> {
             ]
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back), // Use the back arrow icon
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TeacherDashboard()),
+                //zoom out page animation
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    return TeacherDashboard();
+                  },
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    // Define the zoom-out animation
+                    var begin = 1.1; // Start with 1.5 times the normal size
+                    var end = 1.0; // End with the normal size
+                    var curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var scaleAnimation = animation.drive(tween);
+
+                    return ScaleTransition(
+                      scale: scaleAnimation,
+                      child: child,
+                    );
+                  },
+                ),
               );
             },
           ),
@@ -614,7 +641,7 @@ class _TestsScreenState extends State<TestsScreen> {
             ),
           ],
         ),
-        body: _isLoading
+          body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
           child:Column(
@@ -642,7 +669,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal:40, vertical: 10),
                   child: Text(
                     'MY EXAMS',
-                    style: GoogleFonts.raleway(fontSize: 30, fontWeight: FontWeight.bold,color: White),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold,color: White),
                   ),
                 ),
                 Container(
@@ -664,8 +691,8 @@ class _TestsScreenState extends State<TestsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('No exams available.', style: GoogleFonts.raleway(fontSize: 32)),
-                        Text('Please add!', style: GoogleFonts.raleway(fontSize: 32)),
+                        Text('No exams available.', style: TextStyle(fontSize: 32)),
+                        Text('Please add!', style: TextStyle(fontSize: 32)),
                         const SizedBox(height: 20),
 
                       ],
@@ -692,6 +719,7 @@ class _TestsScreenState extends State<TestsScreen> {
                               ),
                             ],
                           ),
+                          //displays exams in the test dashboard
                           child: ListTile(
                             key: ValueKey(_tests[index]['id']),
                             title: Text(_tests[index]['title']),
@@ -738,7 +766,7 @@ class _TestsScreenState extends State<TestsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Add Exam', style: GoogleFonts.raleway(fontSize: 24)),
+                          Text('ADD EXAM', style: TextStyle(fontSize: 28)),
                           const SizedBox(width: 8),
                           const Icon(Icons.add),
                         ],

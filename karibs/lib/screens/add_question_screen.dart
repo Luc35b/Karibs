@@ -33,12 +33,14 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     _fetchCategories();
   }
 
+  /// Fetches categories for the current subject from the database.
   Future<void> _fetchCategories() async {
     var cats = await DatabaseHelper().getCategoriesForSubject(widget.subjectId);
     setState(() {
       _questionCategories = cats;
     });
 
+    // Show a snack bar if no categories are available.
     if (_questionCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -51,6 +53,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     }
   }
 
+  /// Initializes the question order based on existing questions for the current test.
   Future<void> _initializeQuestionOrder() async {
     final questions = await DatabaseHelper().queryAllQuestions(widget.testId);
     setState(() {
@@ -58,9 +61,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     });
   }
 
+  /// Validates input fields and adds the question to the database.
   void _addQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null && _questionOrder != null) {
       if (_selectedType == 'Multiple Choice') {
+        // Check for blank correct choice.
         bool hasBlankChoice = false;
         for (int i = 0; i < _choiceControllers.length; i++) {
           if (_choiceControllers[i].text.isEmpty && _correctChoices[i]) {
@@ -78,6 +83,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           );
           return;
         }
+        // Check if at least one correct choice is selected.
         if (!_correctChoices.contains(true)) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -90,6 +96,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         }
       }
 
+      // Insert question into database based on question type.
       int questionId = await DatabaseHelper().insertQuestion({
         'text': _textController.text,
         'type': _selectedType,
@@ -99,6 +106,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         'essay_spaces': _selectedType == 'Essay' ? _essaySpaces : null, // Save essay spaces if type is 'Essay'
       });
 
+      // Insert choices based on question type.
       if (_selectedType == 'Multiple Choice') {
         for (int i = 0; i < _choiceControllers.length; i++) {
           await DatabaseHelper().insertQuestionChoice({
@@ -115,9 +123,11 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         });
       }
 
+      // Call the callback function to notify the parent widget that a question has been added.
       widget.onQuestionAdded(questionId); // Pass the new question ID here
       Navigator.of(context).pop();
     } else {
+      // Show a snack bar if not all fields are filled.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill out all fields'),
@@ -128,6 +138,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     }
   }
 
+  /// Adds a new choice field for multiple-choice questions.
   void _addChoiceField() {
     setState(() {
       _choiceControllers.add(TextEditingController());
@@ -135,6 +146,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     });
   }
 
+  /// Removes a choice field for multiple-choice questions.
   void _removeChoiceField(int index) {
     setState(() {
       _choiceControllers.removeAt(index);
@@ -142,6 +154,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     });
   }
 
+  /// Shows a dialog to add a new category.
   void _showAddCategoryDialog() {
     final TextEditingController categoryNameController = TextEditingController();
 
@@ -181,11 +194,13 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
+  /// Inserts a new category into the database.
   void _addCategory(String categoryName) async {
     await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
     _fetchCategories();
   }
 
+  /// Shows a tutorial dialog for add question screen
   void _showTutorialDialog() {
     showDialog(
       context: context,

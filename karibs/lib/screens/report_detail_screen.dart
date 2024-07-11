@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:karibs/screens/view_test_grade_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:karibs/database/database_helper.dart';
@@ -8,12 +7,14 @@ import 'package:karibs/main.dart';
 import 'package:karibs/overlay.dart';
 
 
+// Widget for displaying a bar graph representing test scores
 class BarGraph extends StatelessWidget {
   final double score;
   final Map<String, dynamic> categoryScores;
 
   const BarGraph({super.key, required this.score, required this.categoryScores});
 
+  // Determine color based on score range
   Color getScoreColor(double currScore) {
     if (currScore >= 70) {
       return const Color(0xFFBBFABB);
@@ -28,6 +29,7 @@ class BarGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // List of bar chart group data, initially with the total score
     List<BarChartGroupData> barGroups = [
       BarChartGroupData(
         x: 0,
@@ -49,6 +51,7 @@ class BarGraph extends StatelessWidget {
     ];
 
     int xValue = 1;
+    // Adding category scores to the bar chart
     categoryScores.forEach((category, categoryScore) {
         barGroups.add(
           BarChartGroupData(
@@ -86,7 +89,7 @@ class BarGraph extends StatelessWidget {
               reservedSize: 14,
               interval: 20,
               getTitles: (value) {
-                return value.toInt().toString();
+                return value.toInt().toString(); //left axis labels
               },
             ),
             bottomTitles: SideTitles(
@@ -95,9 +98,9 @@ class BarGraph extends StatelessWidget {
               reservedSize: 14,
               getTitles: (double value) {
                 if (value.toInt() == 0) {
-                  return 'Total';
+                  return 'Total'; //bottom axis label
                 } else if (value.toInt() <= categoryScores.keys.length) {
-                  return categoryScores.keys.elementAt(value.toInt()-1);
+                  return categoryScores.keys.elementAt(value.toInt()-1); //category names
                 } else {
                   return '';
                 }
@@ -111,6 +114,7 @@ class BarGraph extends StatelessWidget {
           barGroups: barGroups,
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
+              //displaying data on bar graph
               tooltipBgColor: Colors.blueGrey,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 String category;
@@ -122,7 +126,7 @@ class BarGraph extends StatelessWidget {
                   category = '';
                 }
                 return BarTooltipItem(
-                  '$category\n', //category + '\n',
+                  '$category\n',
                   const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -281,30 +285,13 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
-            child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
+            child: Text('EDIT', style: TextStyle(color: White, fontWeight: FontWeight.bold)),
           ),
         ],
         backgroundColor: DeepPurple,
         foregroundColor: White,
         automaticallyImplyLeading: false,
       ),
-      // appBar: AppBar(
-      //   title: Text('Report Details'),
-      //   backgroundColor: DeepPurple,
-      //   foregroundColor: White,
-      //   actions: [
-      //     TextButton(
-      //       onPressed: _navigateToEditReportScreen,
-      //       child: Text('EDIT', style: GoogleFonts.raleway(color: White, fontWeight: FontWeight.bold)),
-      //       style: TextButton.styleFrom(
-      //         side: BorderSide(color: Colors.white, width: 1),
-      //         shape: RoundedRectangleBorder(
-      //           borderRadius: BorderRadius.circular(5),
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

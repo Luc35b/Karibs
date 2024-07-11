@@ -7,7 +7,6 @@ class QuestionDetailScreen extends StatefulWidget {
   final int questionId;
   final int subjectId; // Added subjectId to pass to EditQuestionScreen
 
-  //const QuestionDetailScreen({super.key, required this.questionId});
   const QuestionDetailScreen({super.key, required this.questionId, required this.subjectId});
 
   @override
@@ -27,6 +26,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     _fetchCategory();
   }
 
+  //fetch category name from database
   Future<void> _fetchCategory() async {
     String? cat = await DatabaseHelper().getCategoryNameFromQuestion(widget.questionId);
     setState(() {
@@ -34,6 +34,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     });
   }
 
+  //fetch question details and choices from database
   Future<void> _fetchQuestionDetails() async {
     final question = await DatabaseHelper().queryQuestion(widget.questionId);
     final choices = await DatabaseHelper().queryAllQuestionChoices(widget.questionId);
@@ -44,6 +45,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     });
   }
 
+  //Navigate to EditQuestionScreen for editing the current question
   void _navigateToEditQuestionScreen() {
     Navigator.push(
       context,
@@ -82,6 +84,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          //displays question text and choices
           children: [
             Row(
               children: [
