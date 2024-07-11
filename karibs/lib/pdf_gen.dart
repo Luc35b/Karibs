@@ -389,7 +389,6 @@ class PdfGenerator {
     }
   }
 
-
   String generateFillerString(String name, String score) { // Filler string for between name and score
     final maxLength = 90;
     int remainingLength = 0;
@@ -399,5 +398,67 @@ class PdfGenerator {
       remainingLength = maxLength - name.length - score.length;
     }
     return '.' * remainingLength;
+  }
+
+  Future<void> generateTestImportPdf(int testId, String testTitle, int subjectId) async {
+    final pdf = pw.Document();
+    final questions = await _getOrderedQuestions(testId);
+    var temp = '';
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) {
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('_Import_Format_^', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('title:$testTitle|subject_id:$subjectId^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                ...questions.asMap().entries.map((entry) {
+                  int index = entry.key + 1;
+                  var question = entry.value;
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      if (question['type'] == 'Multiple Choice')
+                        pw.Text('Q.${question['text']}|m_c|${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if(question['type'] == 'Fill in the Blank')
+                        pw.Text('Q.${question['text']}|f_b,${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if(question['type'] == 'Essay')
+                        pw.Text('Q.${question['text']}|${question['type']}|${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 10),
+                      if (question['choices'] != null)
+                        ...question['choices'].asMap().entries.map<pw.Widget>((choiceEntry) {
+                          int choiceIndex = choiceEntry.key;
+                          var choice = choiceEntry.value;
+                          return pw.Text(
+                            'A.$choiceIndex|${choice['choice_text']}|${choice['is_correct']==1?'true':'false'}^',
+                            style: pw.TextStyle(fontSize: 14),
+                          );
+                        }).toList(),
+                      pw.SizedBox(height: 20),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final filePath = '${output.path}/$testTitle - Import Format.pdf';
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Import Format.pdf'),
+      ),
+    );
   }
 }

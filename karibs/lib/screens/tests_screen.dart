@@ -1,6 +1,13 @@
+import 'dart:io';
+import 'package:karibs/pdf_gen.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart' as pw;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:karibs/database/database_helper.dart';
 import 'package:karibs/screens/test_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'teacher_dashboard.dart';
 import 'package:karibs/overlay.dart';
 
@@ -16,9 +23,12 @@ class _TestsScreenState extends State<TestsScreen> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   List<Map<String, dynamic>> _tests = [];
   List<Map<String, dynamic>> _subjects = [];
+  List<Map<String, dynamic>> _questions = [];
   bool _isLoading = true;
   String? _testName; // To retain the test name
   int? _selectedSubjectId; // To retain the selected subject
+  int? selectedTestId;
+  String selectedTestTitle = '';
 
   @override
   void initState() {
@@ -370,6 +380,207 @@ class _TestsScreenState extends State<TestsScreen> {
     );
   }
 
+  Future<void> _importPDF() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      String filePath = result.files.single.path!;
+      await parsePDFAndInsertIntoDatabase(filePath);
+    }
+  }
+
+  Future<void> parsePDFAndInsertIntoDatabase(String filePath) async {
+    final PdfDocument document = PdfDocument(inputBytes: File(filePath).readAsBytesSync());
+
+    String content = '';
+
+    PdfTextExtractor textExtractor = PdfTextExtractor(document);
+    content += '${textExtractor.extractText()}\n';
+
+    print(content);
+
+    // Initialize variables to store parsed data
+    String testTitle = '';
+    int subjectId = 0;
+    List<Map<String, dynamic>> questionsData = [];
+
+    // Split the content into lines
+    final lines = content.split('^');
+
+    if (!content.startsWith('_Import_Format_')) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('PDF format does not match the required structure.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      throw Exception('Invalid PDF format');
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+
+      // Example: Parse test title and subject ID
+      if (line.startsWith('title')) {
+        var header = line.split('|').map((e) => e.trim()).toList();
+        testTitle = header[0].split(':')[1].trim();
+        subjectId = int.tryParse(header[1].split(':')[1].trim()) ?? 0;
+      }
+
+      // Example: Parse questions and choices
+      if (line.startsWith('Q')) {
+        var questionParts = line.split('|').map((e) => e.trim()).toList();
+        print('Question parts: $questionParts');
+        if (questionParts.length >= 4) {
+          var questionText = questionParts[0].split('.')[1].trim();
+          var qt = questionText.replaceAll('\n', '');
+          var type = questionParts[1];
+          if (type == 'm_c') {
+            type = 'Multiple Choice';
+          }
+          else if (type == 'f_b') {
+            type = 'Fill in the Blank';
+          }
+          var categoryId = int.tryParse(questionParts[2]) ?? 0;
+          var essaySpaces = questionParts.length > 4 ? int.tryParse(questionParts[3]) : null;
+
+          // Collect choices for the question
+          List<Map<String, dynamic>> choices = [];
+          for (var j = i + 1; j < lines.length; j++) {
+            var choiceLine = lines[j].trim();
+            if (choiceLine.startsWith('A')) {
+              var choiceParts = choiceLine.split('|').map((e) => e.trim()).toList();
+              if (choiceParts.length >= 2) {
+                var choiceText = choiceParts[1];
+                var ct = choiceText.replaceAll('\n', '');
+                var isCorrect = choiceParts[2].toLowerCase() == 'true';
+                choices.add({
+                  'choice_text': ct,
+                  'is_correct': isCorrect ? 1 : 0,
+                });
+              }
+            } else {
+              i = j - 1; // Update the outer loop index to continue from the correct position
+              break; // End of choices
+            }
+          }
+
+          // Store question data
+          questionsData.add({
+            'text': qt,
+            'type': type,
+            'category_id': categoryId,
+            'essay_spaces': essaySpaces,
+            'choices': choices,
+          });
+        }
+      }
+    }
+
+    await insertTestData(testTitle, subjectId, questionsData);
+    _fetchTests();
+  }
+
+  Future<void> insertTestData(String testTitle, int subjectId, List<Map<String, dynamic>> questionsData) async {
+    if (_tests.any((test) => test['title'] == testTitle)) {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('Exam with this name already exists. Please choose a different name.'),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+        ),
+      );
+      return;
+    }
+
+    int tId = await DatabaseHelper().insertTest({'title': testTitle, 'subject_id': subjectId});
+    _fetchTests();
+
+    for (var questionData in questionsData) {
+      await insertQuestion(tId, questionData);
+    }
+  }
+
+  Future<void> insertQuestion(int testId, Map<String, dynamic> questionData) async {
+    int questionId = await DatabaseHelper().insertQuestion({
+      'text': questionData['text'],
+      'type': questionData['type'],
+      'category_id': questionData['category_id'],
+      'test_id': testId,
+      'essay_spaces': questionData['essay_spaces'],
+    });
+
+    await insertQuestionChoices(questionId, questionData['choices']);
+  }
+
+  Future<void> insertQuestionChoices(int questionId, List<Map<String, dynamic>> choices) async {
+    for (var choice in choices) {
+      await DatabaseHelper().insertQuestionChoice({
+        'question_id': questionId,
+        'choice_text': choice['choice_text'],
+        'is_correct': choice['is_correct'],
+      });
+    }
+  }
+
+  void _onExportPdfPressed() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select a Test to Export'),
+          content: _tests.isNotEmpty
+              ? DropdownButtonFormField<Map<String, dynamic>>(
+            items: _tests.map((test) {
+              return DropdownMenuItem<Map<String, dynamic>>(
+                value: test,
+                child: Text(test['title']),
+              );
+            }).toList(),
+            onChanged: (selectedTest) {
+              if (selectedTest != null) {
+                Navigator.pop(context);
+                _fetchQuestions(selectedTest['id']);
+                PdfGenerator(context).generateTestImportPdf(
+                  selectedTest['id'],
+                  selectedTest['title'],
+                  selectedTest['subject_id'],
+                );
+              }
+            },
+            decoration: InputDecoration(labelText: 'Select Test'),
+          )
+              : Text('No tests available'),
+        );
+      },
+    );
+  }
+
+  Future<void> _fetchQuestions(int selectedTestId) async {
+    final data = await DatabaseHelper().queryAllQuestions(selectedTestId);
+    List<Map<String, dynamic>> questions = List<Map<String, dynamic>>.from(data);
+
+    // Load order from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? savedOrder = prefs.getStringList('test_${selectedTestId}_order');
+
+    if (savedOrder != null) {
+      questions.sort((a, b) {
+        int aIndex = savedOrder.indexOf(a['id'].toString());
+        int bIndex = savedOrder.indexOf(b['id'].toString());
+        return aIndex.compareTo(bIndex);
+      });
+    }
+
+    setState(() {
+      _questions = questions;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -389,7 +600,7 @@ class _TestsScreenState extends State<TestsScreen> {
                   _showTutorialDialog();
                 },
               ),
-            ],
+            ]
           ),
           leading: IconButton(
             icon: Icon(Icons.arrow_back), // Use the back arrow icon
@@ -419,6 +630,16 @@ class _TestsScreenState extends State<TestsScreen> {
               );
             },
           ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.file_download),
+              onPressed: _importPDF,
+            ),
+            IconButton(
+              icon: Icon(Icons.picture_as_pdf),
+              onPressed: _onExportPdfPressed,
+            ),
+          ],
         ),
           body: _isLoading
             ? const Center(child: CircularProgressIndicator())
