@@ -85,18 +85,18 @@ class DatabaseHelper {
     )
   ''');
     await db.execute('''
-CREATE TABLE questions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  text TEXT NOT NULL,
-  type TEXT NOT NULL,
-  category_id INTEGER NOT NULL,
-  test_id INTEGER NOT NULL,
-  "order" INTEGER NOT NULL DEFAULT 0,
-  essay_spaces INTEGER,
-  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
-  FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
-)
-''');
+    CREATE TABLE questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      type TEXT NOT NULL,
+      category_id INTEGER NOT NULL,
+      test_id INTEGER NOT NULL,
+      "order" INTEGER NOT NULL DEFAULT 0,
+      essay_spaces INTEGER,
+      FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+      FOREIGN KEY (test_id) REFERENCES tests (id) ON DELETE CASCADE
+    )
+    ''');
     await db.execute('''
     CREATE TABLE question_choices (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

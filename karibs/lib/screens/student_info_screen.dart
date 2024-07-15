@@ -19,6 +19,7 @@ class StudentInfoScreen extends StatefulWidget {
   _StudentInfoScreenState createState() => _StudentInfoScreenState();
 }
 
+///returns color based on student score
 Color getReportColor(double currScore) {
   if (currScore >= 70) {
     return const Color(0xFFBBFABB);
@@ -43,6 +44,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
+  ///navigates to add report screen
   void _navigateToAddReportScreen() {
     Navigator.push(
       context,
@@ -56,6 +58,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///navigates to edit student screen
   void _navigateToEditStudentScreen() {
     Navigator.push(
       context,
@@ -69,6 +72,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///fetches the student information from the database
   Future<void> _fetchStudentData() async {
     final student = await DatabaseHelper().queryStudent(widget.studentId);
     final reports = await DatabaseHelper().queryAllReports(widget.studentId);
@@ -77,6 +81,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
       String newStatus = changeStatus(averageScore);
       final status = await DatabaseHelper().updateStudentStatus(widget.studentId, newStatus);
     }
+    //sort reports by date
     final mutableReports = List<Map<String, dynamic>>.from(reports);
     mutableReports.sort((a, b) => DateTime.parse(a['date']).compareTo(DateTime.parse(b['date'])));
     setState(() {
@@ -87,6 +92,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     });
   }
 
+  ///adds report to database
   void _addReport(String title, String notes, int? score) async {
     await DatabaseHelper().insertReport({
       'date': DateTime.now().toIso8601String(),
@@ -98,9 +104,10 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     _fetchStudentData();
   }
 
+  ///generates pdf of all reports under a student
   void _generatePdfAllReports() async {
     if (_student != null && _reports.isNotEmpty) {
-      await PdfGenerator().generateStudentReportPdf(_student!, _reports);
+      await PdfGenerator(context).generateStudentReportPdf(_student!, _reports);
     } else {
       // Show a snackbar or dialog indicating no reports available
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,6 +119,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///lets users select an individual report to be saved
   void _selectIndividualReport() {
     if(_reports.isNotEmpty) {
       showDialog(
@@ -149,9 +157,10 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///generates a pdf of the selected individual report
   void _generatePdfIndividualReport(Map<String, dynamic> report) async {
     if (_student != null && report.isNotEmpty) {
-      await PdfGenerator().generateIndividualReportPdf(_student!, report);
+      await PdfGenerator(context).generateIndividualReportPdf(_student!, report);
     } else {
       // Show a snackbar or dialog indicating report not available
       ScaffoldMessenger.of(context).showSnackBar(
@@ -163,6 +172,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     }
   }
 
+  ///displays tutorial dialog for the student info screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -172,42 +182,33 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
     );
   }
 
-
+  ///adds report data to the graph
   List<FlSpot> _prepareDataForChart() {
     List<FlSpot> spots = [];
-    for (var report in _reports) {
-      int id = report['id'];
-      if(report['score'] != null){
+    for (int i = 0; i < _reports.length; i++) {
+      var report = _reports[i];
+      if (report['score'] != null) {
         double score = report['score'];
-        spots.add(FlSpot(id.toDouble(), score));
+        spots.add(FlSpot(i.toDouble(), score)); // Use the index as the X value
       }
-      //double score = report['score'] != null ? report['score'].toDouble(): 0.0;
-
     }
     return spots;
   }
 
-  double _getMinX() {
-    if (_reports.isEmpty) {
-      return 0.0;
+  ///returns the report title to be displayed on the x-axis of the graph
+  String _getReportTitle(int index) {
+    if (index >= 0 && index < _reports.length) {
+      return _reports[index]['title'] ?? '';
     }
-    //int min = _reports.first['id'];
-    int min = _reports.map((report) => report['id']).reduce((a, b) => a < b ? a : b);
-    return min.toDouble();
+    return '';
   }
 
+  ///returns the maximum x-value
   double _getMaxX() {
     if (_reports.isEmpty) {
       return 0.0;
     }
-    //int max = _reports.last['id'];
-    int max = _reports.map((report) => report['id']).reduce((a, b) => a >= b ? a : b);
-    return max.toDouble();
-  }
-
-  String _formatDate(double value) {
-    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    return '${date.day}/${date.month}';
+    return (_reports.length - 1).toDouble(); // Maximum X is the last index
   }
 
   @override
@@ -233,147 +234,153 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Navigate back to TeacherClassScreen using popUntil
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TeacherClassScreen(classId: _student?['class_id'], refresh: true),
+            // Navigate back to TeacherClassScreen with a custom zoom-out transition
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return TeacherClassScreen(classId: _student?['class_id'], refresh: true);
+                },
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  // Define the zoom out animation
+                  var begin = 1.1; // Start with 1.5 times the normal size
+                  var end = 1.0; // End with the normal size
+                  var curve = Curves.easeInOut;
+
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var scaleAnimation = animation.drive(tween);
+
+                  return ScaleTransition(
+                    scale: scaleAnimation,
+                    child: child,
+                  );
+                },
               ),
             );
           },
         ),
         automaticallyImplyLeading: false,
-
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          :Column(
-        children: [
-          //SizedBox(height: 10,),
-          Row(
-            children: [
-              const SizedBox(width: 20,),
-              if(_student !=null)
-                Expanded(child:
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Text(
-                    _student!['name'],
-                    style: const TextStyle(
-                        fontSize: 36, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ),
-              ElevatedButton(
-                onPressed: _navigateToEditStudentScreen,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: White,
-                  foregroundColor: DeepPurple,
-                  side: const BorderSide(width: 1, color: DeepPurple),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Edit', style: TextStyle(fontSize: 16),),
-              ),
-              const SizedBox(width: 20,),
-            ],
-          ),
-          if (_averageScore != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Average Score: ${_averageScore!.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-          SizedBox(
-            height: 300, // Provide a fixed height for the chart
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20.0, top: 8.0, left: 8.0, bottom: 8.0),
-              child: _reports.isEmpty
-                  ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
-                      decoration: BoxDecoration(
-                        color: DeepPurple,
-                        border: Border.all(width: 2, color: DeepPurple),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(5),
-                          bottomLeft: Radius.circular(5),
-                          bottomRight: Radius.circular(30),
-                        ),
-
-                        //borderRadius: BorderRadius.circular(30), // Rounded corners for all
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(3, 3), // Shadow position
-                          ),
-                        ],
+          :SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const SizedBox(width: 20),
+                if (_student != null)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        _student!['name'],
+                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                       ),
-                      child:const Text('No reports available. \nPlease add!', style: TextStyle(fontSize: 30, color: White),),
                     ),
-
-                    const SizedBox(height: 20),
-
-                  ],
-                ),
-              )
-                  : LineChart(
-                LineChartData(
-                  minX: _getMinX(),
-                  maxX: _getMaxX(),
-                  minY: 0,
-                  maxY: 100,
-                  gridData: FlGridData(show: _reports.isNotEmpty),
-                  titlesData: FlTitlesData(
-                    bottomTitles: SideTitles(
-                      showTitles: true,
-                      getTitles: (value) {
-                        value-=1;
-                        int index = value.toInt();
-                        if(value >=0 && value< _reports.length){
-                          return _reports[index]['title'] ?? '';
-                        }
-                        return '';
-                      },
-                      reservedSize: 22,
-                      margin: 10,
-                    ),
-                    leftTitles: SideTitles(showTitles: true),
                   ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _prepareDataForChart(),
-                      isCurved: false,
-                      colors: [const Color(0xFF245209)],
-                      barWidth: 2,
+                ElevatedButton(
+                  onPressed: _navigateToEditStudentScreen,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: DeepPurple,
+                    side: const BorderSide(width: 1, color: DeepPurple),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5), // Button padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
+                  ),
+                  child: const Text('Edit', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(width: 20),
+              ],
+            ),
+            if (_averageScore != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Average Score: ${_averageScore!.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+            SizedBox(
+              height: 300, // Provide a fixed height for the chart
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20.0, top: 8.0, left: 8.0, bottom: 8.0),
+                child: _reports.isEmpty
+                    ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 35.0, horizontal: 35), // Padding inside the container
+                        decoration: BoxDecoration(
+                          color: DeepPurple,
+                          border: Border.all(width: 2, color: DeepPurple),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(5),
+                            bottomLeft: Radius.circular(5),
+                            bottomRight: Radius.circular(30),
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(3, 3), // Shadow position
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'No reports available. \nPlease add!',
+                          style: TextStyle(fontSize: 30, color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                )
+                    : LineChart(
+                  LineChartData(
+                    minX: 0.0,
+                    maxX: _getMaxX(),
+                    minY: 0,
+                    maxY: 100,
+                    gridData: FlGridData(show: _reports.isNotEmpty),
+                    titlesData: FlTitlesData(
+                      bottomTitles: SideTitles(
+                        showTitles: true,
+                        getTitles: (value) {
+                          return _getReportTitle(value.toInt());
+                        },
+                        reservedSize: 22,
+                        margin: 10,
+                      ),
+                      leftTitles: SideTitles(showTitles: true),
+                    ),
+                    borderData: FlBorderData(show: true),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: _prepareDataForChart(),
+                        isCurved: false,
+                        colors: [const Color(0xFF245209)],
+                        barWidth: 2,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 children: [
                   const Expanded(
-                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                    child: Text('Reports', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   ),
                   ElevatedButton(
                     onPressed: _navigateToAddReportScreen,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: White,
+                      backgroundColor: Colors.white,
                       foregroundColor: DeepPurple,
                       side: const BorderSide(width: 1, color: DeepPurple),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
@@ -416,7 +423,7 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: White,
+                      backgroundColor: Colors.white,
                       foregroundColor: DeepPurple,
                       side: const BorderSide(width: 1, color: DeepPurple),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), // Button padding
@@ -426,12 +433,10 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                     ),
                     child: const Text('PDF', style: TextStyle(fontSize: 20)),
                   ),
-                ]
-
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child:Padding(
+            Padding(
               padding: const EdgeInsets.all(8),
               child: Container(
                 decoration: BoxDecoration(
@@ -447,53 +452,58 @@ class _StudentInfoScreenState extends State<StudentInfoScreen> {
                   ],
                 ),
                 child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemCount: _reports.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                        onTap: () {
-                          // Navigate to another screen when a report is tapped
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReportDetailScreen(
-                                reportId: _reports[index]['id'],
-
-                              ),
+                      onTap: () {
+                        // Navigate to another screen when a report is tapped
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportDetailScreen(
+                              reportId: _reports[index]['id'],
                             ),
-                          ).then((_){
-                            _fetchStudentData();
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: (_reports[index]['score'] != null)
-                                ? getReportColor(_reports[index]['score']).withOpacity(0.7)
-                                : NotWhite,
-                            borderRadius: BorderRadius.circular(8), // Rounded corners for the box
                           ),
-                          margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
-                          child: ListTile(
-                            title: Text(_reports[index]['title'],
-                              style: const TextStyle(fontSize: 24),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-
-                            ),
-                            subtitle: Text(_reports[index]['notes'],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Text(_reports[index]['score']?.toStringAsFixed(2) ?? '', style: const TextStyle(fontSize: 30),),
+                        ).then((_) {
+                          _fetchStudentData();
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: (_reports[index]['score'] != null)
+                              ? getReportColor(_reports[index]['score']).withOpacity(0.7)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(8), // Rounded corners for the box
+                        ),
+                        margin: const EdgeInsets.only(bottom: 8), // Margin between boxes
+                        child: ListTile(
+                          title: Text(
+                            _reports[index]['title'],
+                            style: const TextStyle(fontSize: 24),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ));
+                          subtitle: Text(
+                            _reports[index]['notes'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Text(
+                            _reports[index]['score']?.toStringAsFixed(2) ?? '',
+                            style: const TextStyle(fontSize: 30),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-
     );
   }
 }

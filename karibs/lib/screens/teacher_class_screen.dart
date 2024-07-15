@@ -19,6 +19,7 @@ class TeacherClassScreen extends StatefulWidget {
   _TeacherClassScreenState createState() => _TeacherClassScreenState();
 }
 
+//returns color based on student status
 Color getStatusColor(String currStatus) {
   switch (currStatus) {
     case 'Doing well':
@@ -36,6 +37,7 @@ Color getStatusColor(String currStatus) {
   }
 }
 
+//returns fill color based on student status
 Color getStatusColorFill(String currStatus) {
   switch (currStatus) {
     case 'Doing well':
@@ -53,6 +55,7 @@ Color getStatusColorFill(String currStatus) {
   }
 }
 
+//returns status based on student average score
 String changeStatus(double avgScore) {
   if (avgScore >= 70) {
     return 'Doing well';
@@ -90,6 +93,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     super.didChangeDependencies();
   }
 
+  // Load sorting option from SharedPreferences
   Future<void> _loadSortOption() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -97,14 +101,18 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
+  // Save sorting option to SharedPreferences
   Future<void> _saveSortOption(String option) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('sortOption', option);
   }
 
+  // Fetch students data from database
   Future<void> _fetchStudents() async {
     _className = await DatabaseHelper().getClassName(widget.classId) ?? '';
     var data = await DatabaseHelper().queryAllStudents(widget.classId);
+
+    // Update student status based on average score
     if (data.isNotEmpty) {
       for (var i = 0; i < data.length; i++) {
         var x = await DatabaseHelper().queryAverageScore(data[i]['id']);
@@ -118,6 +126,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       }
     }
 
+    // Retrieve updated student data from database
     data = await DatabaseHelper().queryAllStudents(widget.classId);
     setState(() {
       _students = data;
@@ -130,6 +139,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     _sortStudents(_selectedSortOption);
   }
 
+  //add new student to database
   void _addStudent(String studentName) async {
     await DatabaseHelper().insertStudent({
       'name': studentName,
@@ -139,6 +149,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     _fetchStudents();
   }
 
+  // Show dialog to add a new student
   void _showAddStudentDialog() {
     final TextEditingController studentNameController = TextEditingController();
     final FocusNode focusNode = FocusNode();
@@ -180,6 +191,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
+  //navigate to student info screen
   Future<void> _navigateToStudentInfoScreen(int studentId) async {
     final result = await Navigator.push(
       context,
@@ -195,6 +207,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     }
   }
 
+  // Filter students based on search query and status
   void _filterStudents(String query) {
     setState(() {
       _filteredStudents = List<Map<String, dynamic>>.from(_students); // Start with a copy of _students
@@ -213,7 +226,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
-
+  // Filter students by status
   void _filterByStatus(String status) {
     setState(() {
       _selectedStatus = status;
@@ -221,6 +234,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
+  // Show dialog to filter students by status
   void _showStatusFilterDialog() {
     showDialog(
       context: context,
@@ -255,6 +269,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
   }
 
+  // Generate and print PDF report for the class
   Future<void> _generateAndPrintPdf() async {
     if (_students.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -265,7 +280,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       return;
     }
 
-    final pdfGenerator = PdfGenerator();
+    final pdfGenerator = PdfGenerator(context);
     double averageGrade = 0;
     final scores = _students
         .map<double?>((student) => student['average_score'])
@@ -277,12 +292,14 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     await pdfGenerator.generateClassReportPdf(_className, averageGrade, _students);
   }
 
+  // Sort students based on selected criteria
   void _sortStudents(String criteria) {
     setState(() {
 
       _selectedSortOption = criteria;
       _saveSortOption(criteria);
 
+      //sort by name
       if (criteria == 'Name') {
         _filteredStudents.sort((b, a) => a['name'].compareTo(b['name']));
       } else if (criteria == 'Low Score') {
@@ -302,6 +319,8 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
           }
         });
       }
+
+      //sort by score
       else if (criteria == 'High Score') {
         _filteredStudents.sort((a, b) {
           // Handle case where average_score is null or 'No status'
@@ -320,6 +339,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     });
   }
 
+  //displays the dialog to choose the sort preferences
   void _showSortOptionsDialog() {
     showDialog(
       context: context,
@@ -369,6 +389,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     );
   }
 
+  //displays tutorial dialog for the teacher class screen
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -388,35 +409,53 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
       }
 
       return Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back), // Use the back arrow icon
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TeacherDashboard()),
-                  );
-                },
-              ),
-              const Text('Class Viewing'),
-              SizedBox(width: 8), // Adjust spacing between title and icon
-              IconButton(
-                icon: Icon(Icons.help_outline),
-                onPressed: () {
-                  // Show tutorial dialog
-                  _showTutorialDialog();
-                },
-              ),
+          appBar: AppBar(
+            title: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back), // Use the back arrow icon
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      //zoom out animation between pages
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) {
+                          return TeacherDashboard();
+                        },
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          // Define the zoom out animation
+                          var begin = 1.1; // Start with 1.5 times the normal size
+                          var end = 1.0; // End with the normal size
+                          var curve = Curves.easeInOut;
 
-            ],
+                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                          var scaleAnimation = animation.drive(tween);
+
+                          return ScaleTransition(
+                            scale: scaleAnimation,
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const Text('Class Viewing'),
+                SizedBox(width: 8), // Adjust spacing between title and icon
+                IconButton(
+                  icon: Icon(Icons.help_outline),
+                  onPressed: () {
+                    // Show tutorial dialog
+                    _showTutorialDialog();
+                  },
+                ),
+              ],
+            ),
+            backgroundColor: DeepPurple,
+            foregroundColor: White,
+            automaticallyImplyLeading: false,
           ),
-          backgroundColor: DeepPurple,
-          foregroundColor: White,
-          automaticallyImplyLeading: false,
-      ),
-    body: _isLoading
+          body: _isLoading
     ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
     child: Stack(
@@ -518,6 +557,7 @@ class _TeacherClassScreenState extends State<TeacherClassScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        //displays student names, status, and scores
         Container(
           width: 50,
           height: 50,
