@@ -65,6 +65,132 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     });
   }
 
+  Future<void> _showManageCategoriesDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Manage Categories'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _questionCategories.length,
+                  itemBuilder: (context, index) {
+                    bool isNoneCategory = _questionCategories[index]['name'] == 'None';
+                    return ListTile(
+                      title: Text(_questionCategories[index]['name']),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: isNoneCategory ? null : () async {
+                              await _showEditCategoryDialog(index, _questionCategories[index]['name']);
+                              setState(() {
+                                _fetchCategories();
+                              });
+                            },
+                            color: isNoneCategory ? Colors.grey : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: isNoneCategory ? null : () async {
+                              await _showConfirmDeleteCategoryDialog(index);
+                              setState(() {
+                                _fetchCategories();
+                              });
+                            },
+                            color: isNoneCategory ? Colors.grey : Colors.red,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    _fetchCategories();
+  }
+
+  Future<void> _showEditCategoryDialog(int index, String currentName) async {
+    final TextEditingController categoryNameController = TextEditingController(text: currentName);
+
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Category'),
+          content: TextField(
+            controller: categoryNameController,
+            decoration: const InputDecoration(labelText: 'Category Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (categoryNameController.text.isNotEmpty) {
+                  await DatabaseHelper().updateCategory(_questionCategories[index]['id'], categoryNameController.text.trim());
+                  Navigator.of(context).pop();
+                  _fetchCategories(); // Refresh the categories list
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showConfirmDeleteCategoryDialog(int index) async {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Category'),
+          content: const Text('Are you sure you want to delete this category? Items with this category will be reassigned to "None".'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await DatabaseHelper().deleteCategory(_questionCategories[index]['id'], widget.subjectId);
+                Navigator.of(context).pop();
+                _fetchCategories(); // Refresh the categories list
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+
+
+
   /// Updates the question in the database based on user input.
   void _updateQuestion() async {
     if (_textController.text.isNotEmpty && _selectedType != null && _selectedCategoryId != null) {
@@ -176,9 +302,15 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
               child: const Text('Cancel', style: TextStyle(fontSize: 20)),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 if (categoryNameController.text.isNotEmpty) {
+                  var categoryName = categoryNameController.text;
                   _addCategory(categoryNameController.text);
+                  var id = await DatabaseHelper().getCategoryId(categoryName);
+
+                  setState(() {
+                    _selectedCategoryId = id;
+                  });
                   Navigator.of(context).pop();
                 }
               },
@@ -229,8 +361,8 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
               ),
             ],
           ),
-          backgroundColor: Colors.deepPurple, // Set app bar background color
-          foregroundColor: Colors.white, // Set app bar foreground color
+          backgroundColor: DeepPurple, // Set app bar background color
+          foregroundColor: White, // Set app bar foreground color
           automaticallyImplyLeading: false, // Disable automatic back button
         ),
         body: _isLoading
@@ -324,7 +456,7 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<int>(
-                        value: _selectedCategoryId,
+                        value: _questionCategories.any((category) => category['id'] == _selectedCategoryId) ? _selectedCategoryId : null,
                         items: _questionCategories.map((category) {
                           return DropdownMenuItem<int>(
                             value: category['id'],
@@ -343,6 +475,10 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
                       icon: const Icon(Icons.add),
                       onPressed: _showAddCategoryDialog,
                     ),
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: _showManageCategoriesDialog,
+                    )
                   ],
                 ),
                 const SizedBox(height: 16),
