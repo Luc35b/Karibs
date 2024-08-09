@@ -260,8 +260,39 @@ CREATE TABLE questions (
       INNER JOIN subjects ON classes.subject_id = subjects.id
     ''');
   }
-  
-  // Function to get the category name from a question ID
+
+  Future<String?> getSubjectNameById(int subjectId) async {
+    final db = await database;
+
+    List<Map<String, dynamic>> result = await db.query(
+      'subjects',
+      columns: ['name'],
+      where: 'id = ?',
+      whereArgs: [subjectId],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['name'] as String;
+    }
+    return null;
+  }
+
+  Future<String?> getCategoryNameById(int categoryId) async {
+    final db = await database;
+
+    List<Map<String, dynamic>> result = await db.query(
+      'categories',
+      columns: ['name'],
+      where: 'id = ?',
+      whereArgs: [categoryId],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['name'] as String;
+    }
+    return null;
+  }
+
   Future<String?> getCategoryNameFromQuestion(int questionId) async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.rawQuery('''

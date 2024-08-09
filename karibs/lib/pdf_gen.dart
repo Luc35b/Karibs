@@ -4,10 +4,8 @@ import 'package:karibs/preview_pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:karibs/database/database_helper.dart';
-import 'package:printing/printing.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:karibs/preview_pdf.dart';
+
 
 class PdfGenerator {
   final BuildContext context;
@@ -403,7 +401,21 @@ class PdfGenerator {
   Future<void> generateTestImportPdf(int testId, String testTitle, int subjectId) async {
     final pdf = pw.Document();
     final questions = await _getOrderedQuestions(testId);
-    var temp = '';
+
+    // Fetch the subject name based on the subjectId
+    String? subjectName = await DatabaseHelper().getSubjectNameById(subjectId);
+
+    // Create a map to store categoryId to categoryName mapping
+    Map<int, String> categoryMap = {};
+
+    // Populate the categoryMap with category names
+    for (var question in questions) {
+      int categoryId = question['category_id'];
+      if (!categoryMap.containsKey(categoryId)) {
+        String? categoryName = await DatabaseHelper().getCategoryNameById(categoryId);
+        categoryMap[categoryId] = categoryName ?? 'Unknown Category';
+      }
+    }
 
     pdf.addPage(
       pw.MultiPage(
@@ -414,34 +426,36 @@ class PdfGenerator {
               children: [
                 pw.Text('_Import_Format_^', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 20),
-                pw.Text('title:$testTitle|subject_id:$subjectId^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.Text('title:$testTitle|subject:$subjectName^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 20),
                 ...questions.asMap().entries.map((entry) {
                   int index = entry.key + 1;
                   var question = entry.value;
+                  String? categoryName = categoryMap[question['category_id']];
+
                   return pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       if (question['type'] == 'Multiple Choice')
-                        pw.Text('Q.${question['text']}|m_c|${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                      if(question['type'] == 'Fill in the Blank')
-                        pw.Text('Q.${question['text']}|f_b,${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                      if(question['type'] == 'Essay')
-                        pw.Text('Q.${question['text']}|${question['type']}|${question['category_id']}|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Q.${question['text']}|m_c|$categoryName|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (question['type'] == 'Fill in the Blank')
+                        pw.Text('Q.${question['text']}|f_b|$categoryName|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (question['type'] == 'Essay')
+                        pw.Text('Q.${question['text']}|${question['type']}|$categoryName|${question['essay_spaces']??''}^', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
                       if (question['choices'] != null)
                         ...question['choices'].asMap().entries.map<pw.Widget>((choiceEntry) {
                           int choiceIndex = choiceEntry.key;
                           var choice = choiceEntry.value;
                           return pw.Text(
-                            'A.$choiceIndex|${choice['choice_text']}|${choice['is_correct']==1?'true':'false'}^',
+                            'A.$choiceIndex|${choice['choice_text']}|${choice['is_correct'] == 1 ? 'true' : 'false'}^',
                             style: pw.TextStyle(fontSize: 14),
                           );
                         }).toList(),
                       pw.SizedBox(height: 20),
                     ],
                   );
-                }),
+                }).toList(),
               ],
             ),
           ];
@@ -454,11 +468,14 @@ class PdfGenerator {
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Import Format.pdf'),
-      ),
-    );
+    // Ensure the context is still mounted before navigating
+    if (context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfPreviewScreen(path: filePath, title: '$testTitle - Import Format.pdf'),
+        ),
+      );
+    }
   }
 }

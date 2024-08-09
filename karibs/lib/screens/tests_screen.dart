@@ -404,7 +404,7 @@ class _TestsScreenState extends State<TestsScreen> {
 
     // Initialize variables to store parsed data
     String testTitle = '';
-    int subjectId = 0;
+    String subjectName = '';
     List<Map<String, dynamic>> questionsData = [];
 
     // Split the content into lines
@@ -424,29 +424,27 @@ class _TestsScreenState extends State<TestsScreen> {
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
 
-      // Example: Parse test title and subject ID
+      // Parse test title and subject name
       if (line.startsWith('title')) {
         var header = line.split('|').map((e) => e.trim()).toList();
-        testTitle = header[0].split(':')[1].trim();
-        subjectId = int.tryParse(header[1].split(':')[1].trim()) ?? 0;
+        testTitle = header[0].split(':')[1].trim().replaceAll('\n', '');
+        subjectName = header[1].split(':')[1].trim().replaceAll('\n', '');
       }
 
-      // Example: Parse questions and choices
+      // Parse questions and choices
       if (line.startsWith('Q')) {
         var questionParts = line.split('|').map((e) => e.trim()).toList();
-        print('Question parts: $questionParts');
         if (questionParts.length >= 4) {
           var questionText = questionParts[0].split('.')[1].trim();
           var qt = questionText.replaceAll('\n', '');
           var type = questionParts[1];
-          if (type == 'm_c') {
-            type = 'Multiple Choice';
-          }
-          else if (type == 'f_b') {
-            type = 'Fill in the Blank';
-          }
-          var categoryId = int.tryParse(questionParts[2]) ?? 0;
-          var essaySpaces = questionParts.length > 4 ? int.tryParse(questionParts[3]) : null;
+          type = type == 'm_c' ? 'Multiple Choice' : 'Fill in the Blank';
+          var categoryName = questionParts[2].trim().replaceAll('\n', ' ');;
+          var essaySpaces = questionParts.length > 3 ? int.tryParse(questionParts[3]) : null;
+
+          // Get or insert subject and category IDs
+          int subjectId = await getOrInsertSubject(subjectName);
+          int categoryId = await getOrInsertCategory(categoryName, subjectId);
 
           // Collect choices for the question
           List<Map<String, dynamic>> choices = [];
@@ -481,11 +479,54 @@ class _TestsScreenState extends State<TestsScreen> {
       }
     }
 
-    await insertTestData(testTitle, subjectId, questionsData);
+    await insertTestData(testTitle, subjectName, questionsData);
     _fetchTests();
   }
 
-  Future<void> insertTestData(String testTitle, int subjectId, List<Map<String, dynamic>> questionsData) async {
+  Future<int> getOrInsertSubject(String subjectName) async {
+    final db = await DatabaseHelper().database;
+
+    // Check if the subject already exists
+    final result = await db.query(
+      'subjects',
+      where: 'name = ?',
+      whereArgs: [subjectName],
+    );
+
+    if (result.isNotEmpty) {
+      // Subject exists
+      return result.first['id'] as int;
+    } else {
+      // Insert new subject
+      final id = await db.insert('subjects', {'name': subjectName});
+      return id;
+    }
+  }
+
+  Future<int> getOrInsertCategory(String categoryName, int subjectId) async {
+    final db = await DatabaseHelper().database;
+
+    // Check if the category already exists
+    final result = await db.query(
+      'categories',
+      where: 'name = ? AND subject_id = ?',
+      whereArgs: [categoryName, subjectId],
+    );
+
+    if (result.isNotEmpty) {
+      // Category exists
+      return result.first['id'] as int;
+    } else {
+      // Insert new category
+      final id = await db.insert('categories', {'name': categoryName, 'subject_id': subjectId});
+      return id;
+    }
+  }
+
+
+  Future<void> insertTestData(String testTitle, String subjectName, List<Map<String, dynamic>> questionsData) async {
+    int subjectId = await getOrInsertSubject(subjectName);
+
     if (_tests.any((test) => test['title'] == testTitle)) {
       _scaffoldMessengerKey.currentState?.showSnackBar(
         const SnackBar(
@@ -504,6 +545,7 @@ class _TestsScreenState extends State<TestsScreen> {
       await insertQuestion(tId, questionData);
     }
   }
+
 
   Future<void> insertQuestion(int testId, Map<String, dynamic> questionData) async {
     int questionId = await DatabaseHelper().insertQuestion({
