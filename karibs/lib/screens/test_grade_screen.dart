@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:karibs/main.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
 import '../overlay.dart';
