@@ -186,6 +186,21 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
     );
   }
 
+  void _checkAndSetDefaultCategory() {
+    bool categoryExists = _questionCategories.any((category) => category['id'] == _selectedCategoryId);
+
+    if (!categoryExists) {
+      // Find the ID of the "None" category
+      int noneCategoryId = _questionCategories.firstWhere(
+            (category) => category['name'] == 'None',
+        orElse: () => {'id': null},
+      )['id'];
+
+      // Set the selectedCategoryId to the "None" category ID
+      _selectedCategoryId = noneCategoryId;
+    }
+  }
+
 
 
 
@@ -223,6 +238,11 @@ class _EditQuestionScreenState extends State<EditQuestionScreen> {
           return;
         }
       }
+
+      //print("getting here");
+
+      _checkAndSetDefaultCategory();
+
 
       /// Update question details in the database
       await DatabaseHelper().updateQuestion(widget.questionId, {

@@ -97,7 +97,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         }
       }
 
-      // Insert question into database based on question type.
       int questionId = await DatabaseHelper().insertQuestion({
         'text': _textController.text,
         'type': _selectedType,

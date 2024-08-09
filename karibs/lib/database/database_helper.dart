@@ -139,11 +139,24 @@ class DatabaseHelper {
     )
   ''');
     // Insert initial subjects
-    await db.insert('subjects', {'name': 'None'}); // Add default subject
-    await db.insert('subjects', {'name': 'Math'});
-    await db.insert('subjects', {'name': 'Science'});
-    await db.insert('subjects', {'name': 'History'});
-    await db.insert('subjects', {'name': 'English'});
+    // Insert subjects
+    final subjects = [
+      {'name': 'None'},
+      {'name': 'Math'},
+      {'name': 'Science'},
+      {'name': 'History'},
+      {'name': 'English'},
+    ];
+
+    for (var subject in subjects) {
+      int subjectId = await db.insert('subjects', subject);
+
+      // Insert "None" category for each subject
+      await db.insert('categories', {
+        'name': 'None',
+        'subject_id': subjectId,
+      });
+    }
   }
 
 
