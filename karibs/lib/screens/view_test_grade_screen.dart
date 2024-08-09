@@ -4,6 +4,9 @@ import 'package:karibs/main.dart';
 import 'package:karibs/screens/regrade_test_screen.dart';
 import 'package:karibs/overlay.dart';
 
+/// The `ViewTestGradeScreen` displays the detailed grades of a particular test.
+/// It displays details about the student's responses to the questions like whether they got it correct or incorrect,
+/// along with the correct answers for the question for easy review
 class ViewTestGradeScreen extends StatefulWidget {
   final int reportId;
 
@@ -14,9 +17,9 @@ class ViewTestGradeScreen extends StatefulWidget {
 }
 
 class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
-  bool _isLoading = true;
-  List<Map<String, dynamic>> _questions = [];
-  Map<int, List<Map<String, dynamic>>> _choices = {};
+  bool _isLoading = true;  // Indicates if the data is still loading
+  List<Map<String, dynamic>> _questions = [];  // List of questions related to the report
+  Map<int, List<Map<String, dynamic>>> _choices = {};  // Choices grouped by question_id
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     _fetchQuestionsAndAnswers();
   }
 
+  /// Fetches questions and answers for the specific report from the database.
   Future<void> _fetchQuestionsAndAnswers() async {
     final dbHelper = DatabaseHelper();
     final result = await dbHelper.getQuestionsAndAnswersForReport(widget.reportId);
@@ -31,7 +35,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     setState(() {
       _questions = result['questions'];
 
-      // Group choices by question_id
+      // Group relevant choices by question_id
       _choices = {};
       for (var choice in result['choices']) {
         int questionId = choice['question_id'];
@@ -45,6 +49,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     });
   }
 
+  /// Navigates to the `RegradeTestScreen`.
   void _navigateToRegradeScreen(BuildContext context) {
     Navigator.push(
       context,
@@ -56,6 +61,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
     ).then((_){_fetchQuestionsAndAnswers();});
   }
 
+  /// Shows a tutorial dialog.
   void _showTutorialDialog() {
     showDialog(
       context: context,
@@ -77,10 +83,7 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
             SizedBox(width: 8), // Adjust spacing between title and icon
             IconButton(
               icon: Icon(Icons.help_outline),
-              onPressed: () {
-                // Show tutorial dialog
-                _showTutorialDialog();
-              },
+              onPressed: _showTutorialDialog, // Show tutorial dialog
             ),
           ],
         ),
@@ -100,10 +103,8 @@ class _ViewTestGradeScreenState extends State<ViewTestGradeScreen> {
           Container(
             padding: const EdgeInsets.all(10.0),
             color: Colors.grey[200],
-
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
               children: [
                 Row(
                   children: [

@@ -47,8 +47,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       _selectedStudentId = report['student_id'];
       _testId = report['test_id'];
       _testTitle = report['title'];
-      _studentTestId =
-      await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
+      _studentTestId = await DatabaseHelper().getStudentTestIdFromReport(widget.reportId);
     }
       // Fetch student details, questions, class name, and categories
     _student = await DatabaseHelper().getStudentById(_selectedStudentId!);
@@ -71,30 +70,34 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
 
       // Initialize categoryScores and questionCorrectness based on saved data
-      await _initializeSavedResults();
+
 
     // If no categories are found, indicate that the test has been deleted
-    if(_categories.isEmpty) {
+    if (questionCorrectness.isEmpty && orderedQuestions.isEmpty) {
       setState(() {
         _testDeleted = true;
         _isLoading = false;
       });
       return;
     }
+    print(orderedQuestions);
 
       setState(() {
         _questions = orderedQuestions;
         _isLoading = false;
       });
 
+    await _initializeSavedResults();
+
   }
 
   Future<void> _initializeSavedResults() async {
     // Get saved regrading results for the current student and test
     Map<String, dynamic>? savedResults = await DatabaseHelper().getStudentTestResults(_selectedStudentId!, _testId!);
+    print(savedResults);
     if (savedResults != null) {
       // Initialize questionCorrectness based on saved results
-      _initializeQuestionCorrectness(savedResults);
+      _initializeQuestionCorrectness(savedResults, _questions);
       // Initialize categoryScores based on saved results
       await _initializeCategoryScores(savedResults);
     }
@@ -104,13 +107,25 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
     categoryScores.clear();
     Map<int, double?> cats = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
 
-    // Convert percentage scores to raw scores based on the number of questions
+    // Convert percentage scores to raw scores based on the updated number of questions in each category
     for (var entry in cats.entries) {
-      if (entry.value != null) {
-        int categoryId = entry.key;
-        double? percentageScore = entry.value;
-        int categoryQuestions = _questions.where((question) => question['category_id'] == categoryId).length;
-        cats[categoryId] = (percentageScore! / 100.0) * categoryQuestions;
+      int categoryId = entry.key;
+      double? percentageScore = entry.value;
+
+      int totalQuestionsInCategory = _questions.where((question) => question['category_id'] == categoryId).length;
+
+      // Adjust raw score based on the new total number of questions
+      if (percentageScore != null && totalQuestionsInCategory > 0) {
+        cats[categoryId] = (percentageScore / 100.0) * totalQuestionsInCategory;
+      } else {
+        cats[categoryId] = 0.0;
+      }
+    }
+
+    for (var category in _categories) {
+      int categoryId = category['id'];
+      if (!cats.containsKey(categoryId)) {
+        cats[categoryId] = 0.0; // Default value for new categories
       }
     }
 
@@ -118,17 +133,28 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       categoryScores = cats;
     });
 
-    print(categoryScores); // Ensure correct initialization
-
+    print("category scores: $categoryScores");
   }
 
+
   //saves correct answers
-  void _initializeQuestionCorrectness(Map<String, dynamic> savedResults) {
+  void _initializeQuestionCorrectness(Map<String, dynamic> savedResults, List<Map<String,dynamic>> questions) {
     questionCorrectness.clear();
     savedResults['question_correctness'].forEach((questionId, correctness) {
       questionCorrectness[int.parse(questionId)] = correctness;
     });
+
+    for (var question in questions) {
+      int questionId = question['id'];
+      if (!questionCorrectness.containsKey(questionId)) {
+        questionCorrectness[questionId] = 0; // Default value for ungraded
+      }
+    }
     print(questionCorrectness);
+    setState(() {
+      questionCorrectness = questionCorrectness;
+    });
+    //print("question correctness: " + questionCorrectness.toString());
   }
 
   //marks a question correct by the teacher
@@ -185,7 +211,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       }
     }
 
-    print(categoryScoresPercentage);
+    // print(categoryScoresPercentage);
 
 
     // Save scores to the database
@@ -215,15 +241,37 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
             'got_correct': value,
           });
         }
+        else {
+          await DatabaseHelper().insertStudentTestQuestion({
+            'student_test_id': studentTestId,
+            'question_id': key,
+            'got_correct': value,
+          });
+        }
       });
 
       // Update category scores in the database
       for (var entry in categoryScoresPercentage.entries) {
-        await DatabaseHelper().updateStudentTestCategoryScore(studentTestId!, entry.key, {
-          'student_test_id': studentTestId,
-          'category_id': entry.key,
-          'score': entry.value,
-        });
+
+        int categoryId = entry.key;
+        double categoryScore = entry.value;
+        double? existingCategoryScore = await DatabaseHelper().getStudentTestCategoryScore(studentTestId!, categoryId);
+
+        if(existingCategoryScore != null) {
+          await DatabaseHelper().updateStudentTestCategoryScore(
+              studentTestId!, entry.key, {
+            'student_test_id': studentTestId,
+            'category_id': entry.key,
+            'score': entry.value,
+          });
+        }
+        else {
+          await DatabaseHelper().insertStudentTestCategoryScore({
+            'student_test_id': studentTestId,
+            'category_id': categoryId,
+            'score': categoryScore,
+          });
+        }
 
         print({
           'category_id': entry.key,
@@ -238,6 +286,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
           content: Text('Grades updated successfully'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 80.0, left: 16.0, right: 16.0),
+          duration: Duration(seconds: 2),
         ),
       );
       // Notify the provider that a student has been regraded
@@ -331,7 +380,11 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
               itemBuilder: (context, index) {
                 int questionId = _questions[index]['id'];
                 int categoryId = _questions[index]['category_id'];
-                String categoryName = _categories.firstWhere((category) => category['id'] == categoryId)['name'];
+                String categoryName = _categories.firstWhere(
+                      (category) => category['id'] == categoryId,
+                  orElse: () => {'name': 'Unknown Category'},
+                )['name'];
+
                 return ListTile(
                   title: Text(_questions[index]['text']),
                   subtitle: Text('Category: $categoryName'),

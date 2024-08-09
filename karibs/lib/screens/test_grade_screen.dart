@@ -37,6 +37,8 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
   Map<int, int> questionCorrectness = {};
   Set<int> _gradedStudentIds = {};
 
+  bool _newQuestionsAvailable = false;
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +77,12 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
       final orderIntList = orderList.map((e) => int.parse(e)).toList();
       orderedQuestions.sort((a, b) => orderIntList.indexOf(a['id']).compareTo(orderIntList.indexOf(b['id'])));
     }
+    if(_students.isNotEmpty) {
+      _newQuestionsAvailable = (_gradedStudentIds.length == _students.length) &&
+          (orderedQuestions.isNotEmpty);
+    }
+
+
 
     List<Map<String, dynamic>> categories = await DatabaseHelper().getCategoriesByTestId(widget.testId);
     setState(() {
@@ -228,6 +236,37 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
     );
   }
 
+  Widget _buildNotificationBanner() {
+    if (_newQuestionsAvailable) {
+      return Container(
+        color: Colors.yellow,
+        padding: EdgeInsets.all(10),
+        child: Row(
+          children: [
+            Icon(Icons.info, color: Colors.black),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'New questions have been added. Please regrade each student individually.',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.close, color: Colors.black),
+              onPressed: () {
+                setState(() {
+                  _newQuestionsAvailable = false;
+                });
+              },
+            ),
+          ],
+        ),
+      );
+    }
+    return Container();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -253,6 +292,7 @@ class _TestGradeScreenState extends State<TestGradeScreen> {
           : Center(
         child: Column(
           children: [
+            _buildNotificationBanner(),
             if (_className != null)
               Padding(
                 padding: const EdgeInsets.all(8.0),
