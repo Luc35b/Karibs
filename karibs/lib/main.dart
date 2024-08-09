@@ -3,7 +3,6 @@ import 'package:karibs/overlay.dart';
 import 'package:karibs/providers/student_grading_provider.dart';
 import 'screens/teacher_dashboard.dart';
 import 'student_screens/student_screen.dart';
-import 'database/database_helper.dart';
 import 'package:provider/provider.dart';
 
 //color scheme across the app
