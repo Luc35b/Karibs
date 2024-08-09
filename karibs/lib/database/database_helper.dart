@@ -26,6 +26,7 @@ class DatabaseHelper {
       onUpgrade: _onUpgrade,
       readOnly: false,
     );
+
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -58,7 +59,8 @@ class DatabaseHelper {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       subject_id INTEGER NOT NULL,
-      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+      FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE,
+      UNIQUE(name, subject_id)
     )
   ''');
     await db.execute('''
@@ -136,6 +138,12 @@ class DatabaseHelper {
       FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
     )
   ''');
+    // Insert initial subjects
+    await db.insert('subjects', {'name': 'None'}); // Add default subject
+    await db.insert('subjects', {'name': 'Math'});
+    await db.insert('subjects', {'name': 'Science'});
+    await db.insert('subjects', {'name': 'History'});
+    await db.insert('subjects', {'name': 'English'});
   }
 
 
@@ -178,6 +186,9 @@ CREATE TABLE questions (
         FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
       )
     ''');
+
+
+
     }
   }
 
@@ -422,6 +433,37 @@ CREATE TABLE questions (
     }
     return null;
   }
+
+  Future<Map<String, dynamic>?> getCategoryByNameAndSubjectId(String name, int subjectId) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'categories',
+      where: 'name = ? AND subject_id = ?',
+      whereArgs: [name, subjectId],
+    );
+    if (result.isNotEmpty) {
+      return result.first;
+    } else {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCategoryByName(String categoryName) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.rawQuery('''
+    SELECT categories.id, categories.name, subjects.name as subject_name
+    FROM categories
+    JOIN subjects ON categories.subject_id = subjects.id
+    WHERE categories.name = ?
+  ''', [categoryName]);
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
+
+
 
   Future<Map<String, dynamic>> getQuestionById(int questionId) async {
     Database db = await database;
@@ -861,11 +903,60 @@ CREATE TABLE questions (
       whereArgs: [subjectId],
     );
 
+    await db.update(
+      'categories',
+      {'subject_id': defaultSubjectId},
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+
     // Now delete the subject
     await db.delete(
       'subjects',
       where: 'id = ?',
       whereArgs: [subjectId],
+    );
+  }
+
+  Future<int> updateCategory(int categoryId, String newName) async {
+    final db = await database;
+    return await db.update(
+      'categories',
+      {'name': newName},
+      where: 'id = ?',
+      whereArgs: [categoryId],
+    );
+  }
+
+  Future<int> deleteCategory(int categoryId, int subjectId) async {
+    final db = await database;
+
+    // Check if the "None" category exists; if not, create it
+    final List<Map<String, dynamic>> noneCategory = await db.query(
+      'categories',
+      where: 'name = ? AND subject_id = ?',
+      whereArgs: ['None', subjectId], // subjectId should be provided or fetched accordingly
+    );
+
+    int noneCategoryId;
+    if (noneCategory.isEmpty) {
+      noneCategoryId = await db.insert('categories', {'name': 'None', 'subject_id': subjectId});
+    } else {
+      noneCategoryId = noneCategory.first['id'];
+    }
+
+    // Update all questions and items with the deleted category to the "None" category
+    await db.update(
+      'questions',
+      {'category_id': noneCategoryId},
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
+
+    return await db.delete(
+      'categories',
+      where: 'id = ?',
+      whereArgs: [categoryId],
     );
   }
 
@@ -1103,6 +1194,35 @@ CREATE TABLE questions (
 
     return classResults;
   }
+
+  Future<List<int>> getGradedQuestions(int testId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'student_test_question',
+      columns: ['question_id'],
+      where: 'student_test_id = ?',
+      whereArgs: [testId],
+    );
+
+    return result.map((map) => map['question_id'] as int).toList();
+  }
+
+  Future<double?> getStudentTestCategoryScore(int studentTestId, int categoryId) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'student_test_category_scores',
+      columns: ['score'],
+      where: 'student_test_id = ? AND category_id = ?',
+      whereArgs: [studentTestId, categoryId],
+    );
+    if (result.isNotEmpty) {
+      return result.first['score'];
+    }
+    return null;
+  }
+
+
 
   Future<Map<String, double?>> getCategoryScoresbyStudentTestId(int studentTestId) async {
     final db = await database;

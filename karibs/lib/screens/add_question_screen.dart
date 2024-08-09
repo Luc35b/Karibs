@@ -48,6 +48,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(bottom: 60.0, left: 16.0, right: 16.0),
           dismissDirection: DismissDirection.down,
+          duration: Duration(seconds: 2),
         ),
       );
     }
@@ -177,13 +178,27 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             TextButton(
               onPressed: () async {
                 if (categoryNameController.text.isNotEmpty) {
-                  _addCategory(categoryNameController.text);
-                  int? id = await DatabaseHelper().getCategoryId(categoryNameController.text);
-                  setState(() {
-                    _selectedCategoryId = id;
-                  });
+                  var categoryName = categoryNameController.text.trim();
+                  var existingCategory = await DatabaseHelper().getCategoryByName(categoryName);
 
-                  Navigator.of(context).pop();
+                  if (existingCategory != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Category $categoryName already exists within subject "${existingCategory['subject_name']}"'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    _addCategory(categoryName);
+                    await _fetchCategories();
+                    var id = await DatabaseHelper().getCategoryId(categoryName);
+
+                    setState(() {
+                      _selectedCategoryId = id;
+                    });
+
+                    Navigator.of(context).pop();
+                  }
                 }
               },
               child: const Text('Add', style: TextStyle(fontSize: 20)),
@@ -194,11 +209,152 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 
+  Future<void> _showManageCategoriesDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Manage Categories'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _questionCategories.length,
+                  itemBuilder: (context, index) {
+                    bool isNoneCategory = _questionCategories[index]['name'] == 'None';
+                    return ListTile(
+                      title: Text(_questionCategories[index]['name']),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: isNoneCategory ? null : () async {
+                              await _showEditCategoryDialog(index, _questionCategories[index]['name']);
+                              setState(() {
+                                _fetchCategories();
+                              });
+                            },
+                            color: isNoneCategory ? Colors.grey : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: isNoneCategory ? null : () async {
+                              await _showConfirmDeleteCategoryDialog(index);
+                              setState(() {
+                                _fetchCategories();
+                              });
+                            },
+                            color: isNoneCategory ? Colors.grey : Colors.red,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    _fetchCategories(); // Refresh the categories after managing
+  }
+
+  Future<void> _showEditCategoryDialog(int index, String currentName) async {
+    final TextEditingController categoryNameController = TextEditingController(text: currentName);
+
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Category'),
+          content: TextField(
+            controller: categoryNameController,
+            decoration: const InputDecoration(labelText: 'Category Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (categoryNameController.text.isNotEmpty) {
+                  await DatabaseHelper().updateCategory(_questionCategories[index]['id'], categoryNameController.text.trim());
+                  Navigator.of(context).pop();
+                  _fetchCategories(); // Refresh the categories list
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showConfirmDeleteCategoryDialog(int index) async {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Category'),
+          content: const Text('Are you sure you want to delete this category?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await DatabaseHelper().deleteCategory(_questionCategories[index]['id'], _questionCategories[index]['subject_id']);
+                Navigator.of(context).pop();
+                setState(() {
+                  _fetchCategories();
+                });
+
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  /// Inserts a new category into the database.
   /// Inserts a new category into the database.
   void _addCategory(String categoryName) async {
-    await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
-    _fetchCategories();
+    var existingCategory = await DatabaseHelper().getCategoryByNameAndSubjectId(categoryName, widget.subjectId);
+
+    if (existingCategory != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Category $categoryName already exists for this subject!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      await DatabaseHelper().insertCategory({'name': categoryName, 'subject_id': widget.subjectId});
+      await _fetchCategories();  // Ensure categories are refreshed immediately
+    }
   }
+
+
+
+
 
   /// Shows a tutorial dialog for add question screen
   void _showTutorialDialog() {
@@ -259,7 +415,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           children: [
             Expanded(
               child: DropdownButtonFormField<int>(
-                value: _selectedCategoryId,
+                value: _questionCategories.any((category) => category['id'] == _selectedCategoryId) ? _selectedCategoryId : null,
                 items: _questionCategories.map((category) {
                   return DropdownMenuItem<int>(
                     value: category['id'],
@@ -277,6 +433,10 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: _showAddCategoryDialog,
+            ),
+            IconButton(
+              icon: const Icon(Icons.remove),
+              onPressed: _showManageCategoriesDialog,
             ),
           ],
         ),
@@ -377,4 +537,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     );
   }
 }
+
+
 

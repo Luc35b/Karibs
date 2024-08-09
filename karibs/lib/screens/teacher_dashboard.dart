@@ -36,13 +36,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     'Basic 9',
   ];
 
-  List<String> subjectsList = [
-    'Math',
-    'Science',
-    'History',
-    'English',
-    'None'
-  ];
+  List<String> subjectsList = [];
 
   bool _isLoading = true;
 
@@ -60,11 +54,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     super.initState();
     _fetchClasses();
     _fetchSubjects();
-    _getOrCreateSubjectId('Math');
-    _getOrCreateSubjectId('Science');
-    _getOrCreateSubjectId('History');
-    _getOrCreateSubjectId('English');
-    _getOrCreateSubjectId('None');
   }
 
   Future<void> _fetchSubjects() async {
@@ -73,7 +62,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     // Extract subject names from sData
     List<String> fetchedSubjects = [];
     for (var subject in sData) {
-      fetchedSubjects.add(subject['name'].toString());
+      String subjectName = subject['name'].toString();
+      if (!fetchedSubjects.contains(subjectName)) {
+        fetchedSubjects.add(subjectName);
+      }
     }
 
     setState(() {
@@ -172,6 +164,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _showAddClassDialog() {
+    _fetchClasses();
     _fetchSubjects();
 
     String? selectedClass;
@@ -208,7 +201,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             ...classesList.map((classItem) {
                               return DropdownMenuItem<String>(
                                 value: classItem,
-                                child: Text(classItem),
+                                child: Text(classItem,
+                                overflow: TextOverflow.ellipsis),
                               );
                             }),
                           ],
@@ -251,7 +245,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           hint: const Text('Select Subject'),
-                          value: selectedSubject,
+                          value: subjectsList.any((subject) => subject == selectedSubject) ? selectedSubject : null,
                           onChanged: (String? newValue) {
                             setState(() {
                               selectedSubject = newValue;
@@ -264,7 +258,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             ...subjectsList.map((subject) {
                               return DropdownMenuItem<String>(
                                 value: subject,
-                                child: Text(subject),
+                                child: Container(
+                                  constraints: const BoxConstraints(maxWidth: 200), // Adjust the maxWidth as needed
+                                  child: Text(
+                                    subject,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               );
                             }),
                           ],
@@ -277,8 +277,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             setState(() {
                               if (!subjectsList.contains(customSubjectName)) {
                                 subjectsList.add(customSubjectName);
+
+                                selectedSubject = customSubjectName;
                               }
-                              selectedSubject = customSubjectName;
+                              else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Subject $customSubjectName already exists!'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
                             });
                           }
                         },
@@ -287,7 +296,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       IconButton(
                         onPressed: () async {
                           await _showManageSubjectsDialog();
-                          _fetchSubjects();
+                          setState( () {
+                            _fetchSubjects();
+                          });
                         },
                         icon: const Icon(Icons.remove),
                       ),
@@ -386,8 +397,24 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () {
+
                 String customSubjectName = customSubjectController.text.trim();
-                Navigator.of(context).pop(customSubjectName); // Return custom subject name
+                String normalizedSubjectName = customSubjectName.toLowerCase();
+
+                bool subjectExists = subjectsList.any((subject) => subject.toLowerCase() == normalizedSubjectName);
+
+                if(subjectExists) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Subject $customSubjectName already exists!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+                else {
+                  Navigator.of(context).pop(
+                      customSubjectName); // Return custom subject name
+                }
               },
               child: const Text('Add', style: TextStyle(fontSize: 20)),
             ),
@@ -395,16 +422,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         );
       },
     );
-    // ).then((_){
-    //   focusNode.dispose();
-    // });
-    //
-    // Future.delayed(Duration(milliseconds: 100), (){
-    //   focusNode.requestFocus();
-    // });
   }
 
-  Future<void> _showManageSubjectsDialog() async {
+  Future<String?> _showManageSubjectsDialog() async {
     await showDialog(
       context: context,
       builder: (context) {
@@ -416,18 +436,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 width: double.maxFinite,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: subjectsList.length,
+                  itemCount: _subjects.length,
                   itemBuilder: (context, index) {
-                    bool isNoneSubject = subjectsList[index] == 'None';
+                    bool isNoneSubject = _subjects[index]['name'] == 'None';
                     return ListTile(
-                      title: Text(subjectsList[index]),
+                      title: Text(_subjects[index]['name']),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
                             onPressed: isNoneSubject ? null : () async {
-                              await _showEditSubjectDialog(index, subjectsList[index]);
+                              await _showEditSubjectDialog(index, _subjects[index]['name']);
                             },
                             color: isNoneSubject ? Colors.grey : null,
                           ),
@@ -448,8 +468,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    _showAddClassDialog();
+
                   },
                   child: const Text('Close'),
                 ),
@@ -459,6 +478,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         );
       },
     );
+    _fetchClasses();
   }
 
 
@@ -512,6 +532,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
             TextButton(
               onPressed: () async {
+
+                    int subjectId = _subjects[index]['id'];
+                    // Fetch classes associated with this subject
+                    List<Map<String, dynamic>> associatedClasses = await DatabaseHelper().getClassesBySubjectId(subjectId);
+
+                    // Update classes to have subject 'None'
+                    int? noneSubjectId = await DatabaseHelper().getSubjectId('None');
+                    for (var classItem in associatedClasses) {
+                      int classId = classItem['id'];
+                      await DatabaseHelper().updateClass(classId, {'subject_id': noneSubjectId});
+                    }
                     await DatabaseHelper().deleteSubject(_subjects[index]['id']);
                     Navigator.of(context).pop(true);
                     await _fetchSubjects(); // Refresh the subjects list
@@ -528,7 +559,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
   void _showEditClassDialog(int classId, String currentClassName, String currentSubjectName) {
-    final TextEditingController classNameController = TextEditingController(text: currentClassName);
     String selectedClass = currentClassName; // Track selected class
     String selectedSubject = currentSubjectName; // Track selected subject
 
@@ -586,7 +616,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           hint: const Text('Select Subject'),
-                          value: selectedSubject,
+                          value: subjectsList.any((subject) => subject == selectedSubject) ? selectedSubject : null,
                           onChanged: (String? newValue) {
                             setState(() {
                               selectedSubject = newValue!;
@@ -596,7 +626,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                             ...subjectsList.map((subject) {
                               return DropdownMenuItem<String>(
                                 value: subject,
-                                child: Text(subject),
+                                child: Container(
+                                  constraints: const BoxConstraints(maxWidth: 200), // Adjust the maxWidth as needed
+                                  child: Text(
+                                    subject,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               );
                             }),
                           ],
@@ -607,12 +643,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           String? customSubjectName = await _showCustomSubjectDialog();
                           if (customSubjectName != null && customSubjectName.isNotEmpty) {
                             setState(() {
-                              if (!subjectsList.contains(customSubjectName)) {
+
+                              if (subjectsList.contains(customSubjectName)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Subject $customSubjectName already exists!'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              } else {
                                 subjectsList.add(customSubjectName);
                                 _getOrCreateSubjectId(customSubjectName);
-                                _fetchSubjects();
+                                selectedSubject = customSubjectName;
                               }
-                              selectedSubject = customSubjectName;
+                              setState((){
+                                _fetchSubjects();
+                              });
                             });
                           }
                         },
@@ -621,7 +667,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       IconButton(
                         onPressed: () async {
                           await _showManageSubjectsDialog();
-                          _fetchSubjects();
+                          setState((){
+                            _fetchSubjects();
+                          });
                         },
                         icon: const Icon(Icons.remove),
                       ),
@@ -658,12 +706,18 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
 
 
+
   void _editClassDetails(int classId, String newClassName, String newSubjectName) async {
     print('Updating class with ID: $classId');
     print('New class name: $newClassName');
     print('New subject name: $newSubjectName');
-    int? newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
-    print('new subject id: $newSubjectId');
+    int? newSubjectId;
+    newSubjectId = await DatabaseHelper().getSubjectId(newSubjectName);
+
+    if (newSubjectId == null) {
+      print('Subject not found, setting subject to None');
+      newSubjectId = await DatabaseHelper().getSubjectId('None');
+    }
     _editClassName(classId, newClassName, newSubjectId!);
 
   }
