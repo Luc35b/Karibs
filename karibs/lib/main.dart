@@ -16,7 +16,7 @@ const Color White = Colors.white;
 //runs the app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database, remove when done testing
+  // await DatabaseHelper().deleteDatabaseFile(); // Delete the existing database, remove when done testing
   runApp(
     MultiProvider(
       providers: [
