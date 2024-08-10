@@ -112,18 +112,15 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       // Get all questions in this category
       var questionsInCategory = _questions.where((question) => question['category_id'] == categoryId).toList();
 
-      // Count how many of these questions have been graded
-      int gradedQuestions = questionsInCategory.where((question) => questionCorrectness.containsKey(question['id'])).length;
+      // Count how many of these questions have been graded as correct
+      int correctlyAnsweredQuestions = questionsInCategory
+          .where((question) => questionCorrectness.containsKey(question['id']) && questionCorrectness[question['id']] == 1)
+          .length;
 
-      // Calculate the score for this category based on graded questions
-      if (rawCategoryScores.containsKey(categoryId)) {
-        double? savedScore = rawCategoryScores[categoryId];
-        if (savedScore != null && gradedQuestions > 0) {
-          // Adjust score based on the number of graded questions, not the total number of questions
-          categoryScores[categoryId] = (savedScore / 100.0) * gradedQuestions;
-        } else {
-          categoryScores[categoryId] = 0.0;
-        }
+      // Calculate the score for this category based on correct answers
+      if (correctlyAnsweredQuestions > 0) {
+        double scoreForCategory = (correctlyAnsweredQuestions / questionsInCategory.length) * 100;
+        categoryScores[categoryId] = scoreForCategory;
       } else {
         categoryScores[categoryId] = 0.0;
       }
@@ -135,6 +132,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
     print("category scores: $categoryScores");
   }
+
 
 
 
