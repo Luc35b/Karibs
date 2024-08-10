@@ -105,36 +105,39 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
   Future<void> _initializeCategoryScores(Map<String, dynamic> savedResults) async {
     categoryScores.clear();
-    Map<int, double?> cats = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
+    Map<int, double?> rawCategoryScores = await DatabaseHelper().getCategoryScoresbyIndexbyStudentTestId(_studentTestId!);
 
-    // Convert percentage scores to raw scores based on the updated number of questions in each category
-    for (var entry in cats.entries) {
-      int categoryId = entry.key;
-      double? percentageScore = entry.value;
-
-      int totalQuestionsInCategory = _questions.where((question) => question['category_id'] == categoryId).length;
-
-      // Adjust raw score based on the new total number of questions
-      if (percentageScore != null && totalQuestionsInCategory > 0) {
-        cats[categoryId] = (percentageScore / 100.0) * totalQuestionsInCategory;
-      } else {
-        cats[categoryId] = 0.0;
-      }
-    }
-
+    // Loop over each category to calculate scores
     for (var category in _categories) {
       int categoryId = category['id'];
-      if (!cats.containsKey(categoryId)) {
-        cats[categoryId] = 0.0; // Default value for new categories
+      // Get all questions in this category
+      var questionsInCategory = _questions.where((question) => question['category_id'] == categoryId).toList();
+
+      // Count how many of these questions have been graded
+      int gradedQuestions = questionsInCategory.where((question) => questionCorrectness.containsKey(question['id'])).length;
+
+      // Calculate the score for this category based on graded questions
+      if (rawCategoryScores.containsKey(categoryId)) {
+        double? savedScore = rawCategoryScores[categoryId];
+        if (savedScore != null && gradedQuestions > 0) {
+          // Adjust score based on the number of graded questions, not the total number of questions
+          categoryScores[categoryId] = (savedScore / 100.0) * gradedQuestions;
+        } else {
+          categoryScores[categoryId] = 0.0;
+        }
+      } else {
+        categoryScores[categoryId] = 0.0;
       }
     }
 
     setState(() {
-      categoryScores = cats;
+      categoryScores = categoryScores;
     });
 
     print("category scores: $categoryScores");
   }
+
+
 
 
   //saves correct answers
@@ -169,6 +172,8 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       }
       question_answer_map[questionId] = 1;
     });
+
+    _recalculateTotalScore();
   }
 
   //marks a question incorrect by the teacher
@@ -183,7 +188,20 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
       }
       question_answer_map[questionId] = -1;
     });
+
+    _recalculateTotalScore();
   }
+
+  void _recalculateTotalScore() {
+    int totalQuestions = _questions.length;
+    double totalScore = (categoryScores.values.where((score) => score != null).fold(0.0, (sum, score) => sum + score!) / totalQuestions) * 100;
+    totalScore = totalScore.clamp(0.0, 100.0);
+
+    setState(() {
+      // Update the total score in the state if needed
+    });
+  }
+
 
   void _saveRegradingResults() async {
     // Retrieve existing total score and score from the database
