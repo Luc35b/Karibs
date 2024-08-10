@@ -4,7 +4,6 @@ import 'package:karibs/screens/student_info_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/database_helper.dart';
-import '../main.dart';
 import '../overlay.dart';
 import '../providers/student_grading_provider.dart';
 
@@ -277,7 +276,7 @@ class _RegradeTestScreenState extends State<RegradeTestScreen> {
 
         if(existingCategoryScore != null) {
           await DatabaseHelper().updateStudentTestCategoryScore(
-              studentTestId!, entry.key, {
+              studentTestId, entry.key, {
             'student_test_id': studentTestId,
             'category_id': entry.key,
             'score': entry.value,
